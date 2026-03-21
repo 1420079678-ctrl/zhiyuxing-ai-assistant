@@ -14,6 +14,9 @@ const modelTargetInput = document.getElementById("model_target");
 const responseStyleInput = document.getElementById("response_style");
 const modelHelper = document.getElementById("model-helper");
 const styleHelper = document.getElementById("style-helper");
+const compatibilityButton = document.getElementById("compatibility-button");
+const compatibilitySummary = document.getElementById("compatibility-summary");
+const compatibilityList = document.getElementById("compatibility-list");
 const pageParams = new URLSearchParams(window.location.search);
 const previewMode = pageParams.get("preview") === "1";
 let runtimeMeta = null;
@@ -30,7 +33,8 @@ function updateModelHelper() {
   }
 
   if (option.id === "configured") {
-    modelHelper.textContent = "使用 .env 中的默认模型配置；如果没配密钥，会自动回退到本地演示模式。";
+    modelHelper.textContent =
+      option.reason || "使用 .env 中的默认模型配置；如果没配密钥，会自动回退到本地演示模式。";
     return;
   }
 
@@ -98,6 +102,64 @@ function applyPreviewState() {
     "预览态示例：页面展示的是本地演示模式下的回复效果，用于 README 截图和项目展示。";
   responseMode.textContent = "本地演示模式";
   statusBadge.textContent = "已完成";
+  compatibilitySummary.textContent = "预览态示例：这里会显示 API 接入检查结果。";
+  compatibilityList.innerHTML = "<li>预览态下不实际请求接口，仅用于页面展示。</li>";
+}
+
+function renderCompatibilityStatus(status) {
+  if (status === "ok") {
+    return "检查通过";
+  }
+  if (status === "warning") {
+    return "存在提醒";
+  }
+  return "需要修正";
+}
+
+function renderCompatibilityReport(payload) {
+  compatibilitySummary.textContent = `${renderCompatibilityStatus(payload.status)}：${payload.summary}`;
+  compatibilityList.innerHTML = "";
+
+  (payload.checks || []).forEach((item) => {
+    const element = document.createElement("li");
+    element.className = `compatibility-item compatibility-item-${item.status}`;
+    element.textContent = `[${String(item.status || "").toUpperCase()}] ${item.message}`;
+    compatibilityList.appendChild(element);
+  });
+
+  if (payload.recommended_setups && payload.recommended_setups.length > 0) {
+    payload.recommended_setups.forEach((item) => {
+      const element = document.createElement("li");
+      element.className = "compatibility-item compatibility-item-setup";
+      element.textContent = `可直接执行：${item.command}`;
+      compatibilityList.appendChild(element);
+    });
+  }
+}
+
+async function loadCompatibility() {
+  if (previewMode) {
+    return;
+  }
+
+  compatibilityButton.disabled = true;
+  compatibilitySummary.textContent = "正在检查当前模型接入配置...";
+
+  try {
+    const response = await fetch("/api/compatibility");
+    const payload = await response.json();
+
+    if (!response.ok) {
+      throw new Error(payload.detail || "无法读取兼容性信息");
+    }
+
+    renderCompatibilityReport(payload);
+  } catch (error) {
+    compatibilitySummary.textContent = "兼容性检查失败，请确认服务已正常启动。";
+    compatibilityList.innerHTML = `<li class="compatibility-item compatibility-item-error">${String(error)}</li>`;
+  } finally {
+    compatibilityButton.disabled = false;
+  }
 }
 
 async function loadRuntimeMeta() {
@@ -120,11 +182,14 @@ async function loadRuntimeMeta() {
     applyPreviewState();
     updateModelHelper();
     updateStyleHelper();
+    await loadCompatibility();
   } catch (error) {
     runtimeBadge.textContent = "当前运行：服务信息读取失败";
     providerName.textContent = "读取失败";
     modelName.textContent = "读取失败";
     baseUrl.textContent = "读取失败";
+    compatibilitySummary.textContent = "兼容性检查不可用";
+    compatibilityList.innerHTML = `<li class="compatibility-item compatibility-item-error">${String(error)}</li>`;
   }
 }
 
@@ -137,6 +202,7 @@ document.querySelectorAll(".suggestion-chip").forEach((button) => {
 
 modelTargetInput.addEventListener("change", updateModelHelper);
 responseStyleInput.addEventListener("change", updateStyleHelper);
+compatibilityButton.addEventListener("click", loadCompatibility);
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();

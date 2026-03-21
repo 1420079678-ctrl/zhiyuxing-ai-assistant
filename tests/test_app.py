@@ -4,9 +4,12 @@ from app import (
     STYLE_LABELS,
     app,
     build_completion_kwargs,
+    build_configured_target,
     build_demo_reply,
     build_messages,
+    configured_api_key_env,
     detect_demo_topic,
+    evaluate_runtime_compatibility,
     list_model_options,
     normalize_response_style,
     resolve_model_target,
@@ -31,6 +34,7 @@ def test_meta_returns_runtime_options() -> None:
     assert payload["demo_page"] == "/"
     assert payload["docs_url"] == "/docs"
     assert payload["deployment_note"] == "/project-docs/dingtalk-integration.md"
+    assert payload["compatibility_url"] == "/api/compatibility"
     assert payload["model_doc"] == "/project-docs/model-integration.md"
     assert payload["available_models"]
     assert payload["available_styles"]
@@ -45,6 +49,7 @@ def test_health_exposes_service_version() -> None:
     assert payload["version"] == app.version
     assert "provider_name" in payload
     assert "model_name" in payload
+    assert "api_key_env" in payload
 
 
 def test_project_docs_are_exposed() -> None:
@@ -161,3 +166,53 @@ def test_resolve_model_target_demo() -> None:
 
     assert target.mode == "demo"
     assert target.provider_name == "Local Demo"
+
+
+def test_configured_api_key_env_matches_model_family(monkeypatch) -> None:
+    monkeypatch.setenv("MODEL_NAME", "deepseek-chat")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://api.deepseek.com")
+    monkeypatch.delenv("MODEL_API_KEY_ENV", raising=False)
+
+    assert configured_api_key_env() == "DEEPSEEK_API_KEY"
+
+
+def test_build_configured_target_uses_expected_key_env(monkeypatch) -> None:
+    monkeypatch.setenv("MODEL_NAME", "deepseek-chat")
+    monkeypatch.setenv("MODEL_PROVIDER", "DeepSeek")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://api.deepseek.com")
+    monkeypatch.setenv("OPENAI_API_KEY", "openai-key")
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "deepseek-key")
+    monkeypatch.delenv("DEMO_MODE", raising=False)
+    monkeypatch.delenv("MODEL_API_KEY_ENV", raising=False)
+
+    target = build_configured_target()
+
+    assert target.mode == "openai"
+    assert target.api_key_env == "DEEPSEEK_API_KEY"
+    assert target.api_key == "deepseek-key"
+
+
+def test_compatibility_report_flags_missing_expected_key(monkeypatch) -> None:
+    monkeypatch.setenv("MODEL_NAME", "deepseek-chat")
+    monkeypatch.setenv("MODEL_PROVIDER", "DeepSeek")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://api.deepseek.com")
+    monkeypatch.setenv("OPENAI_API_KEY", "openai-key")
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.setenv("DEMO_MODE", "false")
+    monkeypatch.delenv("MODEL_API_KEY_ENV", raising=False)
+
+    report = evaluate_runtime_compatibility()
+
+    assert report.status == "error"
+    assert report.api_key_env == "DEEPSEEK_API_KEY"
+    assert any(item.status == "error" and "DEEPSEEK_API_KEY" in item.message for item in report.checks)
+
+
+def test_compatibility_endpoint_returns_report() -> None:
+    response = client.get("/api/compatibility")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert "status" in payload
+    assert "checks" in payload
+    assert "recommended_setups" in payload

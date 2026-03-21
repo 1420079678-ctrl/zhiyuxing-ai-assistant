@@ -35,7 +35,7 @@
 | 模式 | 说明 | 需要的配置 |
 | --- | --- | --- |
 | 本地演示模式 | 使用内置规则生成支持性回复，适合本地启动、调试界面和展示流程 | 无需 API Key |
-| 模型调用模式 | 调用 OpenAI 兼容接口生成回复，适合继续做真实能力验证 | `OPENAI_API_KEY` |
+| 模型调用模式 | 调用 OpenAI 兼容接口生成回复，适合继续做真实能力验证 | 与当前模型匹配的 API Key |
 
 项目默认优先保证“拿到就能跑”。如果没有配置模型密钥，页面和 `/chat` 接口仍然可以完整返回结果。
 
@@ -81,23 +81,56 @@ python -m venv .venv
 python -m pip install -r requirements.txt -r requirements-dev.txt
 ```
 
-### 2. 配置环境变量
+### 2. 一键配置模型接入
+
+推荐直接使用仓库根目录下一键脚本：
 
 ```powershell
-Copy-Item .env.example .env
+.\setup-openai.ps1
+.\setup-deepseek-chat.ps1
+.\setup-deepseek-r1.ps1
 ```
 
-在 `.env` 中配置：
+也可以双击对应的 `.bat` 文件。脚本会自动：
 
-- `OPENAI_API_KEY`：可留空，留空时自动进入本地演示模式
-- `DEEPSEEK_API_KEY`：可作为 DeepSeek 的密钥变量使用
+- 不存在 `.env` 时，从 `.env.example` 复制一份
+- 按目标模型写入 `OPENAI_BASE_URL`、`MODEL_NAME`、`MODEL_PROVIDER`
+- 自动设置 `MODEL_API_KEY_ENV`，确保项目优先读取正确的密钥变量
+- 保留其他未切换的配置项
+
+如果想手动配置，至少需要关注：
+
+- `OPENAI_API_KEY`
+- `DEEPSEEK_API_KEY`
 - `OPENAI_BASE_URL`
 - `MODEL_NAME`
 - `MODEL_PROVIDER`
+- `MODEL_API_KEY_ENV`
 - `MODEL_TEMPERATURE`
-- `DEMO_MODE`：可选，设置为 `true` 时强制使用本地演示模式
+- `DEMO_MODE`
 
-### 3. 启动服务
+### 3. 启动前检查兼容性
+
+```powershell
+.\.venv\Scripts\python scripts\check_model_config.py
+```
+
+这个检查会直接告诉你：
+
+- 当前到底会读取哪个密钥变量
+- 当前模型和 API 地址是否存在明显错配
+- `deepseek-reasoner` 这类模型是否已经按兼容规则处理
+- 当前配置是否真的可以进入真实模型调用模式
+
+如果你已经填了真实 Key，还可以追加一次最小真实探测：
+
+```powershell
+.\.venv\Scripts\python scripts\check_model_config.py --probe
+```
+
+这一步会实际发起一次极小请求，用来确认“不是看起来兼容，而是真的能调通”。
+
+### 4. 启动服务
 
 ```bash
 python -m uvicorn app:app --reload
@@ -125,11 +158,12 @@ start-web.bat
 
 - `http://127.0.0.1:8000/`
 - `http://127.0.0.1:8000/api/meta`
+- `http://127.0.0.1:8000/api/compatibility`
 - `http://127.0.0.1:8000/health`
 - `http://127.0.0.1:8000/docs`
 - `http://127.0.0.1:8000/project-docs/usage-guide.md`
 
-### 4. 运行测试
+### 5. 运行测试
 
 ```bash
 python -m pytest -vv
@@ -141,6 +175,7 @@ python -m pytest -vv
 - `POST /chat`：对话接口
 - `GET /health`：服务健康检查
 - `GET /api/meta`：服务元信息与当前运行模式
+- `GET /api/compatibility`：模型接入兼容性检查
 - `GET /docs`：Swagger 文档
 - `GET /project-docs/...`：项目补充文档
 
@@ -174,14 +209,18 @@ python -m pytest -vv
 
 ## 接入不同大模型
 
-当前项目后端使用的是 OpenAI 兼容接口，因此可以通过修改 `.env` 切换不同模型提供商。
+当前项目后端使用的是 OpenAI 兼容接口，因此可以通过修改 `.env` 或直接运行一键脚本切换不同模型提供商。
 
-- 切到 OpenAI：修改 `OPENAI_API_KEY`、`OPENAI_BASE_URL`、`MODEL_NAME`
-- 切到 DeepSeek：修改 `DEEPSEEK_API_KEY`、`OPENAI_BASE_URL=https://api.deepseek.com`、`MODEL_NAME=deepseek-chat` 或 `deepseek-reasoner`
+- 切到 OpenAI：运行 `.\setup-openai.ps1`
+- 切到 DeepSeek Chat：运行 `.\setup-deepseek-chat.ps1`
+- 切到 DeepSeek R1：运行 `.\setup-deepseek-r1.ps1`
+- 切到其他 OpenAI 兼容供应商：运行 `scripts/setup_model_config.py` 并传入自定义 `base_url`、`model_name`、`api_key_env`
 - Web 页面支持直接下拉选择模型目标和辅导风格
-- 页面右侧会直接显示当前提供商、当前模型和 API 地址，便于确认是否接对
+- 页面右侧会直接显示当前提供商、当前模型、API 地址和接入兼容检查结果
 
 如果要接 `DeepSeek-R1`，当前代码已经处理了 `deepseek-reasoner` 的参数兼容问题，不会再强行传不适合的 `temperature` 参数。
+
+需要说明的是：本项目对 `OpenAI` 和 `DeepSeek` 官方接口可以做到明确兼容；对其他“OpenAI 兼容”供应商，是否完全兼容仍取决于对方是否真的支持 Chat Completions、当前模型名和常用参数格式。仓库里新增的兼容检查接口和脚本，就是用来把这件事提前说明白，而不是等运行时报错。
 
 ## 安全边界
 

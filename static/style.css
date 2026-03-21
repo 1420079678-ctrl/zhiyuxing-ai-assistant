@@ -288,6 +288,29 @@ select:focus {
   opacity: 0.72;
 }
 
+.secondary-button {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgba(20, 95, 102, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.76);
+  color: var(--accent-strong);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.secondary-button:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.secondary-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
 .response-panel {
   margin-top: 22px;
   padding: 20px;
@@ -349,6 +372,60 @@ select:focus {
 .runtime-item strong {
   display: block;
   overflow-wrap: anywhere;
+}
+
+.compatibility-panel {
+  margin: 6px 0 18px;
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(29, 41, 53, 0.08);
+}
+
+.compatibility-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.compatibility-header h3 {
+  margin-bottom: 0;
+}
+
+.compatibility-summary,
+.compatibility-list {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.compatibility-summary {
+  margin: 14px 0 10px;
+}
+
+.compatibility-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.compatibility-item {
+  margin-bottom: 6px;
+}
+
+.compatibility-item-ok {
+  color: #1e5b3f;
+}
+
+.compatibility-item-warning {
+  color: #8a5a18;
+}
+
+.compatibility-item-error {
+  color: #9c3535;
+}
+
+.compatibility-item-setup {
+  color: var(--accent-strong);
 }
 
 @keyframes rise-in {

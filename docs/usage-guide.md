@@ -13,9 +13,10 @@
 
 ### 2. 模型调用模式
 
-- 需要配置 `OPENAI_API_KEY`
-- 也支持配置 `DEEPSEEK_API_KEY`
-- 可选配置 `OPENAI_BASE_URL`、`MODEL_NAME`、`MODEL_PROVIDER`
+- 需要配置与当前模型匹配的密钥变量
+- 支持 `OPENAI_API_KEY`
+- 也支持 `DEEPSEEK_API_KEY`
+- 可选配置 `OPENAI_BASE_URL`、`MODEL_NAME`、`MODEL_PROVIDER`、`MODEL_API_KEY_ENV`
 - `/chat` 会调用 OpenAI 兼容接口返回模型回复
 - 适合继续验证真实模型能力
 
@@ -30,6 +31,7 @@
 | `OPENAI_BASE_URL` | OpenAI 兼容接口地址 | 否 |
 | `MODEL_NAME` | 调用的模型名称 | 否 |
 | `MODEL_PROVIDER` | 页面展示用的提供商名称，例如 `OpenAI` / `DeepSeek` | 否 |
+| `MODEL_API_KEY_ENV` | 当前模型优先读取哪个密钥变量，例如 `OPENAI_API_KEY` / `DEEPSEEK_API_KEY` | 否 |
 | `MODEL_TEMPERATURE` | 温度参数 | 否 |
 | `DEMO_MODE` | 设置为 `true` 时强制使用本地演示模式 | 否 |
 
@@ -43,13 +45,54 @@ python -m venv .venv
 python -m pip install -r requirements.txt -r requirements-dev.txt
 ```
 
-### 2. 配置环境变量
+### 2. 一键配置模型
+
+优先推荐直接运行一键脚本：
+
+```powershell
+.\setup-openai.ps1
+.\setup-deepseek-chat.ps1
+.\setup-deepseek-r1.ps1
+```
+
+也可以双击对应的 `.bat` 文件。
+
+这些脚本会自动：
+
+- 初始化 `.env`
+- 写入当前模型所需的 `OPENAI_BASE_URL`
+- 写入 `MODEL_NAME`、`MODEL_PROVIDER`
+- 自动设置 `MODEL_API_KEY_ENV`
+- 尽量保留现有密钥和其他环境变量
+
+### 3. 手动配置环境变量
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-### 3. 启动服务
+### 4. 启动前检查
+
+```powershell
+.\.venv\Scripts\python scripts\check_model_config.py
+```
+
+它会检查：
+
+- 当前模型会读取哪个 API Key
+- 当前 `.env` 是否真的能进入真实模型调用模式
+- 当前 `OPENAI_BASE_URL` 和 `MODEL_NAME` 是否存在明显错配
+- `deepseek-reasoner` 的参数兼容规则是否已处理
+
+如果已经配置了真实密钥，还可以继续执行：
+
+```powershell
+.\.venv\Scripts\python scripts\check_model_config.py --probe
+```
+
+这会实际发起一次最小模型请求，用来验证当前 API 是否真的能被本项目正常调用。
+
+### 5. 启动服务
 
 ```bash
 python -m uvicorn app:app --reload
@@ -75,6 +118,7 @@ python -m uvicorn app:app --reload
 - `/chat`：对话接口
 - `/health`：健康检查
 - `/api/meta`：服务元信息与当前运行模式
+- `/api/compatibility`：模型接入兼容检查
 - `/docs`：Swagger 文档
 - `/project-docs/model-integration.md`：不同模型接入说明
 - `/project-docs/dingtalk-integration.md`：钉钉接入说明
@@ -87,7 +131,23 @@ python -m uvicorn app:app --reload
 
 ### 为什么配置了 API Key 还是走本地演示模式？
 
-检查 `.env` 中的 `DEMO_MODE` 是否被设置为 `true`。如果是，系统会优先使用本地演示模式。
+先检查 `.env` 中的 `DEMO_MODE` 是否被设置为 `true`。如果是，系统会优先使用本地演示模式。
+
+再检查当前模型是不是在读取正确的密钥变量。现在项目会优先按 `MODEL_API_KEY_ENV` 读取密钥，而不是只看有没有任意一个 Key。最稳的方式是直接运行：
+
+```powershell
+.\.venv\Scripts\python scripts\check_model_config.py
+```
+
+### 为什么明明填了 `OPENAI_API_KEY`，切到 DeepSeek 还是可能失败？
+
+因为 DeepSeek 默认应读取 `DEEPSEEK_API_KEY`，而不是只要有任意一个 Key 就算配置完成。
+
+当前项目已经补上了这层判断：
+
+- 切到 OpenAI 时，会优先读取 `OPENAI_API_KEY`
+- 切到 DeepSeek 时，会优先读取 `DEEPSEEK_API_KEY`
+- 如果你接的是其他 OpenAI 兼容供应商，可以手动设置 `MODEL_API_KEY_ENV`
 
 ### 为什么系统环境里跑 `python -m pytest` 失败？
 
@@ -113,6 +173,6 @@ python -m uvicorn app:app --reload
 
 ### 如何接入 DeepSeek R1 这类不同模型？
 
-项目使用的是 OpenAI 兼容接口方式。只要修改 `.env` 中的 `OPENAI_BASE_URL`、`MODEL_NAME` 和密钥配置，就可以切换不同模型提供商。详细示例见：
+项目使用的是 OpenAI 兼容接口方式。只要修改 `.env` 中的 `OPENAI_BASE_URL`、`MODEL_NAME`、`MODEL_API_KEY_ENV` 和对应密钥，就可以切换不同模型提供商。详细示例见：
 
 - [model-integration.md](model-integration.md)

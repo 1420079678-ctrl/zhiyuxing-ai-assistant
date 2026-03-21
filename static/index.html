@@ -123,7 +123,7 @@
             </p>
             <ul class="info-list">
               <li>未配置模型密钥时，系统会自动切换到本地演示模式，保证页面和接口可直接运行。</li>
-              <li>配置 OpenAI 兼容接口后，可切换到真实模型调用模式。</li>
+              <li>现在支持一键写入 OpenAI、DeepSeek Chat、DeepSeek R1 的模型配置。</li>
               <li>如果后续接入钉钉，需根据应用类型和授权模型处理组织级权限问题。</li>
             </ul>
 
@@ -140,6 +140,24 @@
                 <span class="runtime-label">API 地址</span>
                 <strong id="base-url">读取中</strong>
               </div>
+            </div>
+
+            <div class="compatibility-panel">
+              <div class="compatibility-header">
+                <div>
+                  <p class="card-kicker">API Check</p>
+                  <h3>接入兼容检查</h3>
+                </div>
+                <button id="compatibility-button" class="secondary-button" type="button">
+                  测试当前配置
+                </button>
+              </div>
+              <p id="compatibility-summary" class="compatibility-summary">
+                会检查当前 `.env` 中的 API Key、模型名、Base URL 和已知兼容规则。
+              </p>
+              <ul id="compatibility-list" class="compatibility-list">
+                <li>页面初始化后会自动拉取一次，也可以手动重新检查。</li>
+              </ul>
             </div>
 
             <div class="info-links">

@@ -11,6 +11,8 @@
   - 本地演示模式
   - OpenAI 兼容模型调用模式
   - `OPENAI_API_KEY` 或 `DEEPSEEK_API_KEY` 两种密钥命名方式
+  - `MODEL_API_KEY_ENV` 显式指定当前模型该读取哪个密钥变量
+  - 一键配置脚本和启动前兼容性检查
 
 ## 为什么钉钉版不用你自己填 API Key，Web 端却要？
 
@@ -33,8 +35,60 @@
 | `OPENAI_BASE_URL` | 模型服务地址 |
 | `MODEL_NAME` | 使用的模型名称 |
 | `MODEL_PROVIDER` | 页面展示用的提供商名称 |
+| `MODEL_API_KEY_ENV` | 当前模型应优先读取哪个密钥变量 |
 | `MODEL_TEMPERATURE` | 温度参数，部分模型会自动忽略 |
 | `DEMO_MODE` | 强制启用本地演示模式 |
+
+## 先用一键脚本，而不是手改
+
+项目根目录现在提供了 3 组可直接执行的脚本：
+
+```powershell
+.\setup-openai.ps1
+.\setup-deepseek-chat.ps1
+.\setup-deepseek-r1.ps1
+```
+
+也可以双击对应的 `.bat` 文件。
+
+这些脚本会自动：
+
+- 初始化 `.env`
+- 写入正确的 `OPENAI_BASE_URL`
+- 写入 `MODEL_NAME`
+- 写入 `MODEL_PROVIDER`
+- 写入 `MODEL_API_KEY_ENV`
+- 尽量保留其他已有配置
+
+如果你接的不是 OpenAI 或 DeepSeek 官方接口，也可以直接复用同一个脚本写入自定义 OpenAI 兼容配置，例如：
+
+```powershell
+.\.venv\Scripts\python scripts\setup_model_config.py `
+  --preset openai `
+  --provider-name OpenAI-Compatible `
+  --base-url https://your-provider.example.com/v1 `
+  --model-name your-model-name `
+  --api-key-env OPENAI_API_KEY `
+  --api-key your_api_key
+```
+
+这时就不再默认宣称“完美兼容”，而是建议你立刻跑一遍 `check_model_config.py`，必要时再加 `--probe` 做真实探测。
+
+配置完成后，建议立刻执行：
+
+```powershell
+.\.venv\Scripts\python scripts\check_model_config.py
+```
+
+它会直接告诉你当前配置是否真的能调用模型，而不是等到 Web 端报错后再排查。
+
+如果已经填入真实密钥，还可以继续执行：
+
+```powershell
+.\.venv\Scripts\python scripts\check_model_config.py --probe
+```
+
+这会实际发起一次最小请求，用来验证“当前 API 能不能被本项目真实调通”。
 
 ## 如何切换不同模型
 
@@ -48,6 +102,7 @@ DEEPSEEK_API_KEY=
 OPENAI_BASE_URL=https://api.openai.com/v1
 MODEL_NAME=gpt-4o-mini
 MODEL_PROVIDER=Local Demo
+MODEL_API_KEY_ENV=OPENAI_API_KEY
 MODEL_TEMPERATURE=0.7
 DEMO_MODE=true
 ```
@@ -59,6 +114,7 @@ OPENAI_API_KEY=your_openai_key
 OPENAI_BASE_URL=https://api.openai.com/v1
 MODEL_NAME=gpt-4o-mini
 MODEL_PROVIDER=OpenAI
+MODEL_API_KEY_ENV=OPENAI_API_KEY
 MODEL_TEMPERATURE=0.7
 DEMO_MODE=false
 ```
@@ -70,6 +126,7 @@ DEEPSEEK_API_KEY=your_deepseek_key
 OPENAI_BASE_URL=https://api.deepseek.com
 MODEL_NAME=deepseek-chat
 MODEL_PROVIDER=DeepSeek
+MODEL_API_KEY_ENV=DEEPSEEK_API_KEY
 MODEL_TEMPERATURE=0.7
 DEMO_MODE=false
 ```
@@ -81,11 +138,41 @@ DEEPSEEK_API_KEY=your_deepseek_key
 OPENAI_BASE_URL=https://api.deepseek.com
 MODEL_NAME=deepseek-reasoner
 MODEL_PROVIDER=DeepSeek
+MODEL_API_KEY_ENV=DEEPSEEK_API_KEY
 MODEL_TEMPERATURE=0.7
 DEMO_MODE=false
 ```
 
 说明：当前代码已经对 `deepseek-reasoner` 做了兼容处理，不会再强行传 `temperature` 参数。
+
+## 现在“兼容”的判断标准是什么
+
+这里要说清楚一个边界：不是所有自称“OpenAI 兼容”的接口，都一定和本项目百分百无缝兼容。
+
+当前仓库对下面两类接口可以做到明确支持：
+
+- OpenAI 官方接口
+- DeepSeek 官方接口
+
+原因是这两类接口的地址、模型名和已知参数差异，项目里都做了明确适配。
+
+对于其他 OpenAI 兼容服务，是否“完美兼容”取决于对方是否同时满足：
+
+- 支持 Chat Completions 调用方式
+- 支持当前使用的模型名
+- 接受当前消息格式
+- 不要求额外的鉴权头或特殊字段
+- 不拒绝 `temperature` 等常用参数
+
+如果你的服务不满足这些条件，就不能简单算作“完美兼容”。
+
+所以当前项目的策略是：
+
+- 用 `MODEL_API_KEY_ENV` 明确当前模型该读取哪个密钥
+- 用 `/api/compatibility` 和 `scripts/check_model_config.py` 提前做基础检查
+- 对已知差异模型直接做兼容处理，比如 `deepseek-reasoner`
+
+这比只在 README 里写“支持 OpenAI 兼容接口”更可靠，也更适合别人拿去直接接自己的模型服务。
 
 ## 如何体现“不同模型提供不同心理辅导”
 
@@ -122,6 +209,7 @@ DEMO_MODE=false
 - 当前提供商
 - 当前模型
 - API 地址
+- 当前接入兼容检查结果
 
 当前页面左侧还支持直接下拉选择：
 
@@ -134,7 +222,9 @@ DEMO_MODE=false
 
 - 未配置密钥时自动进入本地演示模式
 - 配置 `OPENAI_API_KEY` 或 `DEEPSEEK_API_KEY` 都可以
+- 会根据 `MODEL_API_KEY_ENV` 优先读取正确的密钥变量
 - `deepseek-reasoner` 会自动跳过不适合的 `temperature` 参数
+- 提供一键配置脚本和兼容性检查接口
 
 ## 参考资料
 
