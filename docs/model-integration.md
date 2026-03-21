@@ -60,6 +60,16 @@
 - 写入 `MODEL_API_KEY_ENV`
 - 尽量保留其他已有配置
 
+但这 3 个脚本并不代表“不需要 API Key”。
+
+它们的含义是：项目已经内置了这 3 种常用接入预设，方便你快速切到对应供应商。
+
+- `.\setup-openai.ps1`：写入 OpenAI 官方接口配置，真实调用仍需要 `OPENAI_API_KEY`
+- `.\setup-deepseek-chat.ps1`：写入 DeepSeek Chat 配置，真实调用仍需要 `DEEPSEEK_API_KEY`
+- `.\setup-deepseek-r1.ps1`：写入 DeepSeek R1 配置，真实调用仍需要 `DEEPSEEK_API_KEY`
+
+如果没有填写对应 Key，脚本也能执行成功，但服务只会回退到本地演示模式，不会真正调用远程模型。
+
 如果你接的不是 OpenAI 或 DeepSeek 官方接口，也可以直接复用同一个脚本写入自定义 OpenAI 兼容配置，例如：
 
 ```powershell
@@ -148,6 +158,8 @@ DEMO_MODE=false
 ## 现在“兼容”的判断标准是什么
 
 这里要说清楚一个边界：不是所有自称“OpenAI 兼容”的接口，都一定和本项目百分百无缝兼容。
+
+同样也要说清楚：仓库里提供了 `setup-openai.ps1`、`setup-deepseek-chat.ps1`、`setup-deepseek-r1.ps1`，并不等于这些模型可以不填 Key 直接调用，它们只是项目内置的 3 个接入模板。
 
 当前仓库对下面两类接口可以做到明确支持：
 

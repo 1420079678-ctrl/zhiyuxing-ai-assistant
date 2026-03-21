@@ -98,6 +98,14 @@ python -m pip install -r requirements.txt -r requirements-dev.txt
 - 自动设置 `MODEL_API_KEY_ENV`，确保项目优先读取正确的密钥变量
 - 保留其他未切换的配置项
 
+需要注意：这几个脚本只是帮你一键写好模型接入配置，不是免 API Key 调用。
+
+- `.\setup-openai.ps1` 对应 OpenAI 官方接口，真实调用需要 `OPENAI_API_KEY`
+- `.\setup-deepseek-chat.ps1` 对应 DeepSeek Chat，真实调用需要 `DEEPSEEK_API_KEY`
+- `.\setup-deepseek-r1.ps1` 对应 DeepSeek R1，真实调用也需要 `DEEPSEEK_API_KEY`
+
+如果运行脚本时没有填写对应 Key，项目仍然可以启动，但会自动回退到本地演示模式，不会真的调用线上模型。
+
 如果想手动配置，至少需要关注：
 
 - `OPENAI_API_KEY`
@@ -217,6 +225,8 @@ python -m pytest -vv
 - 切到其他 OpenAI 兼容供应商：运行 `scripts/setup_model_config.py` 并传入自定义 `base_url`、`model_name`、`api_key_env`
 - Web 页面支持直接下拉选择模型目标和辅导风格
 - 页面右侧会直接显示当前提供商、当前模型、API 地址和接入兼容检查结果
+
+再次强调：这些脚本表示“项目已内置这些接入预设”，不是“这几个模型可以不填 Key 直接调用”。
 
 如果要接 `DeepSeek-R1`，当前代码已经处理了 `deepseek-reasoner` 的参数兼容问题，不会再强行传不适合的 `temperature` 参数。
 

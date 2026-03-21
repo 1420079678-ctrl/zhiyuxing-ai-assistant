@@ -65,6 +65,14 @@ python -m pip install -r requirements.txt -r requirements-dev.txt
 - 自动设置 `MODEL_API_KEY_ENV`
 - 尽量保留现有密钥和其他环境变量
 
+这几个脚本不是免 Key 调用，只是把模型接入配置一次写好：
+
+- `.\setup-openai.ps1`：真实调用需要 `OPENAI_API_KEY`
+- `.\setup-deepseek-chat.ps1`：真实调用需要 `DEEPSEEK_API_KEY`
+- `.\setup-deepseek-r1.ps1`：真实调用需要 `DEEPSEEK_API_KEY`
+
+如果你没有填写对应 Key，项目也不会坏掉，只是会继续运行在本地演示模式。
+
 ### 3. 手动配置环境变量
 
 ```powershell
@@ -128,6 +136,15 @@ python -m uvicorn app:app --reload
 ### 为什么没配 API Key 也能返回结果？
 
 因为项目默认支持本地演示模式。这样仓库拿下来后可以直接跑通流程，不会因为缺少密钥导致页面不可用。
+
+### 一键脚本是不是代表不用 API Key？
+
+不是。一键脚本只是把 `.env` 写成对应模型的推荐配置。
+
+- OpenAI 预设仍然需要 `OPENAI_API_KEY`
+- DeepSeek 预设仍然需要 `DEEPSEEK_API_KEY`
+
+如果 Key 留空，项目会自动回退到本地演示模式，所以页面仍然能返回内容，但那不是线上模型真实回复。
 
 ### 为什么配置了 API Key 还是走本地演示模式？
 
