@@ -173,11 +173,15 @@ def test_knowledge_search_endpoint_returns_hits(test_client: TestClient) -> None
 
 
 def test_knowledge_documents_endpoint_supports_custom_documents(test_client: TestClient) -> None:
+    unique_keyword = "zhiyuxing_custom_signal_2026"
     create_response = test_client.post(
         "/api/knowledge/documents",
         json={
             "title": "校园求助渠道",
-            "content": "如果用户提到长期崩溃、严重失眠或明显无助感，应明确建议联系学校心理中心、辅导员或校医院，并给出先联系一个现实中的人的行动建议。",
+            "content": (
+                "如果用户提到长期崩溃、严重失眠或明显无助感，应明确建议联系学校心理中心、辅导员或校医院，"
+                f"并记录唯一标记 {unique_keyword}，用于验证自定义知识文档已参与检索。"
+            ),
         },
     )
 
@@ -192,7 +196,7 @@ def test_knowledge_documents_endpoint_supports_custom_documents(test_client: Tes
     assert list_payload["total_documents"] >= 6
     assert any(item["document_id"] == create_payload["document"]["document_id"] for item in list_payload["documents"])
 
-    search_response = test_client.get("/api/knowledge/search", params={"q": "心理中心"})
+    search_response = test_client.get("/api/knowledge/search", params={"q": unique_keyword})
     assert search_response.status_code == 200
     search_payload = search_response.json()
     assert any("knowledge_uploads" in hit["source_path"] for hit in search_payload["hits"])
