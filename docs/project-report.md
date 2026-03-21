@@ -1,5 +1,7 @@
 # 知愈星项目报告
 
+[中文](project-report.md) | [English](project-report.en.md)
+
 > 这份文档保留项目的完整方案、流程图和界面示意。对外展示请优先查看 [README](../README.md)。
 
 ## 1. 项目定位

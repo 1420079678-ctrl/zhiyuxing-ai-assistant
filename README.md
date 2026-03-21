@@ -1,5 +1,7 @@
 # 知愈星 AI Assistant
 
+[中文](README.md) | [English](README_EN.md)
+
 ![Python 3.13](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Service-009688?logo=fastapi&logoColor=white)
 ![CI](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/actions/workflows/ci.yml/badge.svg)
@@ -210,10 +212,16 @@ python -m pytest -vv
 
 ## 文档入口
 
-- [docs/project-report.md](docs/project-report.md)：完整项目报告与方案背景
-- [docs/usage-guide.md](docs/usage-guide.md)：运行模式、环境变量和常见问题说明
-- [docs/model-integration.md](docs/model-integration.md)：不同大模型的接入方式与 `.env` 配置示例
-- [docs/dingtalk-integration.md](docs/dingtalk-integration.md)：钉钉权限模型与集成边界说明
+- 中文：
+  [docs/project-report.md](docs/project-report.md)、
+  [docs/usage-guide.md](docs/usage-guide.md)、
+  [docs/model-integration.md](docs/model-integration.md)、
+  [docs/dingtalk-integration.md](docs/dingtalk-integration.md)
+- English:
+  [docs/project-report.en.md](docs/project-report.en.md)、
+  [docs/usage-guide.en.md](docs/usage-guide.en.md)、
+  [docs/model-integration.en.md](docs/model-integration.en.md)、
+  [docs/dingtalk-integration.en.md](docs/dingtalk-integration.en.md)
 
 ## 接入不同大模型
 

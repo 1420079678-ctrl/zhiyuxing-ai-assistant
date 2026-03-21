@@ -1,5 +1,7 @@
 # 模型接入说明
 
+[中文](model-integration.md) | [English](model-integration.en.md)
+
 这份文档专门说明 Web 端如何接入不同大模型，以及为什么钉钉版可以“直接用模型”，而本地 Web 项目需要单独配置模型后端。
 
 ## 先说结论

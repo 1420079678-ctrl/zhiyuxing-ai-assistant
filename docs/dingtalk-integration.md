@@ -1,5 +1,7 @@
 # 钉钉集成与权限说明
 
+[中文](dingtalk-integration.md) | [English](dingtalk-integration.en.md)
+
 这份说明用于回答项目部署中的一个关键问题：`如果把知愈星接入钉钉平台，使用方是否需要依赖某个个人账号或单一组织权限才能访问？`
 
 ## 结论
