@@ -10,7 +10,11 @@ from pydantic import BaseModel, Field
 
 load_dotenv()
 
-app = FastAPI(title="Zhiyuxing Demo API", version="0.1.0")
+app = FastAPI(
+    title="Zhiyuxing AI Assistant Demo API",
+    description="面向大学生场景的 AI 心理支持与学习辅助最小可运行演示接口。",
+    version="0.2.0",
+)
 
 
 class ChatRequest(BaseModel):
@@ -21,6 +25,14 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     reply: str
     note: str
+
+
+class ServiceInfo(BaseModel):
+    name: str
+    version: str
+    description: str
+    docs_url: str
+    healthcheck: str
 
 
 def build_client() -> OpenAI:
@@ -50,7 +62,18 @@ def build_messages(user_message: str, system_hint: Optional[str]) -> list[dict[s
 
 @app.get("/health")
 def health() -> dict[str, str]:
-    return {"status": "ok"}
+    return {"status": "ok", "service": "zhiyuxing-demo", "version": app.version}
+
+
+@app.get("/", response_model=ServiceInfo)
+def index() -> ServiceInfo:
+    return ServiceInfo(
+        name=app.title,
+        version=app.version,
+        description="作品集仓库中的最小可运行后端 Demo，用于展示项目方向与接口能力。",
+        docs_url="/docs",
+        healthcheck="/health",
+    )
 
 
 @app.post("/chat", response_model=ChatResponse)
@@ -66,7 +89,7 @@ def chat(req: ChatRequest) -> ChatResponse:
         reply = completion.choices[0].message.content or "抱歉，我这次没有成功生成回复。"
         return ChatResponse(
             reply=reply,
-            note="这是 GitHub 展示版里的最小可运行 Demo，不代表完整比赛交付形态。",
+            note="这是作品集仓库中的最小可运行 Demo，用于展示项目方向与接口能力。",
         )
     except HTTPException:
         raise
