@@ -77,6 +77,8 @@ zhiyuxing-ai-assistant/
 
 ## 快速启动
 
+推荐使用 Python 3.13 运行本项目，以保持与当前本地开发和 CI 环境一致。
+
 ### 1. 安装依赖
 
 ```bash
