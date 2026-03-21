@@ -204,6 +204,8 @@ or run `start-web.ps1` / `start-web.bat`.
 
 No. The current project can run as a standalone web service. DingTalk is an optional integration scenario.
 
+If your current DingTalk integration is an internal enterprise app, it is usually limited to members of that organization and is not publicly accessible in the same way as the web page.
+
 ### Where are local chat records stored?
 
 By default, the app stores sessions in `data/zhiyuxing.db`. You can override this path through `CHAT_DB_PATH`.

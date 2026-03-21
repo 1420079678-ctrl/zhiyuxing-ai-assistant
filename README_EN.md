@@ -347,7 +347,9 @@ For official OpenAI and DeepSeek endpoints, this repository provides explicit su
 
 - The web page is the default entry point for direct access and continued development.
 - DingTalk is an optional business integration scenario and is not required for the project to run.
-- If DingTalk integration is added, permissions depend on the app type, organization-level authorization, and distribution model.
+- If the current DingTalk integration is an `internal enterprise app`, it is usually only usable by members inside that organization and may also require admin authorization.
+- In practice, this means external users normally cannot open the DingTalk version directly unless they join that organization or the app is redesigned for multi-organization / third-party distribution.
+- If the goal is public accessibility, the web version should remain the primary entry point instead of treating DingTalk as the only access path.
 
 ## Testing and CI
 

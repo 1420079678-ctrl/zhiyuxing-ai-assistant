@@ -14,6 +14,12 @@ Usually no. It depends on the app type and authorization model:
 - if the goal is to let **other companies or external teams** use it, a single-organization internal app is not enough
 - if the integration uses **organization-level APIs**, it usually also involves administrator authorization, app authorization, or delegated user authorization
 
+For this project specifically, the more direct conclusion is:
+
+- if your current DingTalk version is an `internal enterprise app`, external users normally **cannot use the AI assistant directly inside DingTalk**
+- they usually need to belong to that organization, or that organization must have the app installed and authorized by an admin
+- so the DingTalk version is generally **not publicly accessible in the same way as the web page**
+
 ## Why the Project Should Not Depend Only on DingTalk Access
 
 If access requires all of the following:
@@ -37,6 +43,7 @@ A more robust structure is:
 
 - better suited for internal organizational use
 - usually bound to a single organization
+- if someone is outside that organization, they normally cannot see or use the assistant inside DingTalk
 - not ideal as the only external access path
 
 If the current project depends on internal enterprise app capabilities, it is better to describe DingTalk as a real deployment scenario, not the only runtime form.
@@ -60,7 +67,15 @@ From an architecture perspective, this is closer to platform and multi-tenant de
 - the web service is the default entry point
 - DingTalk is preserved as a business integration scenario in the docs
 - the project does not require users to rely on one specific personal account
+- however, an internal DingTalk app still usually requires organization membership or an organization that has installed and authorized the app
 - if organization-level DingTalk capabilities are added later, the exact authorization flow can be documented based on the actual app type
+
+## Recommended External Wording
+
+The clearest way to describe the project is:
+
+- `Web version`: runnable and accessible independently, without DingTalk organization access.
+- `DingTalk version`: an optional integration scenario; if implemented as an internal enterprise app, it is typically limited to organization members rather than being a public entry point.
 
 ## References
 
