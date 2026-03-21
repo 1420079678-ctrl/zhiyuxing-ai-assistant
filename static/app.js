@@ -10,16 +10,88 @@ const responseMode = document.getElementById("response-mode");
 const providerName = document.getElementById("provider-name");
 const modelName = document.getElementById("model-name");
 const baseUrl = document.getElementById("base-url");
+const modelTargetInput = document.getElementById("model_target");
+const responseStyleInput = document.getElementById("response_style");
+const modelHelper = document.getElementById("model-helper");
+const styleHelper = document.getElementById("style-helper");
 const pageParams = new URLSearchParams(window.location.search);
+const previewMode = pageParams.get("preview") === "1";
+let runtimeMeta = null;
+
+function updateModelHelper() {
+  if (!runtimeMeta) {
+    return;
+  }
+
+  const option = runtimeMeta.available_models.find((item) => item.id === modelTargetInput.value);
+  if (!option) {
+    modelHelper.textContent = "当前模型目标不可用。";
+    return;
+  }
+
+  if (option.id === "configured") {
+    modelHelper.textContent = "使用 .env 中的默认模型配置；如果没配密钥，会自动回退到本地演示模式。";
+    return;
+  }
+
+  if (option.id === "demo") {
+    modelHelper.textContent = "不调用真实模型，适合展示页面流程和辅导风格切换。";
+    return;
+  }
+
+  modelHelper.textContent = option.available
+    ? `将尝试调用 ${option.provider_name} / ${option.model_name}。`
+    : option.reason || "当前模型不可用。";
+}
+
+function updateStyleHelper() {
+  if (!runtimeMeta) {
+    return;
+  }
+
+  const option = runtimeMeta.available_styles.find((item) => item.id === responseStyleInput.value);
+  styleHelper.textContent = option ? option.helper_text : "当前风格不可用。";
+}
+
+function populateModelOptions(options) {
+  modelTargetInput.innerHTML = "";
+
+  options.forEach((option) => {
+    const element = document.createElement("option");
+    element.value = option.id;
+    element.textContent = option.available ? option.label : `${option.label}（${option.reason || "未配置"}）`;
+    element.disabled = !option.available;
+    if (option.id === "configured") {
+      element.selected = true;
+    }
+    modelTargetInput.appendChild(element);
+  });
+}
+
+function populateStyleOptions(options) {
+  responseStyleInput.innerHTML = "";
+
+  options.forEach((option) => {
+    const element = document.createElement("option");
+    element.value = option.id;
+    element.textContent = option.label;
+    if (option.id === "balanced") {
+      element.selected = true;
+    }
+    responseStyleInput.appendChild(element);
+  });
+}
 
 function applyPreviewState() {
-  if (pageParams.get("preview") !== "1") {
+  if (!previewMode) {
     return;
   }
 
   document.body.classList.add("preview-capture");
+  modelTargetInput.value = "demo";
+  responseStyleInput.value = "structured";
   messageInput.value = "最近总拖延，明明知道该准备考试了，但一打开资料就开始焦虑。";
-  hintInput.value = "给出温和且具体的 3 步建议";
+  hintInput.value = "更关注考试前启动困难";
   responseText.textContent =
     "这更像是启动成本被焦虑放大了，不一定是你不够自律。\n\n可以先试试这 3 步：\n1. 先不要要求自己完整复习，只做 15 分钟的启动动作，比如整理提纲或标出重点章节。\n2. 把“准备考试”拆成今天能完成的一小步，例如做 5 道题或复盘 1 个知识点，降低大脑的抗拒感。\n3. 完成后立刻记录一个小反馈，比如在清单上打勾，让自己看到已经开始，而不是一直停留在想开始。\n\n如果这种焦虑已经连续影响到睡眠、饮食或日常状态，建议尽快联系学校心理中心、辅导员或可信任的人获得线下支持。";
   responseMeta.textContent =
@@ -37,11 +109,17 @@ async function loadRuntimeMeta() {
       throw new Error(payload.detail || "无法读取服务信息");
     }
 
+    runtimeMeta = payload;
+    populateModelOptions(payload.available_models || []);
+    populateStyleOptions(payload.available_styles || []);
     runtimeBadge.textContent =
       payload.chat_mode === "demo" ? "当前运行：本地演示模式" : "当前运行：模型调用模式";
     providerName.textContent = payload.provider_name;
     modelName.textContent = payload.model_name;
     baseUrl.textContent = payload.base_url;
+    applyPreviewState();
+    updateModelHelper();
+    updateStyleHelper();
   } catch (error) {
     runtimeBadge.textContent = "当前运行：服务信息读取失败";
     providerName.textContent = "读取失败";
@@ -57,11 +135,16 @@ document.querySelectorAll(".suggestion-chip").forEach((button) => {
   });
 });
 
+modelTargetInput.addEventListener("change", updateModelHelper);
+responseStyleInput.addEventListener("change", updateStyleHelper);
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const message = messageInput.value.trim();
   const systemHint = hintInput.value.trim();
+  const modelTarget = modelTargetInput.value;
+  const responseStyle = responseStyleInput.value;
 
   if (!message) {
     return;
@@ -81,6 +164,8 @@ form.addEventListener("submit", async (event) => {
       body: JSON.stringify({
         message,
         system_hint: systemHint || null,
+        model_target: modelTarget || "configured",
+        response_style: responseStyle || "balanced",
       }),
     });
 
@@ -92,7 +177,7 @@ form.addEventListener("submit", async (event) => {
 
     responseText.textContent = payload.reply;
     responseMeta.textContent = payload.note;
-    responseMode.textContent = payload.mode === "demo" ? "本地演示模式" : "模型调用模式";
+    responseMode.textContent = `${payload.provider_name} / ${payload.model_name}`;
     statusBadge.textContent = "已完成";
   } catch (error) {
     responseText.textContent =
@@ -105,5 +190,4 @@ form.addEventListener("submit", async (event) => {
   }
 });
 
-applyPreviewState();
 loadRuntimeMeta();

@@ -178,7 +178,8 @@ python -m pytest -vv
 
 - 切到 OpenAI：修改 `OPENAI_API_KEY`、`OPENAI_BASE_URL`、`MODEL_NAME`
 - 切到 DeepSeek：修改 `DEEPSEEK_API_KEY`、`OPENAI_BASE_URL=https://api.deepseek.com`、`MODEL_NAME=deepseek-chat` 或 `deepseek-reasoner`
-- Web 页面右侧会直接显示当前提供商、当前模型和 API 地址，便于确认是否接对
+- Web 页面支持直接下拉选择模型目标和辅导风格
+- 页面右侧会直接显示当前提供商、当前模型和 API 地址，便于确认是否接对
 
 如果要接 `DeepSeek-R1`，当前代码已经处理了 `deepseek-reasoner` 的参数兼容问题，不会再强行传不适合的 `temperature` 参数。
 

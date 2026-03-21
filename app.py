@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import secrets
 import os
+import secrets
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
@@ -18,24 +19,37 @@ BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 DOCS_DIR = BASE_DIR / "docs"
 
-app = FastAPI(
-    title="Zhiyuxing AI Assistant API",
-    description="面向大学生场景的 AI 情绪支持与学习辅助服务，支持本地演示模式与模型调用模式。",
-    version="0.3.0",
-)
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-app.mount("/project-docs", StaticFiles(directory=DOCS_DIR), name="project-docs")
-
 
 class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, description="用户输入")
     system_hint: Optional[str] = Field(default=None, description="可选的额外系统提示")
+    response_style: Optional[str] = Field(default="balanced", description="回答风格")
+    model_target: Optional[str] = Field(default="configured", description="模型目标")
 
 
 class ChatResponse(BaseModel):
     reply: str
     note: str
     mode: str
+    provider_name: str
+    model_name: str
+    response_style: str
+
+
+class ModelOption(BaseModel):
+    id: str
+    label: str
+    provider_name: str
+    model_name: str
+    mode: str
+    available: bool
+    reason: Optional[str] = None
+
+
+class StyleOption(BaseModel):
+    id: str
+    label: str
+    helper_text: str
 
 
 class ServiceInfo(BaseModel):
@@ -53,15 +67,99 @@ class ServiceInfo(BaseModel):
     base_url: str
     model_doc: str
     supports_temperature: bool
+    available_models: list[ModelOption]
+    available_styles: list[StyleOption]
+
+
+@dataclass(frozen=True)
+class ResolvedTarget:
+    id: str
+    label: str
+    mode: str
+    provider_name: str
+    model_name: str
+    base_url: str
+    api_key: Optional[str] = None
+    api_key_env: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class ModelPreset:
+    id: str
+    label: str
+    provider_name: str
+    model_name: str
+    base_url: str
+    api_key_env: str
+    mode: str = "openai"
+
+
+STYLE_OPTIONS = [
+    StyleOption(id="balanced", label="平衡建议", helper_text="兼顾共情、行动建议和安全提醒"),
+    StyleOption(id="warm", label="温和陪伴", helper_text="更重视情绪承接与安抚"),
+    StyleOption(id="structured", label="三步计划", helper_text="用更清晰的分步结构给建议"),
+    StyleOption(id="encouraging", label="鼓励支持", helper_text="语气更积极，强调可恢复性"),
+    StyleOption(id="brief", label="简洁直接", helper_text="减少铺垫，更快给出核心建议"),
+]
+
+STYLE_LABELS = {option.id: option.label for option in STYLE_OPTIONS}
+STYLE_PROMPTS = {
+    "balanced": "保持温和、具体和平衡，兼顾情绪承接与行动建议。",
+    "warm": "更偏温柔陪伴式表达，先接住情绪，再给建议。",
+    "structured": "使用更清晰的分步结构，优先输出 3 步以内的行动建议。",
+    "encouraging": "语气更鼓励，强调事情是可以逐步处理的。",
+    "brief": "尽量简洁直接，减少铺垫，优先给出核心建议。",
+}
+
+MODEL_PRESETS = [
+    ModelPreset(
+        id="openai-gpt-4o-mini",
+        label="OpenAI · GPT-4o mini",
+        provider_name="OpenAI",
+        model_name="gpt-4o-mini",
+        base_url="https://api.openai.com/v1",
+        api_key_env="OPENAI_API_KEY",
+    ),
+    ModelPreset(
+        id="deepseek-chat",
+        label="DeepSeek · Chat",
+        provider_name="DeepSeek",
+        model_name="deepseek-chat",
+        base_url="https://api.deepseek.com",
+        api_key_env="DEEPSEEK_API_KEY",
+    ),
+    ModelPreset(
+        id="deepseek-reasoner",
+        label="DeepSeek · R1 / Reasoner",
+        provider_name="DeepSeek",
+        model_name="deepseek-reasoner",
+        base_url="https://api.deepseek.com",
+        api_key_env="DEEPSEEK_API_KEY",
+    ),
+]
+
+MODEL_PRESET_MAP = {preset.id: preset for preset in MODEL_PRESETS}
+
+app = FastAPI(
+    title="Zhiyuxing AI Assistant API",
+    description="面向大学生场景的 AI 情绪支持与学习辅助服务，支持本地演示模式与模型调用模式。",
+    version="0.4.0",
+)
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+app.mount("/project-docs", StaticFiles(directory=DOCS_DIR), name="project-docs")
 
 
 def env_flag(name: str) -> bool:
     return os.getenv(name, "").strip().lower() in {"1", "true", "yes", "on"}
 
 
-def resolve_api_key() -> Optional[str]:
-    for env_name in ("OPENAI_API_KEY", "DEEPSEEK_API_KEY"):
+def resolve_api_key(env_name: Optional[str] = None) -> Optional[str]:
+    if env_name:
         value = os.getenv(env_name)
+        return value if value else None
+
+    for candidate in ("OPENAI_API_KEY", "DEEPSEEK_API_KEY"):
+        value = os.getenv(candidate)
         if value:
             return value
     return None
@@ -71,11 +169,11 @@ def api_key_configured() -> bool:
     return bool(resolve_api_key())
 
 
-def current_model_name() -> str:
+def configured_model_name() -> str:
     return os.getenv("MODEL_NAME", "gpt-4o-mini")
 
 
-def current_base_url() -> str:
+def configured_base_url() -> str:
     return os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
 
 
@@ -84,32 +182,14 @@ def configured_provider_name() -> str:
     if configured:
         return configured
 
-    base_url = current_base_url().lower()
-    model_name = current_model_name().lower()
+    base_url = configured_base_url().lower()
+    model_name = configured_model_name().lower()
 
     if "deepseek" in base_url or model_name.startswith("deepseek"):
         return "DeepSeek"
     if "openai" in base_url or model_name.startswith("gpt"):
         return "OpenAI"
     return "OpenAI Compatible"
-
-
-def active_model_name() -> str:
-    if current_chat_mode() == "demo":
-        return "builtin-demo"
-    return current_model_name()
-
-
-def active_base_url() -> str:
-    if current_chat_mode() == "demo":
-        return "local://demo-fallback"
-    return current_base_url()
-
-
-def current_provider_name() -> str:
-    if current_chat_mode() == "demo":
-        return "Local Demo"
-    return configured_provider_name()
 
 
 def current_temperature() -> float:
@@ -121,7 +201,7 @@ def current_temperature() -> float:
 
 
 def supports_temperature(model_name: Optional[str] = None) -> bool:
-    return (model_name or current_model_name()).lower() != "deepseek-reasoner"
+    return (model_name or configured_model_name()).lower() != "deepseek-reasoner"
 
 
 def current_chat_mode() -> str:
@@ -130,50 +210,110 @@ def current_chat_mode() -> str:
     return "openai" if api_key_configured() else "demo"
 
 
-def build_client() -> OpenAI:
+def build_demo_target() -> ResolvedTarget:
+    return ResolvedTarget(
+        id="demo",
+        label="本地演示模式",
+        mode="demo",
+        provider_name="Local Demo",
+        model_name="builtin-demo",
+        base_url="local://demo-fallback",
+    )
+
+
+def build_configured_target() -> ResolvedTarget:
+    if current_chat_mode() == "demo":
+        return build_demo_target()
+
     api_key = resolve_api_key()
+    api_key_env = "OPENAI_API_KEY" if os.getenv("OPENAI_API_KEY") else "DEEPSEEK_API_KEY"
+    return ResolvedTarget(
+        id="configured",
+        label="当前配置",
+        mode="openai",
+        provider_name=configured_provider_name(),
+        model_name=configured_model_name(),
+        base_url=configured_base_url(),
+        api_key=api_key,
+        api_key_env=api_key_env,
+    )
+
+
+def resolve_model_target(model_target: Optional[str]) -> ResolvedTarget:
+    target_id = (model_target or "configured").strip().lower()
+
+    if target_id == "configured":
+        return build_configured_target()
+    if target_id == "demo":
+        return build_demo_target()
+
+    preset = MODEL_PRESET_MAP.get(target_id)
+    if not preset:
+        raise HTTPException(status_code=400, detail=f"不支持的模型目标：{target_id}")
+
+    api_key = resolve_api_key(preset.api_key_env)
     if not api_key:
         raise HTTPException(
-            status_code=500,
-            detail="缺少模型密钥，请先在 .env 中配置 OPENAI_API_KEY 或 DEEPSEEK_API_KEY",
+            status_code=400,
+            detail=f"未配置 {preset.api_key_env}，无法切换到 {preset.label}",
         )
 
-    base_url = current_base_url()
-    return OpenAI(api_key=api_key, base_url=base_url)
-
-
-def build_completion_kwargs(messages: list[dict[str, str]]) -> dict[str, object]:
-    model_name = current_model_name()
-    payload: dict[str, object] = {
-        "model": model_name,
-        "messages": messages,
-    }
-
-    if supports_temperature(model_name):
-        payload["temperature"] = current_temperature()
-
-    return payload
-
-
-def build_messages(user_message: str, system_hint: Optional[str]) -> list[dict[str, str]]:
-    system_prompt = (
-        "你是一个面向大学生的 AI 心理支持与学习辅助助手。"
-        "回答时保持温和、具体、不过度承诺，不将自己描述为专业心理医生。"
-        "优先做三件事：识别情绪、给出可执行的小建议、必要时提醒寻求线下专业帮助。"
-        "不要输出诊断结论，不要给出危险、自伤或伤人建议。"
+    return ResolvedTarget(
+        id=preset.id,
+        label=preset.label,
+        mode=preset.mode,
+        provider_name=preset.provider_name,
+        model_name=preset.model_name,
+        base_url=preset.base_url,
+        api_key=api_key,
+        api_key_env=preset.api_key_env,
     )
-    if system_hint:
-        system_prompt += "\n补充要求：" + system_hint
 
-    return [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_message},
+
+def list_model_options() -> list[ModelOption]:
+    configured_target = build_configured_target()
+    options = [
+        ModelOption(
+            id="configured",
+            label=f"当前配置（{configured_target.provider_name} / {configured_target.model_name}）",
+            provider_name=configured_target.provider_name,
+            model_name=configured_target.model_name,
+            mode=configured_target.mode,
+            available=True,
+        ),
+        ModelOption(
+            id="demo",
+            label="本地演示模式",
+            provider_name="Local Demo",
+            model_name="builtin-demo",
+            mode="demo",
+            available=True,
+        ),
     ]
 
+    for preset in MODEL_PRESETS:
+        available = bool(resolve_api_key(preset.api_key_env))
+        options.append(
+            ModelOption(
+                id=preset.id,
+                label=preset.label,
+                provider_name=preset.provider_name,
+                model_name=preset.model_name,
+                mode=preset.mode,
+                available=available,
+                reason=None if available else f"未配置 {preset.api_key_env}",
+            )
+        )
 
-def detect_demo_style(system_hint: Optional[str]) -> str:
+    return options
+
+
+def normalize_response_style(response_style: Optional[str], system_hint: Optional[str] = None) -> str:
+    candidate = (response_style or "").strip().lower()
+    if candidate in STYLE_LABELS:
+        return candidate
+
     hint = (system_hint or "").strip()
-
     if any(keyword in hint for keyword in ("简洁", "简短", "直接")):
         return "brief"
     if any(keyword in hint for keyword in ("鼓励", "打气", "积极")):
@@ -183,6 +323,49 @@ def detect_demo_style(system_hint: Optional[str]) -> str:
     if any(keyword in hint for keyword in ("温柔", "陪伴", "安抚", "共情")):
         return "warm"
     return "balanced"
+
+
+def build_client(target: ResolvedTarget) -> OpenAI:
+    if not target.api_key:
+        raise HTTPException(status_code=500, detail="当前模型目标没有可用密钥")
+
+    return OpenAI(api_key=target.api_key, base_url=target.base_url)
+
+
+def build_completion_kwargs(messages: list[dict[str, str]], model_name: Optional[str] = None) -> dict[str, object]:
+    resolved_model_name = model_name or configured_model_name()
+    payload: dict[str, object] = {
+        "model": resolved_model_name,
+        "messages": messages,
+    }
+
+    if supports_temperature(resolved_model_name):
+        payload["temperature"] = current_temperature()
+
+    return payload
+
+
+def build_messages(
+    user_message: str,
+    system_hint: Optional[str],
+    response_style: Optional[str] = None,
+) -> list[dict[str, str]]:
+    style = normalize_response_style(response_style, system_hint)
+    system_prompt = (
+        "你是一个面向大学生的 AI 心理支持与学习辅助助手。"
+        "回答时保持温和、具体、不过度承诺，不将自己描述为专业心理医生。"
+        "优先做三件事：识别情绪、给出可执行的小建议、必要时提醒寻求线下专业帮助。"
+        "不要输出诊断结论，不要给出危险、自伤或伤人建议。"
+    )
+    system_prompt += "\n回答风格要求：" + STYLE_PROMPTS[style]
+
+    if system_hint:
+        system_prompt += "\n额外要求：" + system_hint
+
+    return [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_message},
+    ]
 
 
 def render_demo_reply(opening: str, steps: list[str], closing: str, style: str) -> str:
@@ -209,9 +392,13 @@ def render_demo_reply(opening: str, steps: list[str], closing: str, style: str) 
     return f"{opening}\n\n可以先试试这 3 步：\n{action_list}\n\n{closing}"
 
 
-def build_demo_reply(user_message: str, system_hint: Optional[str] = None) -> str:
+def build_demo_reply(
+    user_message: str,
+    system_hint: Optional[str] = None,
+    response_style: Optional[str] = None,
+) -> str:
     text = user_message.strip()
-    style = detect_demo_style(system_hint)
+    style = normalize_response_style(response_style, system_hint)
 
     if any(keyword in text for keyword in ("焦虑", "压力", "慌", "紧张", "崩溃", "面试", "考试")):
         openings = [
@@ -334,14 +521,15 @@ def build_demo_reply(user_message: str, system_hint: Optional[str] = None) -> st
 
 @app.get("/health")
 def health() -> dict[str, str | bool]:
+    target = build_configured_target()
     return {
         "status": "ok",
         "service": "zhiyuxing-ai-assistant",
         "version": app.version,
-        "mode": current_chat_mode(),
+        "mode": target.mode,
         "api_key_configured": api_key_configured(),
-        "provider_name": current_provider_name(),
-        "model_name": active_model_name(),
+        "provider_name": target.provider_name,
+        "model_name": target.model_name,
     }
 
 
@@ -352,6 +540,7 @@ def index() -> FileResponse:
 
 @app.get("/api/meta", response_model=ServiceInfo)
 def meta() -> ServiceInfo:
+    target = build_configured_target()
     return ServiceInfo(
         name=app.title,
         version=app.version,
@@ -360,37 +549,49 @@ def meta() -> ServiceInfo:
         healthcheck="/health",
         demo_page="/",
         deployment_note="/project-docs/dingtalk-integration.md",
-        chat_mode=current_chat_mode(),
+        chat_mode=target.mode,
         api_key_configured=api_key_configured(),
-        provider_name=current_provider_name(),
-        model_name=active_model_name(),
-        base_url=active_base_url(),
+        provider_name=target.provider_name,
+        model_name=target.model_name,
+        base_url=target.base_url,
         model_doc="/project-docs/model-integration.md",
-        supports_temperature=supports_temperature(),
+        supports_temperature=supports_temperature(target.model_name),
+        available_models=list_model_options(),
+        available_styles=STYLE_OPTIONS,
     )
 
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(req: ChatRequest) -> ChatResponse:
-    mode = current_chat_mode()
+    target = resolve_model_target(req.model_target)
+    style = normalize_response_style(req.response_style, req.system_hint)
 
-    if mode == "demo":
+    if target.mode == "demo":
         return ChatResponse(
-            reply=build_demo_reply(req.message, req.system_hint),
-            note="当前为本地演示模式。系统会根据输入内容和补充要求切换不同的演示话术；如需真实模型效果，仍需要接入实际模型后端。",
-            mode=mode,
+            reply=build_demo_reply(req.message, req.system_hint, style),
+            note=f"当前为本地演示模式。已按“{STYLE_LABELS[style]}”返回演示回复；如需真实模型效果，请在页面中切换到已配置密钥的模型目标。",
+            mode=target.mode,
+            provider_name=target.provider_name,
+            model_name=target.model_name,
+            response_style=style,
         )
 
     try:
-        client = build_client()
+        client = build_client(target)
         completion = client.chat.completions.create(
-            **build_completion_kwargs(build_messages(req.message, req.system_hint))
+            **build_completion_kwargs(
+                build_messages(req.message, req.system_hint, style),
+                model_name=target.model_name,
+            )
         )
         reply = completion.choices[0].message.content or "抱歉，我这次没有成功生成回复。"
         return ChatResponse(
             reply=reply,
-            note=f"当前为模型调用模式。回复由 {current_provider_name()} / {current_model_name()} 生成。",
-            mode=mode,
+            note=f"当前为模型调用模式。回复由 {target.provider_name} / {target.model_name} 生成，风格为“{STYLE_LABELS[style]}”。",
+            mode=target.mode,
+            provider_name=target.provider_name,
+            model_name=target.model_name,
+            response_style=style,
         )
     except HTTPException:
         raise

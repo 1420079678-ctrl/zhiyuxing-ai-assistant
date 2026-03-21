@@ -65,6 +65,24 @@
             </div>
 
             <form id="chat-form" class="chat-form">
+              <div class="field-grid">
+                <div>
+                  <label class="field-label" for="model_target">模型选择</label>
+                  <select id="model_target" name="model_target"></select>
+                  <p id="model-helper" class="field-helper">
+                    这里会显示当前可切换的模型目标。
+                  </p>
+                </div>
+
+                <div>
+                  <label class="field-label" for="response_style">辅导风格</label>
+                  <select id="response_style" name="response_style"></select>
+                  <p id="style-helper" class="field-helper">
+                    这里会显示当前风格更适合什么样的回答方式。
+                  </p>
+                </div>
+              </div>
+
               <label class="field-label" for="message">输入问题</label>
               <textarea
                 id="message"
@@ -79,7 +97,7 @@
                 id="system_hint"
                 name="system_hint"
                 type="text"
-                placeholder="例如：更简洁 / 更鼓励 / 按 3 步计划说"
+                placeholder="例如：更关注考试焦虑 / 建议更落地一些"
               />
 
               <button id="submit-button" class="submit-button" type="submit">发送并生成回复</button>

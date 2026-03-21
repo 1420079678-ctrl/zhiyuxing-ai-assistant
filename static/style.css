@@ -230,12 +230,19 @@ h1 {
   gap: 12px;
 }
 
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .field-label {
   font-weight: 600;
 }
 
 textarea,
-input {
+input,
+select {
   width: 100%;
   padding: 14px 16px;
   border: 1px solid rgba(29, 41, 53, 0.12);
@@ -246,9 +253,17 @@ input {
 }
 
 textarea:focus,
-input:focus {
+input:focus,
+select:focus {
   outline: 2px solid rgba(20, 95, 102, 0.18);
   border-color: rgba(20, 95, 102, 0.32);
+}
+
+.field-helper {
+  margin: 8px 2px 0;
+  font-size: 0.92rem;
+  color: var(--muted);
+  line-height: 1.6;
 }
 
 .submit-button {
@@ -349,6 +364,7 @@ input:focus {
 }
 
 @media (max-width: 900px) {
+  .field-grid,
   .hero-points,
   .demo-grid,
   .runtime-info {
