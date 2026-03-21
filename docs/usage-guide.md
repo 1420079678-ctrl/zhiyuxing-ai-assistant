@@ -38,6 +38,7 @@
 | `MODEL_TEMPERATURE` | 温度参数 | 否 |
 | `DEMO_MODE` | 设置为 `true` 时强制使用本地演示模式 | 否 |
 | `CHAT_DB_PATH` | 本地 SQLite 会话库路径，默认写入 `data/zhiyuxing.db` | 否 |
+| `KNOWLEDGE_UPLOAD_DIR` | 自定义知识文档写入目录，默认写入 `data/knowledge_uploads` | 否 |
 
 ## 本地启动
 
@@ -132,11 +133,13 @@ python -m uvicorn app:app --reload
 - `/api/meta`：服务元信息与当前运行模式
 - `/api/compatibility`：模型接入兼容检查
 - `/api/knowledge/search?q=关键词`：本地知识库检索
+- `/api/knowledge/documents`：列出或写入知识文档
 - `/api/session/{session_id}`：最近会话历史
 - `/api/feedback`：提交回复反馈
 - `/docs`：Swagger 文档
 - `/project-docs/model-integration.md`：不同模型接入说明
 - `/project-docs/dingtalk-integration.md`：钉钉接入说明
+- `/project-docs/api-reference.md`：接口参考
 
 ## 常见问题
 
@@ -204,6 +207,10 @@ python -m uvicorn app:app --reload
 ### 本地对话记录存在哪里？
 
 默认会保存在仓库下的 `data/zhiyuxing.db`。如果你想切到其他路径，可以在 `.env` 里设置 `CHAT_DB_PATH`。
+
+### 能不能把自己的知识文档接进来？
+
+可以。现在项目支持通过 `POST /api/knowledge/documents` 写入自定义知识文档，写入目录默认是 `data/knowledge_uploads`，也可以通过 `KNOWLEDGE_UPLOAD_DIR` 改掉。
 
 ### 如何接入 DeepSeek R1 这类不同模型？
 

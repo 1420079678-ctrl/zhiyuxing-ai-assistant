@@ -24,6 +24,7 @@ If this project is useful to you, consider giving it a `Star`.
 - `See release`:[v0.1.0 Release](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/tag/v0.1.0)
 - `Chinese docs`:[README.md](README.md)
 - `Model setup`:[docs/model-integration.en.md](docs/model-integration.en.md)
+- `API reference`:[docs/api-reference.en.md](docs/api-reference.en.md)
 
 ## What You Can Verify in 30 Seconds
 
@@ -46,11 +47,31 @@ the GitHub Pages demo is primarily a public preview of the UI and interaction fl
 - `Supportive dialogue`: identifies expressions of stress, anxiety, and procrastination, then replies in a supportive tone.
 - `Study action guidance`: breaks large tasks into small steps that are easier to start.
 - `Local knowledge retrieval`: searches the built-in support and study guidance documents to enrich responses.
+- `Custom knowledge document ingestion`: accepts additional Markdown or text documents through the API, giving the project a more extensible RAG-style entry point.
 - `Session memory and persistence`: keeps recent turns, supports follow-up questions, and stores session data in local SQLite.
 - `Risk detection and guardrail fallback`: switches to a fixed safety-oriented reply when high-risk expressions appear.
 - `Dual runtime mode`: falls back to local demo mode when no model key is configured; switches to OpenAI-compatible model calls when configured.
 - `Web service`: provides a browser-based UI, health check, runtime metadata endpoint, and Swagger docs.
 - `Engineering basics`: includes tests, CI, environment variable examples, and supporting docs.
+
+## Project Structure
+
+```text
+backend/
+  api/            # route layer
+  app_factory.py  # FastAPI assembly
+  chat_logic.py   # prompts, styles, and demo reply logic
+  chat_service.py # full chat pipeline
+  config.py       # runtime config
+  runtime.py      # provider resolution and compatibility checks
+  schemas.py      # request/response models
+services/
+  knowledge.py    # retrieval and custom document writes
+  safety.py       # risk detection
+  storage.py      # SQLite persistence
+static/           # web frontend
+tests/            # regression tests
+```
 
 ## Use Cases
 
@@ -223,6 +244,8 @@ python -m pytest -vv
 - `GET /api/meta`: runtime metadata
 - `GET /api/compatibility`: model integration compatibility check
 - `GET /api/knowledge/search`: local knowledge base search
+- `GET /api/knowledge/documents`: list current knowledge documents
+- `POST /api/knowledge/documents`: write a custom knowledge document
 - `GET /api/session/{session_id}`: recent session history
 - `POST /api/feedback`: mark a reply as helpful or needing more detail
 - `GET /docs`: Swagger docs
@@ -270,11 +293,13 @@ Example response:
 ## Documentation
 
 - Chinese:
+  [docs/api-reference.md](docs/api-reference.md)、
   [docs/project-report.md](docs/project-report.md)、
   [docs/usage-guide.md](docs/usage-guide.md)、
   [docs/model-integration.md](docs/model-integration.md)、
   [docs/dingtalk-integration.md](docs/dingtalk-integration.md)
 - English:
+  [docs/api-reference.en.md](docs/api-reference.en.md)、
   [docs/project-report.en.md](docs/project-report.en.md)、
   [docs/usage-guide.en.md](docs/usage-guide.en.md)、
   [docs/model-integration.en.md](docs/model-integration.en.md)、

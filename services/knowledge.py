@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -7,6 +8,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 DEFAULT_KNOWLEDGE_DIR = BASE_DIR / "knowledge_base"
+DEFAULT_UPLOAD_DIR = BASE_DIR / "data" / "knowledge_uploads"
 
 
 @dataclass(frozen=True)
@@ -25,8 +27,29 @@ class KnowledgeChunk:
     tokens: tuple[str, ...]
 
 
-def knowledge_dir() -> Path:
-    return DEFAULT_KNOWLEDGE_DIR
+@dataclass(frozen=True)
+class KnowledgeDocumentResult:
+    document_id: str
+    title: str
+    source_path: str
+    category: str
+
+
+def builtin_knowledge_dir() -> Path:
+    configured = os.getenv("KNOWLEDGE_BASE_DIR", "").strip()
+    return Path(configured) if configured else DEFAULT_KNOWLEDGE_DIR
+
+
+def upload_knowledge_dir() -> Path:
+    configured = os.getenv("KNOWLEDGE_UPLOAD_DIR", "").strip()
+    return Path(configured) if configured else DEFAULT_UPLOAD_DIR
+
+
+def knowledge_directories() -> list[tuple[str, Path]]:
+    return [
+        ("builtin", builtin_knowledge_dir()),
+        ("custom", upload_knowledge_dir()),
+    ]
 
 
 def tokenize_text(text: str) -> list[str]:
@@ -46,16 +69,22 @@ def tokenize_text(text: str) -> list[str]:
 
 
 def knowledge_document_count() -> int:
-    return len(list(iter_knowledge_files()))
+    return len(iter_knowledge_files())
 
 
 def iter_knowledge_files() -> list[Path]:
-    directory = knowledge_dir()
-    if not directory.exists():
-        return []
-    return sorted(
-        [path for path in directory.iterdir() if path.suffix.lower() in {".md", ".txt"} and path.is_file()]
-    )
+    files: list[Path] = []
+    for _, directory in knowledge_directories():
+        if not directory.exists():
+            continue
+        files.extend(
+            [
+                path
+                for path in directory.iterdir()
+                if path.suffix.lower() in {".md", ".txt"} and path.is_file()
+            ]
+        )
+    return sorted(files)
 
 
 def load_knowledge_chunks() -> list[KnowledgeChunk]:
@@ -63,6 +92,70 @@ def load_knowledge_chunks() -> list[KnowledgeChunk]:
     for path in iter_knowledge_files():
         chunks.extend(parse_knowledge_file(path))
     return chunks
+
+
+def detect_document_category(path: Path) -> str:
+    builtin_dir = builtin_knowledge_dir().resolve()
+    upload_dir = upload_knowledge_dir().resolve()
+    resolved = path.resolve()
+
+    if resolved.is_relative_to(builtin_dir):
+        return "builtin"
+    if resolved.is_relative_to(upload_dir):
+        return "custom"
+    return "unknown"
+
+
+def relative_source_path(path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(BASE_DIR.resolve())).replace("\\", "/")
+    except ValueError:
+        return str(path.resolve()).replace("\\", "/")
+
+
+def extract_document_title(path: Path) -> str:
+    for line in path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            return stripped.lstrip("#").strip() or path.stem.replace("-", " ")
+    return path.stem.replace("-", " ")
+
+
+def list_knowledge_documents() -> list[KnowledgeDocumentResult]:
+    return [
+        KnowledgeDocumentResult(
+            document_id=path.stem,
+            title=extract_document_title(path),
+            source_path=relative_source_path(path),
+            category=detect_document_category(path),
+        )
+        for path in iter_knowledge_files()
+    ]
+
+
+def sanitize_document_id(value: str) -> str:
+    lowered = value.strip().lower()
+    lowered = re.sub(r"\s+", "-", lowered)
+    lowered = re.sub(r"[^a-z0-9\-_]+", "-", lowered)
+    normalized = re.sub(r"-{2,}", "-", lowered).strip("-_")
+    return normalized or "custom-knowledge"
+
+
+def write_knowledge_document(title: str, content: str, document_id: str | None = None) -> KnowledgeDocumentResult:
+    upload_dir = upload_knowledge_dir()
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    resolved_id = sanitize_document_id(document_id or title)
+    target_path = upload_dir / f"{resolved_id}.md"
+    payload = f"# {title.strip()}\n\n{content.strip()}\n"
+    target_path.write_text(payload, encoding="utf-8")
+
+    return KnowledgeDocumentResult(
+        document_id=resolved_id,
+        title=title.strip(),
+        source_path=relative_source_path(target_path),
+        category="custom",
+    )
 
 
 def parse_knowledge_file(path: Path) -> list[KnowledgeChunk]:
@@ -82,7 +175,7 @@ def parse_knowledge_file(path: Path) -> list[KnowledgeChunk]:
         chunks.append(
             KnowledgeChunk(
                 title=current_title,
-                source_path=str(path.relative_to(BASE_DIR)).replace("\\", "/"),
+                source_path=relative_source_path(path),
                 content=content,
                 tokens=tuple(tokenize_text(content)),
             )

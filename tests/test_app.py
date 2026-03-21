@@ -24,6 +24,7 @@ from app import (
 @pytest.fixture
 def test_client(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> TestClient:
     monkeypatch.setenv("CHAT_DB_PATH", str(tmp_path / "zhiyuxing-test.db"))
+    monkeypatch.setenv("KNOWLEDGE_UPLOAD_DIR", str(tmp_path / "knowledge_uploads"))
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
     monkeypatch.delenv("DEMO_MODE", raising=False)
@@ -55,6 +56,8 @@ def test_meta_returns_runtime_options(test_client: TestClient) -> None:
     assert payload["session_history_url"] == "/api/session/{session_id}"
     assert payload["feedback_url"] == "/api/feedback"
     assert payload["knowledge_search_url"].startswith("/api/knowledge/search")
+    assert payload["knowledge_documents_url"] == "/api/knowledge/documents"
+    assert payload["knowledge_upload_url"] == "/api/knowledge/documents"
     assert payload["available_models"]
     assert payload["available_styles"]
 
@@ -167,6 +170,32 @@ def test_knowledge_search_endpoint_returns_hits(test_client: TestClient) -> None
     assert payload["query"] == "失眠"
     assert payload["total_hits"] >= 1
     assert payload["hits"][0]["source_path"].startswith("knowledge_base/")
+
+
+def test_knowledge_documents_endpoint_supports_custom_documents(test_client: TestClient) -> None:
+    create_response = test_client.post(
+        "/api/knowledge/documents",
+        json={
+            "title": "校园求助渠道",
+            "content": "如果用户提到长期崩溃、严重失眠或明显无助感，应明确建议联系学校心理中心、辅导员或校医院，并给出先联系一个现实中的人的行动建议。",
+        },
+    )
+
+    assert create_response.status_code == 201
+    create_payload = create_response.json()
+    assert create_payload["status"] == "ok"
+    assert create_payload["document"]["category"] == "custom"
+
+    list_response = test_client.get("/api/knowledge/documents")
+    assert list_response.status_code == 200
+    list_payload = list_response.json()
+    assert list_payload["total_documents"] >= 6
+    assert any(item["document_id"] == create_payload["document"]["document_id"] for item in list_payload["documents"])
+
+    search_response = test_client.get("/api/knowledge/search", params={"q": "心理中心"})
+    assert search_response.status_code == 200
+    search_payload = search_response.json()
+    assert any("knowledge_uploads" in hit["source_path"] for hit in search_payload["hits"])
 
 
 def test_chat_returns_memory_knowledge_and_safety_fields(test_client: TestClient) -> None:

@@ -24,6 +24,7 @@
 - `查看版本`：[v0.1.0 Release](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/tag/v0.1.0)
 - `英文说明`：[README_EN.md](README_EN.md)
 - `模型接入`：[docs/model-integration.md](docs/model-integration.md)
+- `API 参考`：[docs/api-reference.md](docs/api-reference.md)
 
 ## 30 秒能看到什么
 
@@ -46,11 +47,31 @@ GitHub Pages 上的在线 Demo 主要用于公开展示页面和交互流程；�
 - `情绪支持对话`：识别压力、焦虑、拖延等常见表达，给出温和回应。
 - `学习行动建议`：把大问题拆成可立刻执行的小步骤，降低启动门槛。
 - `本地知识库检索`：根据问题检索内置心理支持与学习建议文档片段，增强回复内容。
+- `自定义知识文档接入`：可通过 API 把自定义 Markdown / 文本写入知识库，形成更像 RAG 项目的可扩展入口。
 - `会话记忆与持久化`：自动记录最近对话，支持继续追问、查看历史和本地 SQLite 持久化。
 - `风险识别与转介兜底`：遇到高风险表达时优先切换固定安全回复，而不是继续普通对话。
 - `双运行模式`：未配置模型密钥时使用本地演示模式；配置后切换到 OpenAI 兼容模型调用模式。
 - `Web 服务化`：提供可直接访问的页面、健康检查、接口元信息和 Swagger 文档。
 - `工程基础`：包含测试、CI、环境变量说明和补充文档。
+
+## 工程结构
+
+```text
+backend/
+  api/            # 路由层
+  app_factory.py  # FastAPI 应用装配
+  chat_logic.py   # 提示词、风格和 Demo 回复逻辑
+  chat_service.py # 完整对话流程
+  config.py       # 运行配置
+  runtime.py      # 模型解析与兼容性检查
+  schemas.py      # 请求/响应模型
+services/
+  knowledge.py    # 知识检索与自定义文档写入
+  safety.py       # 风险检测
+  storage.py      # SQLite 会话持久化
+static/           # Web 前端
+tests/            # 回归测试
+```
 
 ## 使用场景
 
@@ -223,6 +244,8 @@ python -m pytest -vv
 - `GET /api/meta`：服务元信息与当前运行模式
 - `GET /api/compatibility`：模型接入兼容性检查
 - `GET /api/knowledge/search`：本地知识库检索
+- `GET /api/knowledge/documents`：列出当前知识文档
+- `POST /api/knowledge/documents`：写入自定义知识文档
 - `GET /api/session/{session_id}`：最近会话记录
 - `POST /api/feedback`：对回复提交有帮助 / 需要更具体的反馈
 - `GET /docs`：Swagger 文档
@@ -270,11 +293,13 @@ python -m pytest -vv
 ## 文档入口
 
 - 中文：
+  [docs/api-reference.md](docs/api-reference.md)、
   [docs/project-report.md](docs/project-report.md)、
   [docs/usage-guide.md](docs/usage-guide.md)、
   [docs/model-integration.md](docs/model-integration.md)、
   [docs/dingtalk-integration.md](docs/dingtalk-integration.md)
 - English:
+  [docs/api-reference.en.md](docs/api-reference.en.md)、
   [docs/project-report.en.md](docs/project-report.en.md)、
   [docs/usage-guide.en.md](docs/usage-guide.en.md)、
   [docs/model-integration.en.md](docs/model-integration.en.md)、

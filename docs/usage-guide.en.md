@@ -38,6 +38,7 @@ See the root-level `.env.example` file for a reference configuration.
 | `MODEL_TEMPERATURE` | Temperature parameter for supported models | No |
 | `DEMO_MODE` | Set to `true` to force local demo mode | No |
 | `CHAT_DB_PATH` | Local SQLite path for chat sessions; defaults to `data/zhiyuxing.db` | No |
+| `KNOWLEDGE_UPLOAD_DIR` | Directory for custom knowledge document writes; defaults to `data/knowledge_uploads` | No |
 
 ## Local Startup
 
@@ -132,11 +133,13 @@ Or double-click `start-web.bat`.
 - `/api/meta`: runtime metadata
 - `/api/compatibility`: model integration compatibility report
 - `/api/knowledge/search?q=keyword`: local knowledge retrieval
+- `/api/knowledge/documents`: list or write knowledge documents
 - `/api/session/{session_id}`: recent session history
 - `/api/feedback`: submit reply feedback
 - `/docs`: Swagger docs
 - `/project-docs/model-integration.en.md`: model integration guide
 - `/project-docs/dingtalk-integration.en.md`: DingTalk integration notes
+- `/project-docs/api-reference.en.md`: API reference
 
 ## FAQ
 
@@ -204,6 +207,10 @@ No. The current project can run as a standalone web service. DingTalk is an opti
 ### Where are local chat records stored?
 
 By default, the app stores sessions in `data/zhiyuxing.db`. You can override this path through `CHAT_DB_PATH`.
+
+### Can I add my own knowledge documents?
+
+Yes. The project now supports `POST /api/knowledge/documents` for custom knowledge writes. The default directory is `data/knowledge_uploads`, and you can override it with `KNOWLEDGE_UPLOAD_DIR`.
 
 ### How do I connect models such as DeepSeek R1?
 

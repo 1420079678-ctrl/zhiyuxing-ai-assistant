@@ -24,12 +24,14 @@ All notable changes to this project are documented in this file.
 ### Added
 
 - local markdown knowledge base and retrieval endpoint
+- custom knowledge document write and listing endpoints
 - SQLite-backed session persistence and session history endpoint
 - feedback recording endpoint for recent assistant replies
 - rule-based risk detection with high-risk guardrail fallback
 
 ### Improved
 
+- refactored the backend into `backend/`, `api/`, and `services/` modules while keeping `app.py` as a compatible entrypoint
 - web UI now shows session id, memory usage, risk level, knowledge hits, and recent history
 - README and usage guides now distinguish public preview mode from full local backend capabilities
 - test coverage now verifies knowledge retrieval, memory flow, high-risk handling, and feedback persistence
