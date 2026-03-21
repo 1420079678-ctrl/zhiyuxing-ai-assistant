@@ -11,6 +11,7 @@ This document explains how to run the project, configure environment variables, 
 - available by default
 - does not require `OPENAI_API_KEY`
 - `/chat` returns built-in supportive replies
+- combines local knowledge snippets, session memory, and rule-based risk handling
 - useful for previewing the page, APIs, and the overall flow
 
 ### 2. Model Mode
@@ -36,6 +37,7 @@ See the root-level `.env.example` file for a reference configuration.
 | `MODEL_API_KEY_ENV` | Which key variable the app should read first, such as `OPENAI_API_KEY` or `DEEPSEEK_API_KEY` | No |
 | `MODEL_TEMPERATURE` | Temperature parameter for supported models | No |
 | `DEMO_MODE` | Set to `true` to force local demo mode | No |
+| `CHAT_DB_PATH` | Local SQLite path for chat sessions; defaults to `data/zhiyuxing.db` | No |
 
 ## Local Startup
 
@@ -129,6 +131,9 @@ Or double-click `start-web.bat`.
 - `/health`: health check
 - `/api/meta`: runtime metadata
 - `/api/compatibility`: model integration compatibility report
+- `/api/knowledge/search?q=keyword`: local knowledge retrieval
+- `/api/session/{session_id}`: recent session history
+- `/api/feedback`: submit reply feedback
 - `/docs`: Swagger docs
 - `/project-docs/model-integration.en.md`: model integration guide
 - `/project-docs/dingtalk-integration.en.md`: DingTalk integration notes
@@ -138,6 +143,12 @@ Or double-click `start-web.bat`.
 ### Why does the app still return responses even when no API key is configured?
 
 Because the project supports local demo mode by default. This keeps the UI and API usable immediately after cloning.
+
+The current demo mode is not only a single static template. It also uses:
+
+- recent conversation history
+- local knowledge snippets
+- rule-based risk detection
 
 ### Do the one-click setup scripts mean no API key is needed?
 
@@ -189,6 +200,10 @@ or run `start-web.ps1` / `start-web.bat`.
 ### Is DingTalk required?
 
 No. The current project can run as a standalone web service. DingTalk is an optional integration scenario.
+
+### Where are local chat records stored?
+
+By default, the app stores sessions in `data/zhiyuxing.db`. You can override this path through `CHAT_DB_PATH`.
 
 ### How do I connect models such as DeepSeek R1?
 

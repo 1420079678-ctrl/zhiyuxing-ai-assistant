@@ -1,3 +1,8 @@
+import os
+import sqlite3
+from pathlib import Path
+
+import pytest
 from fastapi.testclient import TestClient
 
 from app import (
@@ -15,19 +20,28 @@ from app import (
     resolve_model_target,
 )
 
-client = TestClient(app)
+
+@pytest.fixture
+def test_client(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> TestClient:
+    monkeypatch.setenv("CHAT_DB_PATH", str(tmp_path / "zhiyuxing-test.db"))
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.delenv("DEMO_MODE", raising=False)
+
+    with TestClient(app) as client:
+        yield client
 
 
-def test_root_serves_demo_page() -> None:
-    response = client.get("/")
+def test_root_serves_demo_page(test_client: TestClient) -> None:
+    response = test_client.get("/")
 
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
     assert "知愈星 AI Assistant" in response.text
 
 
-def test_meta_returns_runtime_options() -> None:
-    response = client.get("/api/meta")
+def test_meta_returns_runtime_options(test_client: TestClient) -> None:
+    response = test_client.get("/api/meta")
 
     assert response.status_code == 200
     payload = response.json()
@@ -36,24 +50,31 @@ def test_meta_returns_runtime_options() -> None:
     assert payload["deployment_note"] == "/project-docs/dingtalk-integration.md"
     assert payload["compatibility_url"] == "/api/compatibility"
     assert payload["model_doc"] == "/project-docs/model-integration.md"
+    assert payload["persistence_enabled"] is True
+    assert payload["knowledge_document_count"] >= 1
+    assert payload["session_history_url"] == "/api/session/{session_id}"
+    assert payload["feedback_url"] == "/api/feedback"
+    assert payload["knowledge_search_url"].startswith("/api/knowledge/search")
     assert payload["available_models"]
     assert payload["available_styles"]
 
 
-def test_health_exposes_service_version() -> None:
-    response = client.get("/health")
+def test_health_exposes_service_version(test_client: TestClient) -> None:
+    response = test_client.get("/health")
 
     assert response.status_code == 200
     payload = response.json()
     assert payload["status"] == "ok"
     assert payload["version"] == app.version
+    assert payload["persistence_enabled"] is True
+    assert payload["knowledge_document_count"] >= 1
     assert "provider_name" in payload
     assert "model_name" in payload
     assert "api_key_env" in payload
 
 
-def test_project_docs_are_exposed() -> None:
-    response = client.get("/project-docs/model-integration.md")
+def test_project_docs_are_exposed(test_client: TestClient) -> None:
+    response = test_client.get("/project-docs/model-integration.md")
 
     assert response.status_code == 200
     assert "模型接入说明" in response.text
@@ -102,12 +123,8 @@ def test_normalize_response_style_supports_hint_fallback() -> None:
     assert style == "encouraging"
 
 
-def test_chat_falls_back_to_demo_mode_without_api_key(monkeypatch) -> None:
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
-    monkeypatch.delenv("DEMO_MODE", raising=False)
-
-    response = client.post(
+def test_chat_falls_back_to_demo_mode_without_api_key(test_client: TestClient) -> None:
+    response = test_client.post(
         "/chat",
         json={
             "message": "这周压力很大，完全不想开始复习。",
@@ -121,12 +138,16 @@ def test_chat_falls_back_to_demo_mode_without_api_key(monkeypatch) -> None:
     assert payload["mode"] == "demo"
     assert payload["provider_name"] == "Local Demo"
     assert payload["response_style"] == "warm"
+    assert payload["session_id"].startswith("sess_")
+    assert payload["assistant_message_id"] > 0
 
 
-def test_chat_rejects_unavailable_model_target(monkeypatch) -> None:
+def test_chat_rejects_unavailable_model_target(
+    test_client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
 
-    response = client.post(
+    response = test_client.post(
         "/chat",
         json={
             "message": "我最近很焦虑。",
@@ -138,6 +159,121 @@ def test_chat_rejects_unavailable_model_target(monkeypatch) -> None:
     assert "DEEPSEEK_API_KEY" in response.json()["detail"]
 
 
+def test_knowledge_search_endpoint_returns_hits(test_client: TestClient) -> None:
+    response = test_client.get("/api/knowledge/search", params={"q": "失眠"})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["query"] == "失眠"
+    assert payload["total_hits"] >= 1
+    assert payload["hits"][0]["source_path"].startswith("knowledge_base/")
+
+
+def test_chat_returns_memory_knowledge_and_safety_fields(test_client: TestClient) -> None:
+    response = test_client.post(
+        "/chat",
+        json={
+            "message": "最近总失眠，白天也很累。",
+            "model_target": "configured",
+            "response_style": "warm",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["mode"] == "demo"
+    assert payload["memory_messages_used"] == 0
+    assert payload["knowledge_hits"]
+    assert payload["safety"]["level"] == "medium"
+    assert payload["safety"]["needs_human_support"] is True
+
+
+def test_chat_uses_session_memory_and_exposes_history(test_client: TestClient) -> None:
+    first = test_client.post(
+        "/chat",
+        json={
+            "message": "最近总拖延，完全不想开始。",
+            "model_target": "configured",
+            "response_style": "balanced",
+        },
+    )
+    first_payload = first.json()
+    session_id = first_payload["session_id"]
+
+    second = test_client.post(
+        "/chat",
+        json={
+            "message": "而且我还担心考试复习会来不及。",
+            "model_target": "configured",
+            "session_id": session_id,
+            "response_style": "structured",
+        },
+    )
+
+    assert second.status_code == 200
+    second_payload = second.json()
+    assert second_payload["session_id"] == session_id
+    assert second_payload["memory_messages_used"] == 2
+    assert "延续你前面提到的" in second_payload["reply"]
+
+    history_response = test_client.get(f"/api/session/{session_id}")
+    assert history_response.status_code == 200
+    history_payload = history_response.json()
+    assert history_payload["total_messages"] == 4
+    assert len(history_payload["messages"]) == 4
+    assert history_payload["messages"][0]["role"] == "user"
+    assert history_payload["messages"][-1]["role"] == "assistant"
+
+
+def test_high_risk_message_uses_guardrail(test_client: TestClient) -> None:
+    response = test_client.post(
+        "/chat",
+        json={
+            "message": "我真的不想活了，想结束生命。",
+            "model_target": "configured",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["mode"] == "guardrail"
+    assert payload["provider_name"] == "Safety Guardrail"
+    assert payload["safety"]["level"] == "high"
+    assert "请先做这 3 件事" in payload["reply"]
+
+
+def test_feedback_endpoint_persists_to_sqlite(test_client: TestClient) -> None:
+    chat_response = test_client.post(
+        "/chat",
+        json={
+            "message": "我最近总拖延，想要更具体一点的建议。",
+            "model_target": "configured",
+        },
+    )
+    chat_payload = chat_response.json()
+
+    feedback_response = test_client.post(
+        "/api/feedback",
+        json={
+            "session_id": chat_payload["session_id"],
+            "assistant_message_id": chat_payload["assistant_message_id"],
+            "rating": "helpful",
+            "comment": "这次建议比较能落地。",
+        },
+    )
+
+    assert feedback_response.status_code == 200
+    assert feedback_response.json()["status"] == "ok"
+
+    with sqlite3.connect(os.environ["CHAT_DB_PATH"]) as connection:
+        row = connection.execute(
+            "SELECT rating, comment FROM feedback WHERE assistant_message_id = ?",
+            (chat_payload["assistant_message_id"],),
+        ).fetchone()
+
+    assert row == ("helpful", "这次建议比较能落地。")
+
+
 def test_build_completion_kwargs_omits_temperature_for_deepseek_reasoner() -> None:
     payload = build_completion_kwargs([{"role": "user", "content": "hello"}], model_name="deepseek-reasoner")
 
@@ -145,7 +281,9 @@ def test_build_completion_kwargs_omits_temperature_for_deepseek_reasoner() -> No
     assert "temperature" not in payload
 
 
-def test_build_completion_kwargs_uses_temperature_for_regular_models(monkeypatch) -> None:
+def test_build_completion_kwargs_uses_temperature_for_regular_models(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setenv("MODEL_TEMPERATURE", "0.3")
     payload = build_completion_kwargs([{"role": "user", "content": "hello"}], model_name="gpt-4o-mini")
 
@@ -168,7 +306,7 @@ def test_resolve_model_target_demo() -> None:
     assert target.provider_name == "Local Demo"
 
 
-def test_configured_api_key_env_matches_model_family(monkeypatch) -> None:
+def test_configured_api_key_env_matches_model_family(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("MODEL_NAME", "deepseek-chat")
     monkeypatch.setenv("OPENAI_BASE_URL", "https://api.deepseek.com")
     monkeypatch.delenv("MODEL_API_KEY_ENV", raising=False)
@@ -176,7 +314,7 @@ def test_configured_api_key_env_matches_model_family(monkeypatch) -> None:
     assert configured_api_key_env() == "DEEPSEEK_API_KEY"
 
 
-def test_build_configured_target_uses_expected_key_env(monkeypatch) -> None:
+def test_build_configured_target_uses_expected_key_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("MODEL_NAME", "deepseek-chat")
     monkeypatch.setenv("MODEL_PROVIDER", "DeepSeek")
     monkeypatch.setenv("OPENAI_BASE_URL", "https://api.deepseek.com")
@@ -192,7 +330,7 @@ def test_build_configured_target_uses_expected_key_env(monkeypatch) -> None:
     assert target.api_key == "deepseek-key"
 
 
-def test_compatibility_report_flags_missing_expected_key(monkeypatch) -> None:
+def test_compatibility_report_flags_missing_expected_key(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("MODEL_NAME", "deepseek-chat")
     monkeypatch.setenv("MODEL_PROVIDER", "DeepSeek")
     monkeypatch.setenv("OPENAI_BASE_URL", "https://api.deepseek.com")
@@ -208,8 +346,8 @@ def test_compatibility_report_flags_missing_expected_key(monkeypatch) -> None:
     assert any(item.status == "error" and "DEEPSEEK_API_KEY" in item.message for item in report.checks)
 
 
-def test_compatibility_endpoint_returns_report() -> None:
-    response = client.get("/api/compatibility")
+def test_compatibility_endpoint_returns_report(test_client: TestClient) -> None:
+    response = test_client.get("/api/compatibility")
 
     assert response.status_code == 200
     payload = response.json()

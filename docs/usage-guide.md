@@ -11,6 +11,7 @@
 - 默认可用
 - 不要求配置 `OPENAI_API_KEY`
 - `/chat` 会返回内置的支持性建议
+- 会结合本地知识库、会话记忆和风险规则生成演示回复
 - 适合先验证页面、接口和整体流程
 
 ### 2. 模型调用模式
@@ -36,6 +37,7 @@
 | `MODEL_API_KEY_ENV` | 当前模型优先读取哪个密钥变量，例如 `OPENAI_API_KEY` / `DEEPSEEK_API_KEY` | 否 |
 | `MODEL_TEMPERATURE` | 温度参数 | 否 |
 | `DEMO_MODE` | 设置为 `true` 时强制使用本地演示模式 | 否 |
+| `CHAT_DB_PATH` | 本地 SQLite 会话库路径，默认写入 `data/zhiyuxing.db` | 否 |
 
 ## 本地启动
 
@@ -129,6 +131,9 @@ python -m uvicorn app:app --reload
 - `/health`：健康检查
 - `/api/meta`：服务元信息与当前运行模式
 - `/api/compatibility`：模型接入兼容检查
+- `/api/knowledge/search?q=关键词`：本地知识库检索
+- `/api/session/{session_id}`：最近会话历史
+- `/api/feedback`：提交回复反馈
 - `/docs`：Swagger 文档
 - `/project-docs/model-integration.md`：不同模型接入说明
 - `/project-docs/dingtalk-integration.md`：钉钉接入说明
@@ -138,6 +143,12 @@ python -m uvicorn app:app --reload
 ### 为什么没配 API Key 也能返回结果？
 
 因为项目默认支持本地演示模式。这样仓库拿下来后可以直接跑通流程，不会因为缺少密钥导致页面不可用。
+
+当前演示模式也不是只有固定一句模板，而是会结合：
+
+- 最近会话记录
+- 本地知识库片段
+- 风险检测规则
 
 ### 一键脚本是不是代表不用 API Key？
 
@@ -189,6 +200,10 @@ python -m uvicorn app:app --reload
 ### 钉钉是不是必须项？
 
 不是。当前项目可以作为独立 Web 服务运行，钉钉是可选的接入场景。
+
+### 本地对话记录存在哪里？
+
+默认会保存在仓库下的 `data/zhiyuxing.db`。如果你想切到其他路径，可以在 `.env` 里设置 `CHAT_DB_PATH`。
 
 ### 如何接入 DeepSeek R1 这类不同模型？
 

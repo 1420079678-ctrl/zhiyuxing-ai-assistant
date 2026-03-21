@@ -29,7 +29,10 @@
 
 - 一个可直接打开的在线 Demo，而不是只停留在方案文档
 - 一个可本地运行的 FastAPI + Web 项目，而不是只有截图
-- 一个支持 OpenAI / DeepSeek 接入和兼容性检查的工程化仓库
+- 一个支持 OpenAI / DeepSeek 接入、知识检索、会话记忆和兼容性检查的工程化仓库
+
+说明：
+GitHub Pages 上的在线 Demo 主要用于公开展示页面和交互流程；完整的知识库检索、会话持久化、反馈记录和真实模型调用，需要按下文步骤本地启动后端。
 
 ## 项目价值
 
@@ -42,6 +45,9 @@
 
 - `情绪支持对话`：识别压力、焦虑、拖延等常见表达，给出温和回应。
 - `学习行动建议`：把大问题拆成可立刻执行的小步骤，降低启动门槛。
+- `本地知识库检索`：根据问题检索内置心理支持与学习建议文档片段，增强回复内容。
+- `会话记忆与持久化`：自动记录最近对话，支持继续追问、查看历史和本地 SQLite 持久化。
+- `风险识别与转介兜底`：遇到高风险表达时优先切换固定安全回复，而不是继续普通对话。
 - `双运行模式`：未配置模型密钥时使用本地演示模式；配置后切换到 OpenAI 兼容模型调用模式。
 - `Web 服务化`：提供可直接访问的页面、健康检查、接口元信息和 Swagger 文档。
 - `工程基础`：包含测试、CI、环境变量说明和补充文档。
@@ -89,6 +95,8 @@
 - OpenAI Python SDK
 - Pydantic
 - python-dotenv
+- SQLite
+- Markdown Knowledge Base
 - Pytest
 - GitHub Actions
 
@@ -143,6 +151,7 @@ python -m pip install -r requirements.txt -r requirements-dev.txt
 - `MODEL_API_KEY_ENV`
 - `MODEL_TEMPERATURE`
 - `DEMO_MODE`
+- `CHAT_DB_PATH`
 
 ### 3. 启动前检查兼容性
 
@@ -194,6 +203,8 @@ start-web.bat
 - `http://127.0.0.1:8000/`
 - `http://127.0.0.1:8000/api/meta`
 - `http://127.0.0.1:8000/api/compatibility`
+- `http://127.0.0.1:8000/api/knowledge/search?q=失眠`
+- `http://127.0.0.1:8000/api/session/<session_id>`
 - `http://127.0.0.1:8000/health`
 - `http://127.0.0.1:8000/docs`
 - `http://127.0.0.1:8000/project-docs/usage-guide.md`
@@ -211,6 +222,9 @@ python -m pytest -vv
 - `GET /health`：服务健康检查
 - `GET /api/meta`：服务元信息与当前运行模式
 - `GET /api/compatibility`：模型接入兼容性检查
+- `GET /api/knowledge/search`：本地知识库检索
+- `GET /api/session/{session_id}`：最近会话记录
+- `POST /api/feedback`：对回复提交有帮助 / 需要更具体的反馈
 - `GET /docs`：Swagger 文档
 - `GET /project-docs/...`：项目补充文档
 
@@ -230,8 +244,26 @@ python -m pytest -vv
 ```json
 {
   "reply": "当前状态里明显存在压力堆积，可以先不追求一次解决整周问题，而是把任务缩小到今天最容易开始的一步，比如先完成 20 分钟复习。",
-  "note": "当前为模型调用模式。回复由配置的 OpenAI 兼容接口生成。",
-  "mode": "openai"
+  "note": "当前为模型调用模式。回复由配置的 OpenAI 兼容接口生成，并结合了最近会话与知识库片段。",
+  "mode": "openai",
+  "session_id": "sess_xxxxxxxxxxxx",
+  "assistant_message_id": 12,
+  "memory_messages_used": 2,
+  "knowledge_hits": [
+    {
+      "title": "考试压力与恢复",
+      "excerpt": "当考试焦虑已经影响睡眠时，建议同时安排线下支持和短时复习块。",
+      "source_path": "knowledge_base/04-sleep-and-recovery.md",
+      "score": 3.8
+    }
+  ],
+  "safety": {
+    "level": "medium",
+    "label": "需要额外关注",
+    "note": "检测到持续失眠、崩溃或明显耗竭相关表达，建议尽快联系线下支持资源。",
+    "needs_human_support": true,
+    "matched_keywords": ["失眠"]
+  }
 }
 ```
 
@@ -261,7 +293,7 @@ python -m pytest -vv
 - 继续增强危机表达识别和更安全的引导边界
 - 继续扩展更多 OpenAI 兼容供应商的兼容检查
 - 增强多轮对话连续性与回复稳定性
-- 提供更适合公开展示的在线 Demo 入口
+- 将本地知识库扩展到更多高校场景
 
 ## 接入不同大模型
 

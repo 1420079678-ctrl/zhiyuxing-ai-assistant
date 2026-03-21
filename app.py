@@ -2,16 +2,20 @@ from __future__ import annotations
 
 import os
 import secrets
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from openai import OpenAI
 from pydantic import BaseModel, Field
+from services.knowledge import KnowledgeHitResult, knowledge_document_count, search_knowledge
+from services.safety import RiskAssessment, assess_risk, high_risk_reply, safety_prompt_extension
+from services.storage import ensure_database, ensure_session, recent_messages, save_feedback, save_turn, session_history
 
 load_dotenv()
 
@@ -25,6 +29,22 @@ class ChatRequest(BaseModel):
     system_hint: Optional[str] = Field(default=None, description="可选的额外系统提示")
     response_style: Optional[str] = Field(default="balanced", description="回答风格")
     model_target: Optional[str] = Field(default="configured", description="模型目标")
+    session_id: Optional[str] = Field(default=None, description="会话 ID；为空时自动创建")
+
+
+class RetrievedKnowledge(BaseModel):
+    title: str
+    excerpt: str
+    source_path: str
+    score: float
+
+
+class SafetyInfo(BaseModel):
+    level: str
+    label: str
+    note: str
+    needs_human_support: bool
+    matched_keywords: list[str]
 
 
 class ChatResponse(BaseModel):
@@ -34,6 +54,11 @@ class ChatResponse(BaseModel):
     provider_name: str
     model_name: str
     response_style: str
+    session_id: str
+    assistant_message_id: int
+    memory_messages_used: int
+    knowledge_hits: list[RetrievedKnowledge]
+    safety: SafetyInfo
 
 
 class ModelOption(BaseModel):
@@ -69,8 +94,26 @@ class ServiceInfo(BaseModel):
     base_url: str
     model_doc: str
     supports_temperature: bool
+    persistence_enabled: bool
+    knowledge_document_count: int
+    session_history_url: str
+    feedback_url: str
+    knowledge_search_url: str
     available_models: list[ModelOption]
     available_styles: list[StyleOption]
+
+
+class HealthResponse(BaseModel):
+    status: str
+    service: str
+    version: str
+    mode: str
+    api_key_configured: bool
+    api_key_env: Optional[str]
+    provider_name: str
+    model_name: str
+    persistence_enabled: bool
+    knowledge_document_count: int
 
 
 class CompatibilityCheckItem(BaseModel):
@@ -99,6 +142,44 @@ class CompatibilityReport(BaseModel):
     supports_temperature: bool
     checks: list[CompatibilityCheckItem]
     recommended_setups: list[QuickSetupOption]
+
+
+class SessionMessage(BaseModel):
+    id: int
+    role: str
+    content: str
+    provider_name: Optional[str] = None
+    model_name: Optional[str] = None
+    mode: Optional[str] = None
+    risk_level: Optional[str] = None
+    created_at: str
+
+
+class SessionHistoryResponse(BaseModel):
+    session_id: str
+    title: Optional[str]
+    created_at: Optional[str]
+    updated_at: Optional[str]
+    total_messages: int
+    messages: list[SessionMessage]
+
+
+class KnowledgeSearchResponse(BaseModel):
+    query: str
+    total_hits: int
+    hits: list[RetrievedKnowledge]
+
+
+class FeedbackRequest(BaseModel):
+    session_id: str
+    assistant_message_id: int
+    rating: Literal["helpful", "needs_more"]
+    comment: Optional[str] = None
+
+
+class FeedbackResponse(BaseModel):
+    status: str
+    message: str
 
 
 @dataclass(frozen=True)
@@ -170,10 +251,18 @@ MODEL_PRESETS = [
 
 MODEL_PRESET_MAP = {preset.id: preset for preset in MODEL_PRESETS}
 
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    ensure_database()
+    yield
+
+
 app = FastAPI(
     title="Zhiyuxing AI Assistant API",
     description="面向大学生场景的 AI 情绪支持与学习辅助服务，支持本地演示模式与模型调用模式。",
-    version="0.5.0",
+    version="0.6.0",
+    lifespan=lifespan,
 )
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.mount("/project-docs", StaticFiles(directory=DOCS_DIR), name="project-docs")
@@ -543,6 +632,42 @@ def probe_configured_model() -> str:
     return completion.choices[0].message.content or "连接已建立，但没有返回文本内容。"
 
 
+def to_safety_info(assessment: RiskAssessment) -> SafetyInfo:
+    return SafetyInfo(
+        level=assessment.level,
+        label=assessment.label,
+        note=assessment.note,
+        needs_human_support=assessment.needs_human_support,
+        matched_keywords=list(assessment.matched_keywords),
+    )
+
+
+def to_knowledge_models(hits: list[KnowledgeHitResult]) -> list[RetrievedKnowledge]:
+    return [
+        RetrievedKnowledge(
+            title=hit.title,
+            excerpt=hit.excerpt,
+            source_path=hit.source_path,
+            score=hit.score,
+        )
+        for hit in hits
+    ]
+
+
+def knowledge_sources(hits: list[KnowledgeHitResult]) -> list[str]:
+    return [hit.title for hit in hits]
+
+
+def format_knowledge_prompt(hits: list[KnowledgeHitResult]) -> str:
+    if not hits:
+        return ""
+    sections = [
+        f"- {hit.title}（{hit.source_path}）：{hit.excerpt}"
+        for hit in hits
+    ]
+    return "\n可参考的知识库片段：\n" + "\n".join(sections)
+
+
 def normalize_response_style(response_style: Optional[str], system_hint: Optional[str] = None) -> str:
     candidate = (response_style or "").strip().lower()
     if candidate in STYLE_LABELS:
@@ -584,6 +709,9 @@ def build_messages(
     user_message: str,
     system_hint: Optional[str],
     response_style: Optional[str] = None,
+    conversation_history: Optional[list[dict[str, str]]] = None,
+    knowledge_hits: Optional[list[KnowledgeHitResult]] = None,
+    safety_assessment: Optional[RiskAssessment] = None,
 ) -> list[dict[str, str]]:
     style = normalize_response_style(response_style, system_hint)
     system_prompt = (
@@ -597,10 +725,18 @@ def build_messages(
     if system_hint:
         system_prompt += "\n额外要求：" + system_hint
 
-    return [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_message},
-    ]
+    if safety_assessment and safety_assessment.level == "medium":
+        system_prompt += "\n安全提醒：" + safety_prompt_extension(safety_assessment)
+
+    if knowledge_hits:
+        system_prompt += format_knowledge_prompt(knowledge_hits)
+
+    messages: list[dict[str, str]] = [{"role": "system", "content": system_prompt}]
+    if conversation_history:
+        messages.extend(conversation_history)
+    messages.append({"role": "user", "content": user_message})
+
+    return messages
 
 
 def render_demo_reply(opening: str, steps: list[str], closing: str, style: str) -> str:
@@ -651,7 +787,13 @@ def build_demo_reply(
     user_message: str,
     system_hint: Optional[str] = None,
     response_style: Optional[str] = None,
+    conversation_history: Optional[list[dict[str, str]]] = None,
+    knowledge_hits: Optional[list[KnowledgeHitResult]] = None,
+    safety_assessment: Optional[RiskAssessment] = None,
 ) -> str:
+    if safety_assessment and safety_assessment.level == "high":
+        return high_risk_reply()
+
     style = normalize_response_style(response_style, system_hint)
     topic = detect_demo_topic(user_message)
 
@@ -911,22 +1053,39 @@ def build_demo_reply(
     opening = secrets.choice(openings)
     steps = secrets.choice(step_sets)
     closing = secrets.choice(closings)
-    return render_demo_reply(opening, steps, closing, style)
+    reply = render_demo_reply(opening, steps, closing, style)
+
+    if conversation_history:
+        last_user_messages = [item["content"] for item in conversation_history if item["role"] == "user"]
+        if last_user_messages:
+            recent = last_user_messages[-1][:28]
+            reply = f"延续你前面提到的“{recent}”，这次可以把重点放得更具体一些。\n\n{reply}"
+
+    if knowledge_hits:
+        references = "\n".join(f"- {hit.title}：{hit.excerpt}" for hit in knowledge_hits[:2])
+        reply += f"\n\n结合当前知识库，还可以参考这两个方向：\n{references}"
+
+    if safety_assessment and safety_assessment.level == "medium":
+        reply += f"\n\n额外提醒：{safety_assessment.note}"
+
+    return reply
 
 
-@app.get("/health")
-def health() -> dict[str, str | bool]:
+@app.get("/health", response_model=HealthResponse)
+def health() -> HealthResponse:
     target = build_configured_target()
-    return {
-        "status": "ok",
-        "service": "zhiyuxing-ai-assistant",
-        "version": app.version,
-        "mode": target.mode,
-        "api_key_configured": api_key_configured(),
-        "api_key_env": configured_api_key_env(),
-        "provider_name": target.provider_name,
-        "model_name": target.model_name,
-    }
+    return HealthResponse(
+        status="ok",
+        service="zhiyuxing-ai-assistant",
+        version=app.version,
+        mode=target.mode,
+        api_key_configured=api_key_configured(),
+        api_key_env=configured_api_key_env(),
+        provider_name=target.provider_name,
+        model_name=target.model_name,
+        persistence_enabled=True,
+        knowledge_document_count=knowledge_document_count(),
+    )
 
 
 @app.get("/", include_in_schema=False)
@@ -954,6 +1113,11 @@ def meta() -> ServiceInfo:
         base_url=target.base_url,
         model_doc="/project-docs/model-integration.md",
         supports_temperature=supports_temperature(target.model_name),
+        persistence_enabled=True,
+        knowledge_document_count=knowledge_document_count(),
+        session_history_url="/api/session/{session_id}",
+        feedback_url="/api/feedback",
+        knowledge_search_url="/api/knowledge/search?q=关键词",
         available_models=list_model_options(),
         available_styles=STYLE_OPTIONS,
     )
@@ -964,37 +1128,157 @@ def compatibility() -> CompatibilityReport:
     return evaluate_runtime_compatibility()
 
 
+@app.get("/api/knowledge/search", response_model=KnowledgeSearchResponse)
+def knowledge_search(q: str = Query(..., min_length=2, description="检索关键词")) -> KnowledgeSearchResponse:
+    hits = search_knowledge(q)
+    return KnowledgeSearchResponse(query=q, total_hits=len(hits), hits=to_knowledge_models(hits))
+
+
+@app.get("/api/session/{session_id}", response_model=SessionHistoryResponse)
+def get_session_history(session_id: str) -> SessionHistoryResponse:
+    payload = session_history(session_id)
+    return SessionHistoryResponse(
+        session_id=payload["session_id"],
+        title=payload["title"],
+        created_at=payload["created_at"],
+        updated_at=payload["updated_at"],
+        total_messages=payload["total_messages"],
+        messages=[SessionMessage(**message) for message in payload["messages"]],
+    )
+
+
+@app.post("/api/feedback", response_model=FeedbackResponse)
+def feedback(req: FeedbackRequest) -> FeedbackResponse:
+    save_feedback(req.session_id, req.assistant_message_id, req.rating, req.comment)
+    return FeedbackResponse(status="ok", message="反馈已记录，可用于后续改进回复质量。")
+
+
 @app.post("/chat", response_model=ChatResponse)
 def chat(req: ChatRequest) -> ChatResponse:
     target = resolve_model_target(req.model_target)
     style = normalize_response_style(req.response_style, req.system_hint)
+    session_id = ensure_session(req.session_id, req.message)
+    conversation_history = recent_messages(session_id, limit=6)
+    knowledge_hits = search_knowledge(req.message, limit=3)
+    safety_assessment = assess_risk(req.message)
+
+    if safety_assessment.level == "high":
+        reply = high_risk_reply()
+        assistant_message_id = save_turn(
+            session_id,
+            req.message,
+            reply,
+            response_style=style,
+            provider_name="Safety Guardrail",
+            model_name="high-risk-template",
+            mode="guardrail",
+            risk_level=safety_assessment.level,
+            knowledge_sources=knowledge_sources(knowledge_hits),
+        )
+        return ChatResponse(
+            reply=reply,
+            note="检测到高风险表达，已优先切换到固定安全转介回复，而不是继续普通模型对话。",
+            mode="guardrail",
+            provider_name="Safety Guardrail",
+            model_name="high-risk-template",
+            response_style=style,
+            session_id=session_id,
+            assistant_message_id=assistant_message_id,
+            memory_messages_used=len(conversation_history),
+            knowledge_hits=to_knowledge_models(knowledge_hits),
+            safety=to_safety_info(safety_assessment),
+        )
 
     if target.mode == "demo":
+        reply = build_demo_reply(
+            req.message,
+            req.system_hint,
+            style,
+            conversation_history=conversation_history,
+            knowledge_hits=knowledge_hits,
+            safety_assessment=safety_assessment,
+        )
+        assistant_message_id = save_turn(
+            session_id,
+            req.message,
+            reply,
+            response_style=style,
+            provider_name=target.provider_name,
+            model_name=target.model_name,
+            mode=target.mode,
+            risk_level=safety_assessment.level,
+            knowledge_sources=knowledge_sources(knowledge_hits),
+        )
+        knowledge_note = ""
+        if knowledge_hits:
+            knowledge_note = " 已结合本地知识库片段增强建议。"
+        safety_note = ""
+        if safety_assessment.level == "medium":
+            safety_note = " 同时检测到需要额外关注的状态，回复里已补充线下支持提醒。"
         return ChatResponse(
-            reply=build_demo_reply(req.message, req.system_hint, style),
-            note=f"当前为本地演示模式。已按“{STYLE_LABELS[style]}”返回演示回复；如需真实模型效果，请在页面中切换到已配置密钥的模型目标。",
+            reply=reply,
+            note=(
+                f"当前为本地演示模式。已按“{STYLE_LABELS[style]}”返回演示回复；"
+                f"本轮使用了 {len(conversation_history)} 条会话记忆。{knowledge_note}{safety_note}"
+            ).strip(),
             mode=target.mode,
             provider_name=target.provider_name,
             model_name=target.model_name,
             response_style=style,
+            session_id=session_id,
+            assistant_message_id=assistant_message_id,
+            memory_messages_used=len(conversation_history),
+            knowledge_hits=to_knowledge_models(knowledge_hits),
+            safety=to_safety_info(safety_assessment),
         )
 
     try:
         client = build_client(target)
         completion = client.chat.completions.create(
             **build_completion_kwargs(
-                build_messages(req.message, req.system_hint, style),
+                build_messages(
+                    req.message,
+                    req.system_hint,
+                    style,
+                    conversation_history=conversation_history,
+                    knowledge_hits=knowledge_hits,
+                    safety_assessment=safety_assessment,
+                ),
                 model_name=target.model_name,
             )
         )
         reply = completion.choices[0].message.content or "抱歉，我这次没有成功生成回复。"
+        assistant_message_id = save_turn(
+            session_id,
+            req.message,
+            reply,
+            response_style=style,
+            provider_name=target.provider_name,
+            model_name=target.model_name,
+            mode=target.mode,
+            risk_level=safety_assessment.level,
+            knowledge_sources=knowledge_sources(knowledge_hits),
+        )
+        note = (
+            f"当前为模型调用模式。回复由 {target.provider_name} / {target.model_name} 生成，"
+            f"风格为“{STYLE_LABELS[style]}”，使用了 {len(conversation_history)} 条会话记忆。"
+        )
+        if knowledge_hits:
+            note += f" 已结合 {len(knowledge_hits)} 条知识库片段。"
+        if safety_assessment.level == "medium":
+            note += " 当前表达需要额外关注，系统已加强安全提醒。"
         return ChatResponse(
             reply=reply,
-            note=f"当前为模型调用模式。回复由 {target.provider_name} / {target.model_name} 生成，风格为“{STYLE_LABELS[style]}”。",
+            note=note,
             mode=target.mode,
             provider_name=target.provider_name,
             model_name=target.model_name,
             response_style=style,
+            session_id=session_id,
+            assistant_message_id=assistant_message_id,
+            memory_messages_used=len(conversation_history),
+            knowledge_hits=to_knowledge_models(knowledge_hits),
+            safety=to_safety_info(safety_assessment),
         )
     except HTTPException:
         raise

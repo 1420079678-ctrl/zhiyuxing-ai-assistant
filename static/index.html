@@ -22,16 +22,16 @@
 
           <div class="hero-points">
             <div class="point-card">
-              <span class="point-label">场景</span>
+              <span class="point-label">能力</span>
               <strong>情绪支持 + 学习行动建议</strong>
             </div>
             <div class="point-card">
-              <span class="point-label">运行</span>
-              <strong>本地演示 / 模型调用</strong>
+              <span class="point-label">增强</span>
+              <strong>知识检索 + 会话记忆</strong>
             </div>
             <div class="point-card">
-              <span class="point-label">接入</span>
-              <strong>Web 服务 + 钉钉扩展</strong>
+              <span class="point-label">安全</span>
+              <strong>风险识别 + 转介兜底</strong>
             </div>
           </div>
 
@@ -49,7 +49,10 @@
                 <p class="card-kicker">Demo Chat</p>
                 <h2>对话演示</h2>
               </div>
-              <span id="status-badge" class="status-badge">等待输入</span>
+              <div class="header-actions">
+                <button id="reset-session-button" class="secondary-button" type="button">重置会话</button>
+                <span id="status-badge" class="status-badge">等待输入</span>
+              </div>
             </div>
 
             <div class="suggestion-row">
@@ -112,6 +115,11 @@
                 这里会显示回复内容，也可以先点击上方建议问题快速体验。
               </p>
               <p id="response-meta" class="response-meta"></p>
+              <div class="response-actions">
+                <button id="feedback-helpful" class="secondary-button" type="button" disabled>这条有帮助</button>
+                <button id="feedback-needs-more" class="secondary-button" type="button" disabled>还想更具体</button>
+                <span id="feedback-status" class="feedback-status">反馈功能会在生成回复后启用。</span>
+              </div>
             </div>
           </article>
 
@@ -123,11 +131,28 @@
             </p>
             <ul class="info-list">
               <li>未配置模型密钥时，系统会自动切换到本地演示模式，保证页面和接口可直接运行。</li>
+              <li>每次回复会结合本地知识库、最近会话记录和风险判断，让 Demo 不只是固定模板。</li>
               <li>现在支持一键写入 OpenAI、DeepSeek Chat、DeepSeek R1 的模型配置，但真实调用仍需填写对应 API Key。</li>
               <li>如果后续接入钉钉，需根据应用类型和授权模型处理组织级权限问题。</li>
             </ul>
 
             <div class="runtime-info">
+              <div class="runtime-item">
+                <span class="runtime-label">当前会话</span>
+                <strong id="session-id">读取中</strong>
+              </div>
+              <div class="runtime-item">
+                <span class="runtime-label">记忆条数</span>
+                <strong id="memory-count">0</strong>
+              </div>
+              <div class="runtime-item">
+                <span class="runtime-label">风险等级</span>
+                <strong id="risk-level">读取中</strong>
+              </div>
+              <div class="runtime-item">
+                <span class="runtime-label">知识检索</span>
+                <strong id="knowledge-count">0</strong>
+              </div>
               <div class="runtime-item">
                 <span class="runtime-label">当前提供商</span>
                 <strong id="provider-name">读取中</strong>
@@ -140,6 +165,30 @@
                 <span class="runtime-label">API 地址</span>
                 <strong id="base-url">读取中</strong>
               </div>
+            </div>
+
+            <div class="compatibility-panel">
+              <div class="compatibility-header">
+                <div>
+                  <p class="card-kicker">Session Memory</p>
+                  <h3>最近会话记录</h3>
+                </div>
+              </div>
+              <ul id="history-list" class="compatibility-list">
+                <li>当前会显示最近几轮对话，便于确认会话记忆和本地持久化已生效。</li>
+              </ul>
+            </div>
+
+            <div class="compatibility-panel">
+              <div class="compatibility-header">
+                <div>
+                  <p class="card-kicker">Knowledge</p>
+                  <h3>本轮知识库命中</h3>
+                </div>
+              </div>
+              <ul id="knowledge-list" class="compatibility-list">
+                <li>发送消息后，这里会展示本轮检索到的知识片段。</li>
+              </ul>
             </div>
 
             <div class="compatibility-panel">
