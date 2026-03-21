@@ -228,7 +228,18 @@ Example response:
 - Other:
   [CONTRIBUTING.md](CONTRIBUTING.md)、
   [CHANGELOG.md](CHANGELOG.md)、
-  [LICENSE](LICENSE)
+  [LICENSE](LICENSE)、
+  [ROADMAP.md](ROADMAP.md)、
+  [SECURITY.md](SECURITY.md)、
+  [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)、
+  [docs/github-launch-kit.md](docs/github-launch-kit.md)
+
+## Roadmap
+
+- improve crisis-expression detection and safer escalation behavior
+- expand compatibility checks for more OpenAI-compatible providers
+- improve multi-turn continuity and response quality
+- provide a better public-facing online demo entry
 
 ## Integrating Different Models
 

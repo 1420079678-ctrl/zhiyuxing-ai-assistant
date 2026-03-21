@@ -228,7 +228,18 @@ python -m pytest -vv
 - 其他：
   [CONTRIBUTING.md](CONTRIBUTING.md)、
   [CHANGELOG.md](CHANGELOG.md)、
-  [LICENSE](LICENSE)
+  [LICENSE](LICENSE)、
+  [ROADMAP.md](ROADMAP.md)、
+  [SECURITY.md](SECURITY.md)、
+  [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)、
+  [docs/github-launch-kit.md](docs/github-launch-kit.md)
+
+## 路线图
+
+- 继续增强危机表达识别和更安全的引导边界
+- 继续扩展更多 OpenAI 兼容供应商的兼容检查
+- 增强多轮对话连续性与回复稳定性
+- 提供更适合公开展示的在线 Demo 入口
 
 ## 接入不同大模型
 

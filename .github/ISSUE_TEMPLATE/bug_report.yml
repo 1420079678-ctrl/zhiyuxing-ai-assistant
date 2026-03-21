@@ -1,0 +1,55 @@
+name: Bug report
+description: Report a reproducible bug in the web app, API, or provider integration.
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting this issue.
+        Please include enough detail so the problem can be reproduced.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the bug and what you expected to happen.
+      placeholder: The page loaded, but /chat returned a 500 error when using DeepSeek Chat...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Provide a minimal reproduction path.
+      placeholder: |
+        1. Run .\setup-deepseek-chat.ps1
+        2. Start the app
+        3. Open the web page
+        4. Send a message...
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Runtime mode
+      options:
+        - Local demo mode
+        - OpenAI
+        - DeepSeek Chat
+        - DeepSeek R1
+        - Other OpenAI-compatible provider
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Share your OS, Python version, and how you started the app.
+      placeholder: Windows 11, Python 3.13, start-web.ps1
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Paste relevant logs, error messages, or screenshots.
+      render: shell

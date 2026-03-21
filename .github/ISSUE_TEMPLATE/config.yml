@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Usage Guide
+    url: https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/blob/main/docs/usage-guide.en.md
+    about: Read the usage guide before opening environment or startup issues.
+  - name: Model Integration Guide
+    url: https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/blob/main/docs/model-integration.en.md
+    about: Check provider compatibility and setup notes before reporting model integration issues.

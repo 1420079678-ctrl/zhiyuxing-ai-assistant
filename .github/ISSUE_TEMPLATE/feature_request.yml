@@ -1,0 +1,37 @@
+name: Feature request
+description: Suggest a product, UX, model integration, or developer experience improvement.
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      placeholder: It is hard for new users to understand which provider config is active...
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      placeholder: Add a clearer provider status card and a more direct setup wizard...
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Web UI
+        - FastAPI backend
+        - Demo reply quality
+        - Provider compatibility
+        - DingTalk integration
+        - Documentation
+        - Testing / CI
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Links, screenshots, examples, or prior art.
