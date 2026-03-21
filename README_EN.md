@@ -26,6 +26,7 @@ If this project is useful to you, consider giving it a `Star`.
 - `Model setup`:[docs/model-integration.en.md](docs/model-integration.en.md)
 - `API reference`:[docs/api-reference.en.md](docs/api-reference.en.md)
 - `Restricted public backend`:[docs/public-demo.md](docs/public-demo.md)
+- `Troubleshooting`:[docs/troubleshooting.en.md](docs/troubleshooting.en.md)
 
 ## What You Can Verify in 30 Seconds
 
@@ -162,6 +163,26 @@ On first run, the script will automatically:
 - copy `.env`
 - check the current model configuration
 - start the web service
+
+If someone hits a startup failure on their first run, tell them to run:
+
+```powershell
+.\doctor.ps1
+```
+
+or double-click:
+
+```text
+doctor.bat
+```
+
+This checks:
+
+- whether they are in the repository root
+- whether Python is installed
+- whether `.venv` and dependencies can be created automatically
+- whether port `8000` is already in use
+- whether the current model configuration is limited to demo mode
 
 To run tests, use:
 

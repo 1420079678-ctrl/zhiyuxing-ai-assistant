@@ -26,6 +26,7 @@
 - `模型接入`：[docs/model-integration.md](docs/model-integration.md)
 - `API 参考`：[docs/api-reference.md](docs/api-reference.md)
 - `受限公开后端`：[docs/public-demo.md](docs/public-demo.md)
+- `启动排障`：[docs/troubleshooting.md](docs/troubleshooting.md)
 
 ## 30 秒能看到什么
 
@@ -162,6 +163,26 @@ start-web.bat
 - 自动复制 `.env`
 - 检查当前模型接入配置
 - 启动 Web 服务
+
+如果别人第一次运行失败，先不要手动折腾环境，直接运行：
+
+```powershell
+.\doctor.ps1
+```
+
+或双击：
+
+```text
+doctor.bat
+```
+
+这个脚本会自动检查：
+
+- 是否在项目根目录
+- Python 是否安装
+- `.venv` 和依赖是否能自动补齐
+- `8000` 端口是否被占用
+- 当前模型配置是否只能走 demo mode
 
 要跑测试也不需要自己记命令，直接运行：
 
