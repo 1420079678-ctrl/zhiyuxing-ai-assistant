@@ -9,5 +9,6 @@ __pycache__/
 uvicorn*.log
 public-demo*.log
 public-demo-url.txt
+dist/
 data/
 *.db

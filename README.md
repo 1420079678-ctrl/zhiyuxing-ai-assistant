@@ -9,7 +9,7 @@
 ![CI](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-145f66)](https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/)
-[![Release](https://img.shields.io/github/v/release/1420079678-ctrl/zhiyuxing-ai-assistant)](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/tag/v0.1.0)
+[![Release](https://img.shields.io/github/v/release/1420079678-ctrl/zhiyuxing-ai-assistant)](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/latest)
 [![Stars](https://img.shields.io/github/stars/1420079678-ctrl/zhiyuxing-ai-assistant?style=social)](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant)
 
 面向大学生场景的 AI 情绪支持与学习辅助服务，围绕学业压力、拖延内耗、考试与面试焦虑等高频问题，提供温和、具体、可执行的支持性建议。
@@ -21,12 +21,13 @@
 ## 快速入口
 
 - `在线体验`：[Live Demo](https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/)
-- `查看版本`：[v0.1.0 Release](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/tag/v0.1.0)
+- `下载发布包`：[Latest Release](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/latest)
 - `英文说明`：[README_EN.md](README_EN.md)
 - `模型接入`：[docs/model-integration.md](docs/model-integration.md)
 - `API 参考`：[docs/api-reference.md](docs/api-reference.md)
 - `受限公开后端`：[docs/public-demo.md](docs/public-demo.md)
 - `启动排障`：[docs/troubleshooting.md](docs/troubleshooting.md)
+- `Release 安装`：[docs/release-install.md](docs/release-install.md)
 
 ## 30 秒能看到什么
 
@@ -135,6 +136,24 @@ tests/            # 回归测试
 ## 快速启动
 
 推荐使用 Python 3.13，以保持与当前本地开发和 CI 环境一致。
+
+### Release 压缩包安装
+
+如果你不想 clone 仓库，也不想手动配 Git，最省事的方式是直接下载 Release 压缩包：
+
+- [Latest Release](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/latest)
+
+优先下载：
+
+- `zhiyuxing-ai-assistant-release-v*.zip`
+
+这类压缩包里会额外包含：
+
+- `start-web.bat`
+- `doctor.bat`
+- `INSTALL.txt`
+
+完整说明见：[docs/release-install.md](docs/release-install.md)
 
 ### 最简单启动方式
 

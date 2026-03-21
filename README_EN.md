@@ -9,7 +9,7 @@ Live demo after deployment: `https://1420079678-ctrl.github.io/zhiyuxing-ai-assi
 ![CI](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-145f66)](https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/)
-[![Release](https://img.shields.io/github/v/release/1420079678-ctrl/zhiyuxing-ai-assistant)](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/tag/v0.1.0)
+[![Release](https://img.shields.io/github/v/release/1420079678-ctrl/zhiyuxing-ai-assistant)](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/latest)
 [![Stars](https://img.shields.io/github/stars/1420079678-ctrl/zhiyuxing-ai-assistant?style=social)](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant)
 
 Zhiyuxing AI Assistant is an AI-powered emotional support and study assistance service designed for college student scenarios. It focuses on high-frequency issues such as academic pressure, procrastination, exam anxiety, and interview stress, and responds with warm, concrete, actionable suggestions.
@@ -21,12 +21,13 @@ If this project is useful to you, consider giving it a `Star`.
 ## Quick Links
 
 - `Try online`:[Live Demo](https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/)
-- `See release`:[v0.1.0 Release](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/tag/v0.1.0)
+- `Download package`:[Latest Release](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/latest)
 - `Chinese docs`:[README.md](README.md)
 - `Model setup`:[docs/model-integration.en.md](docs/model-integration.en.md)
 - `API reference`:[docs/api-reference.en.md](docs/api-reference.en.md)
 - `Restricted public backend`:[docs/public-demo.md](docs/public-demo.md)
 - `Troubleshooting`:[docs/troubleshooting.en.md](docs/troubleshooting.en.md)
+- `Release install`:[docs/release-install.en.md](docs/release-install.en.md)
 
 ## What You Can Verify in 30 Seconds
 
@@ -135,6 +136,24 @@ The following screenshots are kept as DingTalk integration examples to show how 
 ## Quick Start
 
 Python 3.13 is recommended to stay aligned with the local dev environment and CI.
+
+### Release Package Installation
+
+If you do not want to clone the repository or work with Git setup manually, the easiest option is to download the packaged zip from Releases:
+
+- [Latest Release](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/latest)
+
+Prefer the asset named like:
+
+- `zhiyuxing-ai-assistant-release-v*.zip`
+
+That package also includes:
+
+- `start-web.bat`
+- `doctor.bat`
+- `INSTALL.txt`
+
+Full instructions: [docs/release-install.en.md](docs/release-install.en.md)
 
 ### Simplest Way To Start
 
