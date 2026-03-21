@@ -25,11 +25,13 @@
 - `英文说明`：[README_EN.md](README_EN.md)
 - `模型接入`：[docs/model-integration.md](docs/model-integration.md)
 - `API 参考`：[docs/api-reference.md](docs/api-reference.md)
+- `受限公开后端`：[docs/public-demo.md](docs/public-demo.md)
 
 ## 30 秒能看到什么
 
 - 一个可直接打开的在线 Demo，而不是只停留在方案文档
 - 一个可本地运行的 FastAPI + Web 项目，而不是只有截图
+- 一个可临时公开访问的受限后端，而不是只能在本机自测
 - 一个支持 OpenAI / DeepSeek 接入、知识检索、会话记忆和兼容性检查的工程化仓库
 
 说明：
@@ -51,6 +53,7 @@ GitHub Pages 上的在线 Demo 主要用于公开展示页面和交互流程；�
 - `会话记忆与持久化`：自动记录最近对话，支持继续追问、查看历史和本地 SQLite 持久化。
 - `风险识别与转介兜底`：遇到高风险表达时优先切换固定安全回复，而不是继续普通对话。
 - `双运行模式`：未配置模型密钥时使用本地演示模式；配置后切换到 OpenAI 兼容模型调用模式。
+- `受限公开后端体验`：可一键启动临时公网隧道，让他人直接访问真实后端接口进行体验。
 - `Web 服务化`：提供可直接访问的页面、健康检查、接口元信息和 Swagger 文档。
 - `工程基础`：包含测试、CI、环境变量说明和补充文档。
 
@@ -71,6 +74,9 @@ services/
   storage.py      # SQLite 会话持久化
 static/           # Web 前端
 tests/            # 回归测试
+  api/            # API 路由与集成测试
+  services/       # chat / runtime / safety / knowledge / storage 单元测试
+  conftest.py     # 统一测试夹具
 ```
 
 ## 使用场景
@@ -219,6 +225,22 @@ python -m uvicorn app:app --reload
 start-web.bat
 ```
 
+如果你想把“真实后端”临时分享给老师、同学或面试官，也可以启动受限公开演示：
+
+```powershell
+.\start-public-demo.ps1
+```
+
+这个脚本会自动启动一个专用后端并建立临时公网隧道，终端里会打印一个可直接访问的公开 URL。需要注意：
+
+- 它会强制启用 `PUBLIC_DEMO_MODE=true`
+- `/chat`、`/api/meta`、`/docs` 等读接口可访问
+- `/api/knowledge/documents` 与 `/api/feedback` 等写接口会被禁止
+- 它只适合公开演示，不会发起真实模型调用
+- 链接只在你的电脑和脚本持续运行时有效
+
+更完整说明见：[docs/public-demo.md](docs/public-demo.md)
+
 启动后可访问：
 
 - `http://127.0.0.1:8000/`
@@ -234,6 +256,21 @@ start-web.bat
 
 ```bash
 python -m pytest -vv
+```
+
+当前测试已经按子系统拆分，不再集中在单个文件里：
+
+- `tests/api/test_api.py`
+- `tests/services/test_chat_logic.py`
+- `tests/services/test_runtime.py`
+- `tests/services/test_knowledge.py`
+- `tests/services/test_safety.py`
+- `tests/services/test_storage.py`
+
+如果只想针对某个层级回归，也可以这样运行：
+
+```bash
+python -m pytest tests/api tests/services -vv
 ```
 
 ## 接口概览

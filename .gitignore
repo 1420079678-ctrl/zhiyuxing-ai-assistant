@@ -7,5 +7,7 @@ __pycache__/
 .idea/
 .vscode/
 uvicorn*.log
+public-demo*.log
+public-demo-url.txt
 data/
 *.db

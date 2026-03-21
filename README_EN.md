@@ -25,11 +25,13 @@ If this project is useful to you, consider giving it a `Star`.
 - `Chinese docs`:[README.md](README.md)
 - `Model setup`:[docs/model-integration.en.md](docs/model-integration.en.md)
 - `API reference`:[docs/api-reference.en.md](docs/api-reference.en.md)
+- `Restricted public backend`:[docs/public-demo.md](docs/public-demo.md)
 
 ## What You Can Verify in 30 Seconds
 
 - a public online demo instead of a repo that only has concept docs
 - a runnable FastAPI + Web project instead of screenshots only
+- a temporarily shareable restricted backend instead of local-only testing
 - a practical repository with OpenAI / DeepSeek integration, local knowledge retrieval, session memory, and compatibility checks
 
 Note:
@@ -51,6 +53,7 @@ the GitHub Pages demo is primarily a public preview of the UI and interaction fl
 - `Session memory and persistence`: keeps recent turns, supports follow-up questions, and stores session data in local SQLite.
 - `Risk detection and guardrail fallback`: switches to a fixed safety-oriented reply when high-risk expressions appear.
 - `Dual runtime mode`: falls back to local demo mode when no model key is configured; switches to OpenAI-compatible model calls when configured.
+- `Restricted public backend experience`: can open a temporary public tunnel so other people can try real backend endpoints.
 - `Web service`: provides a browser-based UI, health check, runtime metadata endpoint, and Swagger docs.
 - `Engineering basics`: includes tests, CI, environment variable examples, and supporting docs.
 
@@ -71,6 +74,9 @@ services/
   storage.py      # SQLite persistence
 static/           # web frontend
 tests/            # regression tests
+  api/            # API route and integration tests
+  services/       # chat / runtime / safety / knowledge / storage unit tests
+  conftest.py     # shared fixtures
 ```
 
 ## Use Cases
@@ -219,6 +225,22 @@ Or double-click:
 start-web.bat
 ```
 
+If you want to temporarily share the real backend with teachers, classmates, or interviewers, you can also start the restricted public demo:
+
+```powershell
+.\start-public-demo.ps1
+```
+
+This starts a dedicated backend instance and creates a temporary public tunnel. The terminal will print a public URL when it is ready. Important constraints:
+
+- it forces `PUBLIC_DEMO_MODE=true`
+- read endpoints such as `/chat`, `/api/meta`, and `/docs` stay accessible
+- write endpoints such as `/api/knowledge/documents` and `/api/feedback` are blocked
+- it is meant for public demo use and does not make real model calls
+- the link only stays alive while your machine and the script keep running
+
+See [docs/public-demo.md](docs/public-demo.md) for details.
+
 After startup:
 
 - `http://127.0.0.1:8000/`
@@ -234,6 +256,21 @@ After startup:
 
 ```bash
 python -m pytest -vv
+```
+
+Tests are now split by subsystem instead of being kept in a single file:
+
+- `tests/api/test_api.py`
+- `tests/services/test_chat_logic.py`
+- `tests/services/test_runtime.py`
+- `tests/services/test_knowledge.py`
+- `tests/services/test_safety.py`
+- `tests/services/test_storage.py`
+
+You can also run the grouped suites explicitly:
+
+```bash
+python -m pytest tests/api tests/services -vv
 ```
 
 ## API Overview

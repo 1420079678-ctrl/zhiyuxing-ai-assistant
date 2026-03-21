@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import FileResponse
 
 from services.knowledge import knowledge_document_count, list_knowledge_documents, search_knowledge, write_knowledge_document
@@ -8,7 +8,7 @@ from services.storage import save_feedback, session_history
 
 from backend.chat_logic import to_knowledge_models
 from backend.chat_service import handle_chat_request
-from backend.config import STATIC_DIR, STYLE_OPTIONS, api_key_configured, configured_api_key_env, supports_temperature
+from backend.config import STATIC_DIR, STYLE_OPTIONS, api_key_configured, configured_api_key_env, public_demo_mode, supports_temperature
 from backend.runtime import build_configured_target, evaluate_runtime_compatibility, list_model_options
 from backend.schemas import (
     ChatRequest,
@@ -75,6 +75,7 @@ def meta(request: Request) -> ServiceInfo:
         deployment_note="/project-docs/dingtalk-integration.md",
         compatibility_url="/api/compatibility",
         chat_mode=target.mode,
+        public_demo_mode=public_demo_mode(),
         api_key_configured=api_key_configured(),
         api_key_env=configured_api_key_env(),
         provider_name=target.provider_name,
@@ -113,6 +114,8 @@ def knowledge_documents() -> KnowledgeDocumentListResponse:
 
 @router.post("/api/knowledge/documents", response_model=KnowledgeDocumentUpsertResponse, status_code=201)
 def create_knowledge_document(req: KnowledgeDocumentCreateRequest) -> KnowledgeDocumentUpsertResponse:
+    if public_demo_mode():
+        raise HTTPException(status_code=403, detail="PUBLIC_DEMO_MODE=true，当前公开后端不允许写入知识文档。")
     document = write_knowledge_document(req.title, req.content, req.document_id)
     return KnowledgeDocumentUpsertResponse(
         status="ok",
@@ -136,6 +139,8 @@ def get_session_history(session_id: str) -> SessionHistoryResponse:
 
 @router.post("/api/feedback", response_model=FeedbackResponse)
 def feedback(req: FeedbackRequest) -> FeedbackResponse:
+    if public_demo_mode():
+        raise HTTPException(status_code=403, detail="PUBLIC_DEMO_MODE=true，当前公开后端不记录反馈。")
     save_feedback(req.session_id, req.assistant_message_id, req.rating, req.comment)
     return FeedbackResponse(status="ok", message="反馈已记录，可用于后续改进回复质量。")
 

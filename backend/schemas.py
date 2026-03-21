@@ -69,6 +69,7 @@ class ServiceInfo(BaseModel):
     deployment_note: str
     compatibility_url: str
     chat_mode: str
+    public_demo_mode: bool
     api_key_configured: bool
     api_key_env: Optional[str]
     provider_name: str

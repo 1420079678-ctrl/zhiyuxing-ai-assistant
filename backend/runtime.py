@@ -16,6 +16,7 @@ from backend.config import (
     current_chat_mode,
     current_temperature,
     env_flag,
+    public_demo_mode,
     resolve_api_key,
     supports_temperature,
 )
@@ -49,12 +50,15 @@ def build_configured_snapshot() -> ResolvedTarget:
 
 def build_configured_target() -> ResolvedTarget:
     configured_target = build_configured_snapshot()
-    if env_flag("DEMO_MODE") or not configured_target.api_key:
+    if public_demo_mode() or env_flag("DEMO_MODE") or not configured_target.api_key:
         return build_demo_target()
     return configured_target
 
 
 def resolve_model_target(model_target: str | None) -> ResolvedTarget:
+    if public_demo_mode():
+        return build_demo_target()
+
     target_id = (model_target or "configured").strip().lower()
 
     if target_id == "configured":
@@ -90,7 +94,9 @@ def list_model_options() -> list[ModelOption]:
     configured_mode = current_chat_mode()
     configured_reason = None
 
-    if env_flag("DEMO_MODE"):
+    if public_demo_mode():
+        configured_reason = "PUBLIC_DEMO_MODE=true，当前服务固定为受限公开演示模式"
+    elif env_flag("DEMO_MODE"):
         configured_reason = "DEMO_MODE=true，当前配置会强制回退到本地演示模式"
     elif not configured_target.api_key and configured_target.api_key_env:
         configured_reason = f"未配置 {configured_target.api_key_env}，当前会回退到本地演示模式"
@@ -194,6 +200,8 @@ def evaluate_runtime_compatibility() -> CompatibilityReport:
     else:
         add_check("env-file", "warning", "未检测到 .env 文件；启动脚本会自动从 .env.example 复制一份默认配置。")
 
+    if public_demo_mode():
+        add_check("public-demo-mode", "warning", "PUBLIC_DEMO_MODE=true，当前服务固定为受限公开演示模式，不会发起真实模型调用。")
     if env_flag("DEMO_MODE"):
         add_check("demo-mode", "warning", "DEMO_MODE=true，当前服务会强制使用本地演示模式。")
     else:
@@ -260,7 +268,7 @@ def evaluate_runtime_compatibility() -> CompatibilityReport:
 
     has_error = any(item.status == "error" for item in checks)
     has_warning = any(item.status == "warning" for item in checks)
-    ready_for_model_call = not env_flag("DEMO_MODE") and bool(configured_target.api_key) and not has_error
+    ready_for_model_call = not public_demo_mode() and not env_flag("DEMO_MODE") and bool(configured_target.api_key) and not has_error
 
     if ready_for_model_call and not has_warning:
         status = "ok"
@@ -311,6 +319,8 @@ def build_completion_kwargs(messages: list[dict[str, str]], model_name: str | No
 def probe_configured_model() -> str:
     configured_target = build_configured_snapshot()
 
+    if public_demo_mode():
+        raise HTTPException(status_code=400, detail="PUBLIC_DEMO_MODE=true，当前不会发起真实模型调用。")
     if env_flag("DEMO_MODE"):
         raise HTTPException(status_code=400, detail="DEMO_MODE=true，当前不会发起真实模型调用。")
     if not configured_target.api_key:

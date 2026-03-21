@@ -67,6 +67,10 @@ def env_flag(name: str) -> bool:
     return os.getenv(name, "").strip().lower() in {"1", "true", "yes", "on"}
 
 
+def public_demo_mode() -> bool:
+    return env_flag("PUBLIC_DEMO_MODE")
+
+
 def resolve_api_key(env_name: Optional[str] = None) -> Optional[str]:
     if env_name:
         value = os.getenv(env_name)
@@ -138,6 +142,6 @@ def supports_temperature(model_name: Optional[str] = None) -> bool:
 
 
 def current_chat_mode() -> str:
-    if env_flag("DEMO_MODE"):
+    if public_demo_mode() or env_flag("DEMO_MODE"):
         return "demo"
     return "openai" if configured_api_key() else "demo"
