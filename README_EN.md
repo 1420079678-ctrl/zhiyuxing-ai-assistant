@@ -135,7 +135,48 @@ The following screenshots are kept as DingTalk integration examples to show how 
 
 Python 3.13 is recommended to stay aligned with the local dev environment and CI.
 
-### 1. Install Dependencies
+### Simplest Way To Start
+
+If you just cloned the repository, enter the project root first:
+
+```powershell
+cd zhiyuxing-ai-assistant
+```
+
+If you just want to run the Web version first, use the repository launcher directly from the project root:
+
+```powershell
+.\start-web.ps1
+```
+
+Or double-click:
+
+```text
+start-web.bat
+```
+
+On first run, the script will automatically:
+
+- create `.venv`
+- install project dependencies
+- copy `.env`
+- check the current model configuration
+- start the web service
+
+To run tests, use:
+
+```powershell
+cd zhiyuxing-ai-assistant
+.\run-tests.ps1
+```
+
+or double-click:
+
+```text
+run-tests.bat
+```
+
+### 1. Manual Dependency Setup (Advanced)
 
 ```bash
 python -m venv .venv
@@ -256,6 +297,12 @@ After startup:
 
 ```bash
 python -m pytest -vv
+```
+
+Using the repository script is recommended because it avoids accidentally using the wrong Python environment:
+
+```powershell
+.\run-tests.ps1
 ```
 
 Tests are now split by subsystem instead of being kept in a single file:

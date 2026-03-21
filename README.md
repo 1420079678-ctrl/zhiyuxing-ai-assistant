@@ -135,7 +135,48 @@ tests/            # 回归测试
 
 推荐使用 Python 3.13，以保持与当前本地开发和 CI 环境一致。
 
-### 1. 安装依赖
+### 最简单启动方式
+
+如果你是刚 clone 下来，先进入项目根目录：
+
+```powershell
+cd zhiyuxing-ai-assistant
+```
+
+如果你只是想先把 Web 版跑起来，不想手动配虚拟环境，直接在项目根目录运行：
+
+```powershell
+.\start-web.ps1
+```
+
+或者直接双击：
+
+```text
+start-web.bat
+```
+
+首次运行时，脚本会自动：
+
+- 创建 `.venv`
+- 安装项目依赖
+- 自动复制 `.env`
+- 检查当前模型接入配置
+- 启动 Web 服务
+
+要跑测试也不需要自己记命令，直接运行：
+
+```powershell
+cd zhiyuxing-ai-assistant
+.\run-tests.ps1
+```
+
+或双击：
+
+```text
+run-tests.bat
+```
+
+### 1. 手动安装依赖（进阶）
 
 ```bash
 python -m venv .venv
@@ -256,6 +297,12 @@ start-web.bat
 
 ```bash
 python -m pytest -vv
+```
+
+更推荐直接使用仓库脚本，这样不会误用系统 Python：
+
+```powershell
+.\run-tests.ps1
 ```
 
 当前测试已经按子系统拆分，不再集中在单个文件里：
