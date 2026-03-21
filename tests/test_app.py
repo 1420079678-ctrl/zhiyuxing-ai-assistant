@@ -52,7 +52,15 @@ def test_build_messages_appends_system_hint() -> None:
 def test_build_demo_reply_returns_structured_advice() -> None:
     reply = build_demo_reply("最近总拖延，学不进去。")
 
-    assert "可以先试试这 3 步" in reply
+    assert "1." in reply
+    assert "2." in reply
+    assert "3." in reply
+
+
+def test_build_demo_reply_respects_system_hint_style() -> None:
+    reply = build_demo_reply("最近总拖延，学不进去。", "更简洁一点")
+
+    assert "先做这 3 件事" in reply
     assert "1." in reply
 
 
@@ -69,3 +77,4 @@ def test_chat_falls_back_to_demo_mode_without_api_key(monkeypatch) -> None:
     payload = response.json()
     assert payload["mode"] == "demo"
     assert "本地演示模式" in payload["note"]
+    assert payload["reply"]
