@@ -5,10 +5,13 @@
 ![Python 3.13](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Service-009688?logo=fastapi&logoColor=white)
 ![CI](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/actions/workflows/ci.yml/badge.svg)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 
 Zhiyuxing AI Assistant is an AI-powered emotional support and study assistance service designed for college student scenarios. It focuses on high-frequency issues such as academic pressure, procrastination, exam anxiety, and interview stress, and responds with warm, concrete, actionable suggestions.
 
 This repository is not just a concept showcase. It is structured as a runnable project foundation that can be used directly, extended further, and integrated with platforms such as DingTalk over time.
+
+If this project is useful to you, consider giving it a `Star`.
 
 ## Why This Project
 
@@ -222,6 +225,10 @@ Example response:
   [docs/usage-guide.en.md](docs/usage-guide.en.md)、
   [docs/model-integration.en.md](docs/model-integration.en.md)、
   [docs/dingtalk-integration.en.md](docs/dingtalk-integration.en.md)
+- Other:
+  [CONTRIBUTING.md](CONTRIBUTING.md)、
+  [CHANGELOG.md](CHANGELOG.md)、
+  [LICENSE](LICENSE)
 
 ## Integrating Different Models
 

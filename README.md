@@ -5,10 +5,13 @@
 ![Python 3.13](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Service-009688?logo=fastapi&logoColor=white)
 ![CI](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/actions/workflows/ci.yml/badge.svg)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 
 面向大学生场景的 AI 情绪支持与学习辅助服务，围绕学业压力、拖延内耗、考试与面试焦虑等高频问题，提供温和、具体、可执行的支持性建议。
 
 这个仓库的目标不是单纯展示方案，而是提供一个可以直接运行、便于继续开发、也能逐步接入钉钉等平台的完整项目基础。
+
+如果这个项目对你有帮助，欢迎点一个 `Star`。
 
 ## 项目价值
 
@@ -222,6 +225,10 @@ python -m pytest -vv
   [docs/usage-guide.en.md](docs/usage-guide.en.md)、
   [docs/model-integration.en.md](docs/model-integration.en.md)、
   [docs/dingtalk-integration.en.md](docs/dingtalk-integration.en.md)
+- 其他：
+  [CONTRIBUTING.md](CONTRIBUTING.md)、
+  [CHANGELOG.md](CHANGELOG.md)、
+  [LICENSE](LICENSE)
 
 ## 接入不同大模型
 
