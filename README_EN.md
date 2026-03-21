@@ -2,6 +2,8 @@
 
 [中文](README.md) | [English](README_EN.md)
 
+Live demo after deployment: `https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/`
+
 ![Python 3.13](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Service-009688?logo=fastapi&logoColor=white)
 ![CI](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/actions/workflows/ci.yml/badge.svg)
@@ -51,6 +53,10 @@ The project is designed so that it can run immediately after cloning. If no mode
 The default entry point in this repository is the standalone web page. It can run independently and does not require DingTalk to be opened.
 
 ![Web Page Preview](docs/assets/11-web-demo.png)
+
+A public GitHub Pages demo is also included so visitors can try the interaction flow without configuring a backend or API keys:
+
+- `https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/`
 
 ### DingTalk Integration Scenario
 

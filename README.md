@@ -2,6 +2,8 @@
 
 [中文](README.md) | [English](README_EN.md)
 
+在线 Demo（部署后）：`https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/`
+
 ![Python 3.13](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Service-009688?logo=fastapi&logoColor=white)
 ![CI](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/actions/workflows/ci.yml/badge.svg)
@@ -51,6 +53,10 @@
 当前仓库默认运行的是独立 Web 页面，不需要打开钉钉即可访问和体验。
 
 ![Web 页面预览](docs/assets/11-web-demo.png)
+
+也提供基于 GitHub Pages 的公开在线演示页，方便在不配置后端和 API Key 的情况下直接体验交互流程：
+
+- `https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/`
 
 ### 钉钉接入场景示意
 

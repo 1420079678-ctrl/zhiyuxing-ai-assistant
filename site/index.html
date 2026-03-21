@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zhiyuxing AI Assistant Demo</title>
+    <meta
+      name="description"
+      content="Public online demo for Zhiyuxing AI Assistant, an emotional support and study assistance project for student scenarios."
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="page-glow page-glow-left"></div>
+      <div class="page-glow page-glow-right"></div>
+
+      <main class="layout">
+        <section class="hero-card">
+          <p class="eyebrow">Public Demo</p>
+          <h1>Zhiyuxing AI Assistant</h1>
+          <p class="hero-copy">
+            AI emotional support and study assistance for student scenarios. This public site runs in
+            browser-side demo mode so anyone can try the interaction flow without API keys.
+          </p>
+          <p class="hero-copy hero-copy-cn">
+            这是一个公开可访问的在线演示站，使用浏览器端 Demo 模式展示项目交互流程，不依赖 API Key。
+          </p>
+
+          <div class="hero-points">
+            <div class="point-card">
+              <span class="point-label">Demo</span>
+              <strong>Runs without API keys</strong>
+            </div>
+            <div class="point-card">
+              <span class="point-label">Project</span>
+              <strong>FastAPI + Web UI + Provider presets</strong>
+            </div>
+            <div class="point-card">
+              <span class="point-label">Repo</span>
+              <strong>OpenAI / DeepSeek compatible</strong>
+            </div>
+          </div>
+
+          <div class="hero-actions">
+            <a class="ghost-link" href="https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant" target="_blank" rel="noreferrer">
+              View GitHub
+            </a>
+            <a class="ghost-link" href="https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/tag/v0.1.0" target="_blank" rel="noreferrer">
+              Release v0.1.0
+            </a>
+            <a class="ghost-link" href="https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/blob/main/docs/model-integration.en.md" target="_blank" rel="noreferrer">
+              Model Setup
+            </a>
+            <span class="status-badge">Online demo mode</span>
+          </div>
+        </section>
+
+        <section class="demo-grid">
+          <article class="chat-card">
+            <div class="card-header">
+              <div>
+                <p class="card-kicker">Interactive Demo</p>
+                <h2>Try the conversation flow</h2>
+              </div>
+              <span id="status-badge" class="status-badge">Ready</span>
+            </div>
+
+            <div class="suggestion-row">
+              <button class="suggestion-chip" type="button" data-message="I keep procrastinating even though I know I should start studying.">
+                Procrastination
+              </button>
+              <button class="suggestion-chip" type="button" data-message="I have an interview soon and I feel more nervous the more I prepare.">
+                Interview stress
+              </button>
+              <button class="suggestion-chip" type="button" data-message="Final exams are coming and I feel overwhelmed and stuck.">
+                Exam pressure
+              </button>
+            </div>
+
+            <form id="chat-form" class="chat-form">
+              <div class="field-grid">
+                <div>
+                  <label class="field-label" for="response_style">Response style</label>
+                  <select id="response_style" name="response_style">
+                    <option value="balanced">Balanced</option>
+                    <option value="warm">Warm</option>
+                    <option value="structured">Structured</option>
+                    <option value="encouraging">Encouraging</option>
+                    <option value="brief">Brief</option>
+                  </select>
+                  <p class="field-helper">This public site demonstrates style switching with browser-side demo logic.</p>
+                </div>
+
+                <div>
+                  <label class="field-label" for="demo_mode">Demo runtime</label>
+                  <input id="demo_mode" value="Browser-side local demo" readonly />
+                  <p class="field-helper">The full repository also supports FastAPI backend mode and provider integration.</p>
+                </div>
+              </div>
+
+              <label class="field-label" for="message">Your message</label>
+              <textarea
+                id="message"
+                name="message"
+                rows="5"
+                placeholder="Example: I feel stressed about exams and cannot get myself to begin."
+                required
+              ></textarea>
+
+              <button id="submit-button" class="submit-button" type="submit">Generate demo reply</button>
+            </form>
+
+            <div class="response-panel">
+              <div class="response-header">
+                <h3>Demo reply</h3>
+                <span id="response-mode" class="response-note">Local browser demo</span>
+              </div>
+              <p id="response-text" class="response-text">
+                This public demo is designed to show the interaction style and project positioning. It does not send your
+                message to an external model provider.
+              </p>
+              <p id="response-meta" class="response-meta">
+                For the full runnable project with FastAPI, provider presets, compatibility checks, and bilingual docs, open the GitHub repository.
+              </p>
+            </div>
+          </article>
+
+          <aside class="info-card">
+            <p class="card-kicker">Project Snapshot</p>
+            <h2>What this repository already includes</h2>
+            <ul class="info-list">
+              <li>Standalone FastAPI web app with browser UI</li>
+              <li>Local demo mode that works without API keys</li>
+              <li>One-click presets for OpenAI, DeepSeek Chat, and DeepSeek R1</li>
+              <li>Compatibility preflight checks and optional live probe</li>
+              <li>Bilingual GitHub documentation and release history</li>
+            </ul>
+
+            <div class="runtime-info">
+              <div class="runtime-item">
+                <span class="runtime-label">Live public demo</span>
+                <strong>Browser-side demo mode</strong>
+              </div>
+              <div class="runtime-item">
+                <span class="runtime-label">Repository mode</span>
+                <strong>FastAPI + provider integration</strong>
+              </div>
+              <div class="runtime-item runtime-item-wide">
+                <span class="runtime-label">Best next step</span>
+                <strong>Open the repo, run the provider setup script, and try real model mode locally.</strong>
+              </div>
+            </div>
+
+            <img class="preview-image" src="./assets/11-web-demo.png" alt="Zhiyuxing web demo screenshot" />
+
+            <div class="info-links">
+              <a class="ghost-link" href="https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant" target="_blank" rel="noreferrer">
+                Star the repo
+              </a>
+              <a class="ghost-link" href="https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/blob/main/README_EN.md" target="_blank" rel="noreferrer">
+                Read README
+              </a>
+              <a class="ghost-link" href="https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/blob/main/docs/github-launch-kit.md" target="_blank" rel="noreferrer">
+                Launch kit
+              </a>
+            </div>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

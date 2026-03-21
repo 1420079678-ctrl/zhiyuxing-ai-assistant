@@ -18,8 +18,9 @@ fastapi, python, ai-assistant, chatbot, openai-compatible, deepseek, mental-heal
 
 ### Website
 
-- 如果没有稳定在线 Demo，先留空
-- 如果后续部署了演示页，再填正式可访问地址
+```text
+https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/
+```
 
 ## 2. Social Preview
 
