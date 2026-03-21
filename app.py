@@ -1,20 +1,29 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Optional
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from openai import OpenAI
 from pydantic import BaseModel, Field
 
 load_dotenv()
+
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "static"
+DOCS_DIR = BASE_DIR / "docs"
 
 app = FastAPI(
     title="Zhiyuxing AI Assistant Demo API",
     description="面向大学生场景的 AI 心理支持与学习辅助最小可运行演示接口。",
     version="0.2.0",
 )
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+app.mount("/project-docs", StaticFiles(directory=DOCS_DIR), name="project-docs")
 
 
 class ChatRequest(BaseModel):
@@ -33,6 +42,8 @@ class ServiceInfo(BaseModel):
     description: str
     docs_url: str
     healthcheck: str
+    demo_page: str
+    deployment_note: str
 
 
 def build_client() -> OpenAI:
@@ -65,14 +76,21 @@ def health() -> dict[str, str]:
     return {"status": "ok", "service": "zhiyuxing-demo", "version": app.version}
 
 
-@app.get("/", response_model=ServiceInfo)
-def index() -> ServiceInfo:
+@app.get("/", include_in_schema=False)
+def index() -> FileResponse:
+    return FileResponse(STATIC_DIR / "index.html")
+
+
+@app.get("/api/meta", response_model=ServiceInfo)
+def meta() -> ServiceInfo:
     return ServiceInfo(
         name=app.title,
         version=app.version,
         description="作品集仓库中的最小可运行后端 Demo，用于展示项目方向与接口能力。",
         docs_url="/docs",
         healthcheck="/health",
+        demo_page="/",
+        deployment_note="/project-docs/dingtalk-integration.md",
     )
 
 

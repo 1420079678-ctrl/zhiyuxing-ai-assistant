@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>知愈星 AI Assistant Demo</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="page-glow page-glow-left"></div>
+      <div class="page-glow page-glow-right"></div>
+
+      <main class="layout">
+        <section class="hero-card">
+          <p class="eyebrow">Internship Portfolio Demo</p>
+          <h1>知愈星 AI Assistant</h1>
+          <p class="hero-copy">
+            一个面向大学生场景的 AI 心理支持与学习辅助助手展示页。
+            这个页面是独立 Web Demo，不依赖进入钉钉组织后才能体验，适合在 GitHub 或面试场景中直接演示。
+          </p>
+
+          <div class="hero-points">
+            <div class="point-card">
+              <span class="point-label">场景</span>
+              <strong>情绪支持 + 学习建议</strong>
+            </div>
+            <div class="point-card">
+              <span class="point-label">接口</span>
+              <strong>FastAPI + OpenAI SDK</strong>
+            </div>
+            <div class="point-card">
+              <span class="point-label">定位</span>
+              <strong>作品集独立演示版</strong>
+            </div>
+          </div>
+
+          <div class="hero-actions">
+            <a href="/docs" class="ghost-link">查看 Swagger 文档</a>
+            <a href="/api/meta" class="ghost-link">查看接口元信息</a>
+          </div>
+        </section>
+
+        <section class="demo-grid">
+          <article class="chat-card">
+            <div class="card-header">
+              <div>
+                <p class="card-kicker">Demo Chat</p>
+                <h2>对话演示</h2>
+              </div>
+              <span id="status-badge" class="status-badge">等待输入</span>
+            </div>
+
+            <div class="suggestion-row">
+              <button class="suggestion-chip" type="button" data-message="这周作业很多，我越想越焦虑，完全不敢开始。">
+                学业压力
+              </button>
+              <button class="suggestion-chip" type="button" data-message="我最近总拖延，明明知道该学，但一打开书就很烦躁。">
+                拖延内耗
+              </button>
+              <button class="suggestion-chip" type="button" data-message="我马上要面试了，越准备越慌，感觉自己不够好。">
+                面试焦虑
+              </button>
+            </div>
+
+            <form id="chat-form" class="chat-form">
+              <label class="field-label" for="message">输入你的问题</label>
+              <textarea
+                id="message"
+                name="message"
+                rows="5"
+                placeholder="例如：最近考试周压力很大，越到晚上越学不进去。"
+                required
+              ></textarea>
+
+              <label class="field-label" for="system_hint">补充要求</label>
+              <input
+                id="system_hint"
+                name="system_hint"
+                type="text"
+                placeholder="例如：给出温和且可执行的建议"
+              />
+
+              <button id="submit-button" class="submit-button" type="submit">发送并生成回复</button>
+            </form>
+
+            <div class="response-panel">
+              <div class="response-header">
+                <h3>模型回复</h3>
+                <span class="response-note">最小可运行 Demo</span>
+              </div>
+              <p id="response-text" class="response-text">
+                这里会显示回复内容。你也可以先点击上方建议问题快速体验。
+              </p>
+              <p id="response-meta" class="response-meta"></p>
+            </div>
+          </article>
+
+          <aside class="info-card">
+            <p class="card-kicker">Portfolio Notes</p>
+            <h2>钉钉集成说明</h2>
+            <p>
+              真实项目场景可以落到钉钉平台，但作品集演示不应该绑死在你的钉钉组织权限上。
+            </p>
+            <ul class="info-list">
+              <li>当前页面是独立 Web Demo，评审不需要进入你的钉钉租户。</li>
+              <li>钉钉内部应用通常只在所属组织内可用，不适合直接作为外部面试演示入口。</li>
+              <li>如果后续要给其他组织使用，需要按钉钉的多组织分发/授权模型来设计。</li>
+            </ul>
+
+            <div class="info-links">
+              <a href="/project-docs/dingtalk-integration.md" class="ghost-link">查看权限说明文档</a>
+              <a href="https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant" class="ghost-link">查看 GitHub 仓库</a>
+            </div>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
