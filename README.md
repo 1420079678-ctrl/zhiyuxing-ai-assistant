@@ -90,8 +90,11 @@ Copy-Item .env.example .env
 在 `.env` 中配置：
 
 - `OPENAI_API_KEY`：可留空，留空时自动进入本地演示模式
+- `DEEPSEEK_API_KEY`：可作为 DeepSeek 的密钥变量使用
 - `OPENAI_BASE_URL`
 - `MODEL_NAME`
+- `MODEL_PROVIDER`
+- `MODEL_TEMPERATURE`
 - `DEMO_MODE`：可选，设置为 `true` 时强制使用本地演示模式
 
 ### 3. 启动服务
@@ -166,7 +169,18 @@ python -m pytest -vv
 
 - [docs/project-report.md](docs/project-report.md)：完整项目报告与方案背景
 - [docs/usage-guide.md](docs/usage-guide.md)：运行模式、环境变量和常见问题说明
+- [docs/model-integration.md](docs/model-integration.md)：不同大模型的接入方式与 `.env` 配置示例
 - [docs/dingtalk-integration.md](docs/dingtalk-integration.md)：钉钉权限模型与集成边界说明
+
+## 接入不同大模型
+
+当前项目后端使用的是 OpenAI 兼容接口，因此可以通过修改 `.env` 切换不同模型提供商。
+
+- 切到 OpenAI：修改 `OPENAI_API_KEY`、`OPENAI_BASE_URL`、`MODEL_NAME`
+- 切到 DeepSeek：修改 `DEEPSEEK_API_KEY`、`OPENAI_BASE_URL=https://api.deepseek.com`、`MODEL_NAME=deepseek-chat` 或 `deepseek-reasoner`
+- Web 页面右侧会直接显示当前提供商、当前模型和 API 地址，便于确认是否接对
+
+如果要接 `DeepSeek-R1`，当前代码已经处理了 `deepseek-reasoner` 的参数兼容问题，不会再强行传不适合的 `temperature` 参数。
 
 ## 安全边界
 

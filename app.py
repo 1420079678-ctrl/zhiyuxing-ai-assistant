@@ -48,14 +48,80 @@ class ServiceInfo(BaseModel):
     deployment_note: str
     chat_mode: str
     api_key_configured: bool
+    provider_name: str
+    model_name: str
+    base_url: str
+    model_doc: str
+    supports_temperature: bool
 
 
 def env_flag(name: str) -> bool:
     return os.getenv(name, "").strip().lower() in {"1", "true", "yes", "on"}
 
 
+def resolve_api_key() -> Optional[str]:
+    for env_name in ("OPENAI_API_KEY", "DEEPSEEK_API_KEY"):
+        value = os.getenv(env_name)
+        if value:
+            return value
+    return None
+
+
 def api_key_configured() -> bool:
-    return bool(os.getenv("OPENAI_API_KEY"))
+    return bool(resolve_api_key())
+
+
+def current_model_name() -> str:
+    return os.getenv("MODEL_NAME", "gpt-4o-mini")
+
+
+def current_base_url() -> str:
+    return os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+
+
+def configured_provider_name() -> str:
+    configured = os.getenv("MODEL_PROVIDER")
+    if configured:
+        return configured
+
+    base_url = current_base_url().lower()
+    model_name = current_model_name().lower()
+
+    if "deepseek" in base_url or model_name.startswith("deepseek"):
+        return "DeepSeek"
+    if "openai" in base_url or model_name.startswith("gpt"):
+        return "OpenAI"
+    return "OpenAI Compatible"
+
+
+def active_model_name() -> str:
+    if current_chat_mode() == "demo":
+        return "builtin-demo"
+    return current_model_name()
+
+
+def active_base_url() -> str:
+    if current_chat_mode() == "demo":
+        return "local://demo-fallback"
+    return current_base_url()
+
+
+def current_provider_name() -> str:
+    if current_chat_mode() == "demo":
+        return "Local Demo"
+    return configured_provider_name()
+
+
+def current_temperature() -> float:
+    raw_value = os.getenv("MODEL_TEMPERATURE", "0.7")
+    try:
+        return float(raw_value)
+    except ValueError:
+        return 0.7
+
+
+def supports_temperature(model_name: Optional[str] = None) -> bool:
+    return (model_name or current_model_name()).lower() != "deepseek-reasoner"
 
 
 def current_chat_mode() -> str:
@@ -65,12 +131,28 @@ def current_chat_mode() -> str:
 
 
 def build_client() -> OpenAI:
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = resolve_api_key()
     if not api_key:
-        raise HTTPException(status_code=500, detail="缺少 OPENAI_API_KEY，请先配置 .env")
+        raise HTTPException(
+            status_code=500,
+            detail="缺少模型密钥，请先在 .env 中配置 OPENAI_API_KEY 或 DEEPSEEK_API_KEY",
+        )
 
-    base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+    base_url = current_base_url()
     return OpenAI(api_key=api_key, base_url=base_url)
+
+
+def build_completion_kwargs(messages: list[dict[str, str]]) -> dict[str, object]:
+    model_name = current_model_name()
+    payload: dict[str, object] = {
+        "model": model_name,
+        "messages": messages,
+    }
+
+    if supports_temperature(model_name):
+        payload["temperature"] = current_temperature()
+
+    return payload
 
 
 def build_messages(user_message: str, system_hint: Optional[str]) -> list[dict[str, str]]:
@@ -258,6 +340,8 @@ def health() -> dict[str, str | bool]:
         "version": app.version,
         "mode": current_chat_mode(),
         "api_key_configured": api_key_configured(),
+        "provider_name": current_provider_name(),
+        "model_name": active_model_name(),
     }
 
 
@@ -278,6 +362,11 @@ def meta() -> ServiceInfo:
         deployment_note="/project-docs/dingtalk-integration.md",
         chat_mode=current_chat_mode(),
         api_key_configured=api_key_configured(),
+        provider_name=current_provider_name(),
+        model_name=active_model_name(),
+        base_url=active_base_url(),
+        model_doc="/project-docs/model-integration.md",
+        supports_temperature=supports_temperature(),
     )
 
 
@@ -294,16 +383,13 @@ def chat(req: ChatRequest) -> ChatResponse:
 
     try:
         client = build_client()
-        model_name = os.getenv("MODEL_NAME", "gpt-4o-mini")
         completion = client.chat.completions.create(
-            model=model_name,
-            messages=build_messages(req.message, req.system_hint),
-            temperature=0.7,
+            **build_completion_kwargs(build_messages(req.message, req.system_hint))
         )
         reply = completion.choices[0].message.content or "抱歉，我这次没有成功生成回复。"
         return ChatResponse(
             reply=reply,
-            note="当前为模型调用模式。回复由配置的 OpenAI 兼容接口生成。",
+            note=f"当前为模型调用模式。回复由 {current_provider_name()} / {current_model_name()} 生成。",
             mode=mode,
         )
     except HTTPException:

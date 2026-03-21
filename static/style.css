@@ -304,6 +304,38 @@ input:focus {
   margin: 14px 0 18px;
 }
 
+.runtime-info {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0 18px;
+}
+
+.runtime-item {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(29, 41, 53, 0.08);
+}
+
+.runtime-item-wide {
+  grid-column: 1 / -1;
+}
+
+.runtime-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.runtime-item strong {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
 @keyframes rise-in {
   from {
     opacity: 0;
@@ -318,7 +350,8 @@ input:focus {
 
 @media (max-width: 900px) {
   .hero-points,
-  .demo-grid {
+  .demo-grid,
+  .runtime-info {
     grid-template-columns: 1fr;
   }
 

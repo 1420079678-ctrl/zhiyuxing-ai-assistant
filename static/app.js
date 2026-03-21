@@ -7,6 +7,9 @@ const statusBadge = document.getElementById("status-badge");
 const submitButton = document.getElementById("submit-button");
 const runtimeBadge = document.getElementById("runtime-badge");
 const responseMode = document.getElementById("response-mode");
+const providerName = document.getElementById("provider-name");
+const modelName = document.getElementById("model-name");
+const baseUrl = document.getElementById("base-url");
 const pageParams = new URLSearchParams(window.location.search);
 
 function applyPreviewState() {
@@ -36,8 +39,14 @@ async function loadRuntimeMeta() {
 
     runtimeBadge.textContent =
       payload.chat_mode === "demo" ? "当前运行：本地演示模式" : "当前运行：模型调用模式";
+    providerName.textContent = payload.provider_name;
+    modelName.textContent = payload.model_name;
+    baseUrl.textContent = payload.base_url;
   } catch (error) {
     runtimeBadge.textContent = "当前运行：服务信息读取失败";
+    providerName.textContent = "读取失败";
+    modelName.textContent = "读取失败";
+    baseUrl.textContent = "读取失败";
   }
 }
 
@@ -87,7 +96,7 @@ form.addEventListener("submit", async (event) => {
     statusBadge.textContent = "已完成";
   } catch (error) {
     responseText.textContent =
-      "当前没有成功返回回复。请检查服务是否已启动；如需真实模型结果，请确认 .env 中已正确配置 OPENAI_API_KEY。";
+      "当前没有成功返回回复。请检查服务是否已启动；如需真实模型结果，请确认 .env 中已正确配置 OPENAI_API_KEY 或 DEEPSEEK_API_KEY。";
     responseMeta.textContent = String(error);
     responseMode.textContent = "调用失败";
     statusBadge.textContent = "调用失败";

@@ -14,7 +14,8 @@
 ### 2. 模型调用模式
 
 - 需要配置 `OPENAI_API_KEY`
-- 可选配置 `OPENAI_BASE_URL` 和 `MODEL_NAME`
+- 也支持配置 `DEEPSEEK_API_KEY`
+- 可选配置 `OPENAI_BASE_URL`、`MODEL_NAME`、`MODEL_PROVIDER`
 - `/chat` 会调用 OpenAI 兼容接口返回模型回复
 - 适合继续验证真实模型能力
 
@@ -25,8 +26,11 @@
 | 变量名 | 说明 | 是否必填 |
 | --- | --- | --- |
 | `OPENAI_API_KEY` | OpenAI 兼容接口密钥，留空时自动进入本地演示模式 | 否 |
+| `DEEPSEEK_API_KEY` | DeepSeek 密钥，未设置 `OPENAI_API_KEY` 时会回退使用 | 否 |
 | `OPENAI_BASE_URL` | OpenAI 兼容接口地址 | 否 |
 | `MODEL_NAME` | 调用的模型名称 | 否 |
+| `MODEL_PROVIDER` | 页面展示用的提供商名称，例如 `OpenAI` / `DeepSeek` | 否 |
+| `MODEL_TEMPERATURE` | 温度参数 | 否 |
 | `DEMO_MODE` | 设置为 `true` 时强制使用本地演示模式 | 否 |
 
 ## 本地启动
@@ -72,6 +76,7 @@ python -m uvicorn app:app --reload
 - `/health`：健康检查
 - `/api/meta`：服务元信息与当前运行模式
 - `/docs`：Swagger 文档
+- `/project-docs/model-integration.md`：不同模型接入说明
 - `/project-docs/dingtalk-integration.md`：钉钉接入说明
 
 ## 常见问题
@@ -105,3 +110,9 @@ python -m uvicorn app:app --reload
 ### 钉钉是不是必须项？
 
 不是。当前项目可以作为独立 Web 服务运行，钉钉是可选的接入场景。
+
+### 如何接入 DeepSeek R1 这类不同模型？
+
+项目使用的是 OpenAI 兼容接口方式。只要修改 `.env` 中的 `OPENAI_BASE_URL`、`MODEL_NAME` 和密钥配置，就可以切换不同模型提供商。详细示例见：
+
+- [model-integration.md](model-integration.md)

@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from app import app, build_demo_reply, build_messages
+from app import app, build_completion_kwargs, build_demo_reply, build_messages
 
 client = TestClient(app)
 
@@ -22,6 +22,9 @@ def test_meta_returns_demo_entrypoints() -> None:
     assert payload["docs_url"] == "/docs"
     assert payload["deployment_note"] == "/project-docs/dingtalk-integration.md"
     assert "chat_mode" in payload
+    assert payload["model_doc"] == "/project-docs/model-integration.md"
+    assert "provider_name" in payload
+    assert "model_name" in payload
 
 
 def test_health_exposes_service_version() -> None:
@@ -32,6 +35,8 @@ def test_health_exposes_service_version() -> None:
     assert payload["status"] == "ok"
     assert payload["version"] == app.version
     assert "mode" in payload
+    assert "provider_name" in payload
+    assert "model_name" in payload
 
 
 def test_project_docs_are_exposed() -> None:
@@ -66,6 +71,7 @@ def test_build_demo_reply_respects_system_hint_style() -> None:
 
 def test_chat_falls_back_to_demo_mode_without_api_key(monkeypatch) -> None:
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
     monkeypatch.delenv("DEMO_MODE", raising=False)
 
     response = client.post(
@@ -78,3 +84,22 @@ def test_chat_falls_back_to_demo_mode_without_api_key(monkeypatch) -> None:
     assert payload["mode"] == "demo"
     assert "本地演示模式" in payload["note"]
     assert payload["reply"]
+
+
+def test_build_completion_kwargs_omits_temperature_for_deepseek_reasoner(monkeypatch) -> None:
+    monkeypatch.setenv("MODEL_NAME", "deepseek-reasoner")
+
+    payload = build_completion_kwargs([{"role": "user", "content": "hello"}])
+
+    assert payload["model"] == "deepseek-reasoner"
+    assert "temperature" not in payload
+
+
+def test_build_completion_kwargs_uses_temperature_for_regular_models(monkeypatch) -> None:
+    monkeypatch.setenv("MODEL_NAME", "gpt-4o-mini")
+    monkeypatch.setenv("MODEL_TEMPERATURE", "0.3")
+
+    payload = build_completion_kwargs([{"role": "user", "content": "hello"}])
+
+    assert payload["model"] == "gpt-4o-mini"
+    assert payload["temperature"] == 0.3
