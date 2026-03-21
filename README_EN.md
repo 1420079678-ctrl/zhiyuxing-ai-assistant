@@ -8,12 +8,28 @@ Live demo after deployment: `https://1420079678-ctrl.github.io/zhiyuxing-ai-assi
 ![FastAPI](https://img.shields.io/badge/FastAPI-Service-009688?logo=fastapi&logoColor=white)
 ![CI](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-145f66)](https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/)
+[![Release](https://img.shields.io/github/v/release/1420079678-ctrl/zhiyuxing-ai-assistant)](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/tag/v0.1.0)
+[![Stars](https://img.shields.io/github/stars/1420079678-ctrl/zhiyuxing-ai-assistant?style=social)](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant)
 
 Zhiyuxing AI Assistant is an AI-powered emotional support and study assistance service designed for college student scenarios. It focuses on high-frequency issues such as academic pressure, procrastination, exam anxiety, and interview stress, and responds with warm, concrete, actionable suggestions.
 
 This repository is not just a concept showcase. It is structured as a runnable project foundation that can be used directly, extended further, and integrated with platforms such as DingTalk over time.
 
 If this project is useful to you, consider giving it a `Star`.
+
+## Quick Links
+
+- `Try online`:[Live Demo](https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/)
+- `See release`:[v0.1.0 Release](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/tag/v0.1.0)
+- `Chinese docs`:[README.md](README.md)
+- `Model setup`:[docs/model-integration.en.md](docs/model-integration.en.md)
+
+## What You Can Verify in 30 Seconds
+
+- a public online demo instead of a repo that only has concept docs
+- a runnable FastAPI + Web project instead of screenshots only
+- a practical repository with OpenAI / DeepSeek integration and compatibility checks
 
 ## Why This Project
 

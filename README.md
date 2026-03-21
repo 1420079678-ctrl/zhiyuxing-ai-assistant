@@ -8,12 +8,28 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-Service-009688?logo=fastapi&logoColor=white)
 ![CI](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-145f66)](https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/)
+[![Release](https://img.shields.io/github/v/release/1420079678-ctrl/zhiyuxing-ai-assistant)](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/tag/v0.1.0)
+[![Stars](https://img.shields.io/github/stars/1420079678-ctrl/zhiyuxing-ai-assistant?style=social)](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant)
 
 面向大学生场景的 AI 情绪支持与学习辅助服务，围绕学业压力、拖延内耗、考试与面试焦虑等高频问题，提供温和、具体、可执行的支持性建议。
 
 这个仓库的目标不是单纯展示方案，而是提供一个可以直接运行、便于继续开发、也能逐步接入钉钉等平台的完整项目基础。
 
 如果这个项目对你有帮助，欢迎点一个 `Star`。
+
+## 快速入口
+
+- `在线体验`：[Live Demo](https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/)
+- `查看版本`：[v0.1.0 Release](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/tag/v0.1.0)
+- `英文说明`：[README_EN.md](README_EN.md)
+- `模型接入`：[docs/model-integration.md](docs/model-integration.md)
+
+## 30 秒能看到什么
+
+- 一个可直接打开的在线 Demo，而不是只停留在方案文档
+- 一个可本地运行的 FastAPI + Web 项目，而不是只有截图
+- 一个支持 OpenAI / DeepSeek 接入和兼容性检查的工程化仓库
 
 ## 项目价值
 
