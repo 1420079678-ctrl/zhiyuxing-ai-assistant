@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from app import app, build_messages
+from app import app, build_demo_reply, build_messages
 
 client = TestClient(app)
 
@@ -21,6 +21,7 @@ def test_meta_returns_demo_entrypoints() -> None:
     assert payload["demo_page"] == "/"
     assert payload["docs_url"] == "/docs"
     assert payload["deployment_note"] == "/project-docs/dingtalk-integration.md"
+    assert "chat_mode" in payload
 
 
 def test_health_exposes_service_version() -> None:
@@ -30,6 +31,7 @@ def test_health_exposes_service_version() -> None:
     payload = response.json()
     assert payload["status"] == "ok"
     assert payload["version"] == app.version
+    assert "mode" in payload
 
 
 def test_project_docs_are_exposed() -> None:
@@ -45,3 +47,25 @@ def test_build_messages_appends_system_hint() -> None:
     assert messages[0]["role"] == "system"
     assert "给出 3 条具体建议" in messages[0]["content"]
     assert messages[1]["content"] == "最近总拖延。"
+
+
+def test_build_demo_reply_returns_structured_advice() -> None:
+    reply = build_demo_reply("最近总拖延，学不进去。")
+
+    assert "可以先试试这 3 步" in reply
+    assert "1." in reply
+
+
+def test_chat_falls_back_to_demo_mode_without_api_key(monkeypatch) -> None:
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("DEMO_MODE", raising=False)
+
+    response = client.post(
+        "/chat",
+        json={"message": "这周压力很大，完全不想开始复习。"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["mode"] == "demo"
+    assert "本地演示模式" in payload["note"]

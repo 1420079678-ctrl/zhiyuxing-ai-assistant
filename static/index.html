@@ -13,31 +13,32 @@
 
       <main class="layout">
         <section class="hero-card">
-          <p class="eyebrow">Internship Portfolio Demo</p>
+          <p class="eyebrow">AI Support Service</p>
           <h1>知愈星 AI Assistant</h1>
           <p class="hero-copy">
-            一个面向大学生场景的 AI 心理支持与学习辅助助手展示页。
-            这个页面是独立 Web Demo，不依赖进入钉钉组织后才能体验，适合在 GitHub 或面试场景中直接演示。
+            一个面向大学生场景的 AI 情绪支持与学习辅助服务，围绕学业压力、拖延内耗、
+            考试与面试焦虑等高频问题提供温和、具体、可执行的支持性建议。
           </p>
 
           <div class="hero-points">
             <div class="point-card">
               <span class="point-label">场景</span>
-              <strong>情绪支持 + 学习建议</strong>
+              <strong>情绪支持 + 学习行动建议</strong>
             </div>
             <div class="point-card">
-              <span class="point-label">接口</span>
-              <strong>FastAPI + OpenAI SDK</strong>
+              <span class="point-label">运行</span>
+              <strong>本地演示 / 模型调用</strong>
             </div>
             <div class="point-card">
-              <span class="point-label">定位</span>
-              <strong>作品集独立演示版</strong>
+              <span class="point-label">接入</span>
+              <strong>Web 服务 + 钉钉扩展</strong>
             </div>
           </div>
 
           <div class="hero-actions">
             <a href="/docs" class="ghost-link">查看 Swagger 文档</a>
             <a href="/api/meta" class="ghost-link">查看接口元信息</a>
+            <span id="runtime-badge" class="status-badge">当前运行：读取中</span>
           </div>
         </section>
 
@@ -87,7 +88,7 @@
             <div class="response-panel">
               <div class="response-header">
                 <h3>模型回复</h3>
-                <span class="response-note">最小可运行 Demo</span>
+                <span id="response-mode" class="response-note">等待对话</span>
               </div>
               <p id="response-text" class="response-text">
                 这里会显示回复内容，也可以先点击上方建议问题快速体验。
@@ -97,19 +98,20 @@
           </article>
 
           <aside class="info-card">
-            <p class="card-kicker">Portfolio Notes</p>
-            <h2>钉钉集成说明</h2>
+            <p class="card-kicker">Run & Integrate</p>
+            <h2>运行与接入说明</h2>
             <p>
-              真实项目场景可以落到钉钉平台，但作品集演示不应该绑死在特定钉钉组织权限上。
+              项目默认提供浏览器可直接访问的 Web 服务，也保留了钉钉平台集成的扩展空间。
             </p>
             <ul class="info-list">
-              <li>当前页面是独立 Web Demo，评审不需要进入特定钉钉租户。</li>
-              <li>钉钉内部应用通常只在所属组织内可用，不适合直接作为外部面试演示入口。</li>
-              <li>如果后续要给其他组织使用，需要按钉钉的多组织分发/授权模型来设计。</li>
+              <li>未配置模型密钥时，系统会自动切换到本地演示模式，保证页面和接口可直接运行。</li>
+              <li>配置 OpenAI 兼容接口后，可切换到真实模型调用模式。</li>
+              <li>如果后续接入钉钉，需根据应用类型和授权模型处理组织级权限问题。</li>
             </ul>
 
             <div class="info-links">
-              <a href="/project-docs/dingtalk-integration.md" class="ghost-link">查看权限说明文档</a>
+              <a href="/project-docs/usage-guide.md" class="ghost-link">查看使用说明</a>
+              <a href="/project-docs/dingtalk-integration.md" class="ghost-link">查看钉钉接入说明</a>
               <a href="https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant" class="ghost-link">查看 GitHub 仓库</a>
             </div>
           </aside>
