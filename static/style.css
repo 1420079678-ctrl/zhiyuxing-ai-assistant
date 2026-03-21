@@ -26,6 +26,10 @@ body {
     linear-gradient(160deg, #faf4ec 0%, var(--bg) 58%, var(--bg-deep) 100%);
 }
 
+.preview-capture {
+  color: #16212b;
+}
+
 .page-shell {
   position: relative;
   overflow: hidden;
@@ -70,6 +74,13 @@ body {
   backdrop-filter: blur(16px);
 }
 
+.preview-capture .hero-card,
+.preview-capture .chat-card,
+.preview-capture .info-card {
+  background: rgba(255, 252, 246, 0.97);
+  box-shadow: 0 22px 64px rgba(38, 43, 53, 0.16);
+}
+
 .hero-card {
   padding: 36px;
   animation: rise-in 0.7s ease-out both;
@@ -104,6 +115,13 @@ h1 {
   font-size: 1.05rem;
   line-height: 1.7;
   color: var(--muted);
+}
+
+.preview-capture .hero-copy,
+.preview-capture .response-meta,
+.preview-capture .info-card p,
+.preview-capture .info-list {
+  color: #4b5864;
 }
 
 .hero-points {
@@ -268,6 +286,10 @@ input:focus {
   line-height: 1.8;
   color: var(--ink);
   white-space: pre-wrap;
+}
+
+.preview-capture .response-text {
+  color: #1c2a36;
 }
 
 .response-meta,

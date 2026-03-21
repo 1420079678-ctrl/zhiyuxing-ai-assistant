@@ -7,6 +7,23 @@ const statusBadge = document.getElementById("status-badge");
 const submitButton = document.getElementById("submit-button");
 const runtimeBadge = document.getElementById("runtime-badge");
 const responseMode = document.getElementById("response-mode");
+const pageParams = new URLSearchParams(window.location.search);
+
+function applyPreviewState() {
+  if (pageParams.get("preview") !== "1") {
+    return;
+  }
+
+  document.body.classList.add("preview-capture");
+  messageInput.value = "最近总拖延，明明知道该准备考试了，但一打开资料就开始焦虑。";
+  hintInput.value = "给出温和且具体的 3 步建议";
+  responseText.textContent =
+    "这更像是启动成本被焦虑放大了，不一定是你不够自律。\n\n可以先试试这 3 步：\n1. 先不要要求自己完整复习，只做 15 分钟的启动动作，比如整理提纲或标出重点章节。\n2. 把“准备考试”拆成今天能完成的一小步，例如做 5 道题或复盘 1 个知识点，降低大脑的抗拒感。\n3. 完成后立刻记录一个小反馈，比如在清单上打勾，让自己看到已经开始，而不是一直停留在想开始。\n\n如果这种焦虑已经连续影响到睡眠、饮食或日常状态，建议尽快联系学校心理中心、辅导员或可信任的人获得线下支持。";
+  responseMeta.textContent =
+    "预览态示例：页面展示的是本地演示模式下的回复效果，用于 README 截图和项目展示。";
+  responseMode.textContent = "本地演示模式";
+  statusBadge.textContent = "已完成";
+}
 
 async function loadRuntimeMeta() {
   try {
@@ -79,4 +96,5 @@ form.addEventListener("submit", async (event) => {
   }
 });
 
+applyPreviewState();
 loadRuntimeMeta();
