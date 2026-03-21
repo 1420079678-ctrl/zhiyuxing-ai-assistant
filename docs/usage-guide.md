@@ -51,6 +51,20 @@ Copy-Item .env.example .env
 python -m uvicorn app:app --reload
 ```
 
+如果系统环境里缺少依赖，优先使用仓库虚拟环境：
+
+```powershell
+.\.venv\Scripts\python -m uvicorn app:app --reload
+```
+
+也可以直接运行：
+
+```powershell
+.\start-web.ps1
+```
+
+或者双击根目录的 `start-web.bat`。
+
 ## 常用地址
 
 - `/`：Web 页面入口
@@ -77,6 +91,16 @@ python -m uvicorn app:app --reload
 ```bash
 .\.venv\Scripts\python -m pytest -q
 ```
+
+### 为什么运行 `python -m uvicorn app:app --reload` 会报错？
+
+如果报错类似 `No module named uvicorn`，说明你用的是系统 Python，而不是项目虚拟环境。请改用：
+
+```powershell
+.\.venv\Scripts\python -m uvicorn app:app --reload
+```
+
+或者直接运行 `start-web.ps1` / `start-web.bat`。
 
 ### 钉钉是不是必须项？
 

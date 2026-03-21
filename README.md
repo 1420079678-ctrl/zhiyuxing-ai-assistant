@@ -100,6 +100,24 @@ Copy-Item .env.example .env
 python -m uvicorn app:app --reload
 ```
 
+如果你的系统 Python 没装项目依赖，最稳的方式是直接使用仓库自带虚拟环境：
+
+```powershell
+.\.venv\Scripts\python -m uvicorn app:app --reload
+```
+
+也可以直接运行仓库根目录下的一键脚本：
+
+```powershell
+.\start-web.ps1
+```
+
+或双击：
+
+```text
+start-web.bat
+```
+
 启动后可访问：
 
 - `http://127.0.0.1:8000/`
