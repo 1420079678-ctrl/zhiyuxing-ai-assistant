@@ -4,6 +4,27 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-09-06
+
+### Major Commercial & Enterprise Transformation (大版本企业级重构)
+
+#### Added
+- **Production-Ready Deployment**: Multi-stage `Dockerfile`, `docker-compose.yml`, `docker-compose.prod.yml`, Nginx reverse proxy configuration with SSE tuning, and Kubernetes manifests (`deploy/k8s/deployment.yaml`).
+- **Server-Sent Events (SSE) Streaming**: Added `POST /chat/stream` endpoint for real-time typewriter output across both live AI models and local demo modes.
+- **Enterprise Observability**: Added standard Prometheus metrics endpoint (`GET /metrics`) tracking uptime, QPS, model invocations, guardrail triggers, and token estimates.
+- **Request Tracing & Security**: Integrated `X-Request-ID` and `X-Response-Time` HTTP middleware, CORS support, and optional enterprise multi-tenant API Key authentication (`services/auth.py`).
+- **Dual Business Scenarios**: Introduced **Enterprise EAP & Workplace Mode (企业员工关怀与职场抗压)** alongside **Campus Growth Mode (高校学业成长)**, with specialized prompts, topic detection, and actions.
+- **Expanded Enterprise RAG Knowledge**: Added workplace burnout recovery (`06-workplace-burnout.md`) and career efficiency action (`07-career-efficiency-action.md`) knowledge documents, document deletion API (`DELETE /api/knowledge/documents/{id}`), and scenario filtering.
+- **Multi-Session Management**: Added `GET /api/sessions` and `DELETE /api/sessions/{id}` APIs, and SQLite WAL mode optimization with connection timeout protections.
+- **SaaS Copilot Console UI**: Completely redesigned `static/` web interface into an enterprise-grade AI Copilot workspace with multi-session drawer, real-time message stream bubbles, scenario switcher pills, live telemetry inspector, and knowledge base management modal.
+- **Packaging & DevOps Automation**: Standardized `pyproject.toml` (PEP 621), `Makefile`, `deploy/scripts/deploy.sh`, and `.env.production`.
+- **Commercialization Documentation**: Added Enterprise AI Copilot Whitepaper (`docs/commercialization.md`) and Docker production deployment manual (`docs/deployment-docker.md`).
+
+#### Maintained
+- Preserved 100% backward compatibility for existing REST endpoints (`/chat`, `/health`, `/api/meta`, etc.).
+- Preserved all prior Git commits, release bundles, and historical version records.
+- Preserved open-source MIT license, GitHub Pages demo, and active OrcaRouter partnership promotion program (elevated to recommended multi-model gateway).
+
 ## [0.7.0] - 2026-03-21
 
 ### Added

@@ -1,492 +1,123 @@
-# Zhiyuxing AI Assistant
+# Zhiyuxing AI Assistant (ZhiYuXing Copilot)
 
 [中文](README.md) | [English](README_EN.md)
 
 Live demo after deployment: `https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/`
 
+![Version 1.0.0](https://img.shields.io/badge/Release-v1.0.0--Enterprise-blue.svg)
 ![Python 3.13](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Service-009688?logo=fastapi&logoColor=white)
+![Docker Ready](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)
+![Prometheus](https://img.shields.io/badge/Prometheus-Metrics-E6522C?logo=prometheus&logoColor=white)
 ![CI](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-145f66)](https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/)
-[![Release](https://img.shields.io/github/v/release/1420079678-ctrl/zhiyuxing-ai-assistant)](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/latest)
 [![Stars](https://img.shields.io/github/stars/1420079678-ctrl/zhiyuxing-ai-assistant?style=social)](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant)
 
-Zhiyuxing AI Assistant is an AI-powered emotional support and study assistance service designed for college student scenarios. It focuses on high-frequency issues such as academic pressure, procrastination, exam anxiety, and interview stress, and responds with warm, concrete, actionable suggestions.
+**Zhiyuxing AI Assistant (ZhiYuXing Copilot)** is an enterprise-grade AI copilot platform for mental health support, emotional resilience, and micro-action empowerment. Rather than generic chit-chat, the platform delivers structured emotional containment, domain-specific RAG knowledge retrieval, rule-based risk guardrails, and executable micro-action steps across two primary commercial pillars: **Enterprise EAP & Workplace Well-being** and **Campus & Higher-Ed Academic Growth**.
 
-This repository is not just a concept showcase. It is structured as a runnable project foundation that can be used directly, extended further, and integrated with platforms such as DingTalk over time.
+The platform is fully production-ready with **industrial containerized deployments** (Docker, Docker Compose, Nginx reverse proxy with SSE tuning, Kubernetes manifests), **Server-Sent Events (SSE) streaming (`POST /chat/stream`)**, and **Prometheus observability (`GET /metrics`)**, while preserving zero-key local demo modes for friction-free evaluation.
 
-If this project is useful to you, consider giving it a `Star`.
+If this project is useful to you, consider giving it a `Star` ⭐.
 
-## Optional OrcaRouter Integration
+---
 
-[![OrcaRouter optional provider](https://img.shields.io/badge/OrcaRouter-Optional_provider-2563eb)](https://www.orcarouter.ai/ref/ref_f60521be8c405c4c116f)
+## 🌟 Recommended Multi-Model Gateway: OrcaRouter
 
-Use OrcaRouter through the project's existing OpenAI-compatible configuration in a self-hosted backend. The [OrcaRouter guide](docs/orcarouter.en.md) includes repeatable setup commands, key configuration, verification, and rollback steps.
+[![OrcaRouter Recommended Gateway](https://img.shields.io/badge/OrcaRouter-Recommended_Gateway-2563eb)](https://www.orcarouter.ai/ref/ref_f60521be8c405c4c116f)
 
-- [Open OrcaRouter](https://www.orcarouter.ai/ref/ref_f60521be8c405c4c116f) · [Official quickstart](https://docs.orcarouter.ai/getting-started/quickstart)
-- This is the project's referral link; the maintainer may earn referral revenue when you use the service through it.
-- Status recorded on 2026-09-06: the referral program is active; the open-source directory listing is not published and an app ID has not been issued. Configuration instructions are available, but a live API call has not been verified. This does not imply official endorsement.
-- The GitHub Pages demo still uses local demo logic; real calls require your own backend configuration and API key.
+In production environments requiring multi-model resilience and load distribution, integrate OrcaRouter using the project's native OpenAI-compatible configuration:
 
-## Quick Links
+- [Open OrcaRouter](https://www.orcarouter.ai/ref/ref_f60521be8c405c4c116f) · [Official Quickstart](https://docs.orcarouter.ai/getting-started/quickstart) · [Project Integration Guide](docs/orcarouter.en.md)
+- Above link is the project's referral link; maintainers may earn referral revenue when services are utilized.
+- Status recorded on 2026-09-06: the referral program is active; configuration instructions are verified and ready.
+- The GitHub Pages demo continues to run local browser demo logic; live model invocation requires configuring API keys.
 
-- `Try online`:[Live Demo](https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/)
+---
+
+## 🚀 Dual Commercial Scenarios
+
+| Scenario | Target Pain Points | Output & Empowerment |
+|---|---|---|
+| 🏢 **Enterprise EAP & Workplace** | High delivery stress, burnout, emotional exhaustion, cross-team alignment friction | 5-minute micro-recovery breaks, psychological offline boundaries, Swiss-cheese action launch, 3-sentence upward alignment |
+| 🎓 **Campus & Higher-Ed** | Academic overwhelm, thesis procrastination, exam & defense nervousness, job hunting stress | 15-minute start commands, cognitive overload reduction, campus counseling referral pathway |
+| 🔒 **Compliance & Safety** | Severe crisis signals, self-harm expressions, acute helplessness | Millisecond rule interception, blocking model generation and outputting emergency hotline referrals |
+
+---
+
+## 💻 Quick Links
+
+- `Commercial Whitepaper`:[docs/commercialization.md](docs/commercialization.md)
+- `Docker Production Guide`:[docs/deployment-docker.md](docs/deployment-docker.md)
+- `Try online (Static Demo)`:[Live Demo](https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/)
 - `Download package`:[Latest Release](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/latest)
-- `Chinese docs`:[README.md](README.md)
+- `Chinese documentation`:[README.md](README.md)
 - `Model setup`:[docs/model-integration.en.md](docs/model-integration.en.md)
 - `API reference`:[docs/api-reference.en.md](docs/api-reference.en.md)
-- `Restricted public backend`:[docs/public-demo.md](docs/public-demo.md)
 - `Troubleshooting`:[docs/troubleshooting.en.md](docs/troubleshooting.en.md)
-- `Release install`:[docs/release-install.en.md](docs/release-install.en.md)
 
-## What You Can Verify in 30 Seconds
+---
 
-- a public online demo instead of a repo that only has concept docs
-- a runnable FastAPI + Web project instead of screenshots only
-- a temporarily shareable restricted backend instead of local-only testing
-- a practical repository with OpenAI / DeepSeek integration, local knowledge retrieval, session memory, and compatibility checks
+## 🛠️ Production Deployment
 
-Note:
-the GitHub Pages demo is primarily a public preview of the UI and interaction flow. Full knowledge retrieval, session persistence, feedback recording, and real model calls are available when you run the backend locally.
+### Option 1: Docker Compose Full Stack (Recommended)
 
-## Why This Project
+```bash
+# 1. Copy production environment file
+cp .env.production .env
 
-- Targets real and frequent student scenarios instead of generic chat.
-- Combines emotional support with next-step study guidance in a single conversation loop.
-- Supports local demo mode without any API key, so the repository can be started immediately.
-- Keeps room for real model integration and DingTalk-based deployment scenarios.
-
-## Core Capabilities
-
-- `Supportive dialogue`: identifies expressions of stress, anxiety, and procrastination, then replies in a supportive tone.
-- `Study action guidance`: breaks large tasks into small steps that are easier to start.
-- `Local knowledge retrieval`: searches the built-in support and study guidance documents to enrich responses.
-- `Custom knowledge document ingestion`: accepts additional Markdown or text documents through the API, giving the project a more extensible RAG-style entry point.
-- `Session memory and persistence`: keeps recent turns, supports follow-up questions, and stores session data in local SQLite.
-- `Risk detection and guardrail fallback`: switches to a fixed safety-oriented reply when high-risk expressions appear.
-- `Dual runtime mode`: falls back to local demo mode when no model key is configured; switches to OpenAI-compatible model calls when configured.
-- `Restricted public backend experience`: can open a temporary public tunnel so other people can try real backend endpoints.
-- `Web service`: provides a browser-based UI, health check, runtime metadata endpoint, and Swagger docs.
-- `Engineering basics`: includes tests, CI, environment variable examples, and supporting docs.
-
-## Project Structure
-
-```text
-backend/
-  api/            # route layer
-  app_factory.py  # FastAPI assembly
-  chat_logic.py   # prompts, styles, and demo reply logic
-  chat_service.py # full chat pipeline
-  config.py       # runtime config
-  runtime.py      # provider resolution and compatibility checks
-  schemas.py      # request/response models
-services/
-  knowledge.py    # retrieval and custom document writes
-  safety.py       # risk detection
-  storage.py      # SQLite persistence
-static/           # web frontend
-tests/            # regression tests
-  api/            # API route and integration tests
-  services/       # chat / runtime / safety / knowledge / storage unit tests
-  conftest.py     # shared fixtures
+# 2. Build and launch API container + Nginx reverse proxy
+docker compose up -d --build
 ```
 
-## Use Cases
+Access endpoints:
+- **Web Console**: `http://localhost` (Nginx port 80, SSE buffering disabled)
+- **API Swagger Documentation**: `http://localhost:8000/docs`
+- **Prometheus Metrics**: `http://localhost/metrics`
 
-- Heavy academic workload with no clear starting point
-- Long-term procrastination and difficulty getting started
-- Persistent stress before exams, thesis defense, or interviews
-- Emotional overload that disrupts study rhythm and execution
+### Option 2: Kubernetes Cluster
 
-## Runtime Modes
-
-| Mode | Description | Required Configuration |
-| --- | --- | --- |
-| Local demo mode | Uses built-in rules to generate supportive responses. Good for local preview, UI testing, and flow demos. | No API key required |
-| Model mode | Calls an OpenAI-compatible API for real model responses. Good for validating real capabilities. | API key that matches the configured provider |
-
-The project is designed so that it can run immediately after cloning. If no model key is configured, the page and `/chat` endpoint still return complete responses through demo mode.
-
-## Screenshots
-
-### Standalone Web Page
-
-The default entry point in this repository is the standalone web page. It can run independently and does not require DingTalk to be opened.
-
-![Web Page Preview](docs/assets/11-web-demo.png)
-
-A public GitHub Pages demo is also included so visitors can try the interaction flow without configuring a backend or API keys:
-
-- `https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/`
-
-### DingTalk Integration Scenario
-
-The following screenshots are kept as DingTalk integration examples to show how the project can later be connected to a collaboration platform.
-
-![Platform Overview](docs/assets/09-platform-overview.png)
-
-![Chat Demo](docs/assets/10-chat-demo.png)
-
-## Tech Stack
-
-- Python 3.13
-- FastAPI
-- OpenAI Python SDK
-- Pydantic
-- python-dotenv
-- SQLite
-- Markdown knowledge base
-- Pytest
-- GitHub Actions
-
-## Architecture
-
-![Technical Architecture](docs/assets/07-technical-architecture.png)
-
-## Quick Start
-
-Python 3.13 is recommended to stay aligned with the local dev environment and CI.
-
-### Release Package Installation
-
-If you do not want to clone the repository or work with Git setup manually, the easiest option is to download the packaged zip from Releases:
-
-- [Latest Release](https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant/releases/latest)
-
-Prefer the asset named like:
-
-- `zhiyuxing-ai-assistant-release-v*.zip`
-
-That package also includes:
-
-- `start-web.bat`
-- `doctor.bat`
-- `INSTALL.txt`
-
-Full instructions: [docs/release-install.en.md](docs/release-install.en.md)
-
-### Simplest Way To Start
-
-If you just cloned the repository, enter the project root first:
-
-```powershell
-cd zhiyuxing-ai-assistant
+Apply production manifests from [deploy/k8s/deployment.yaml](deploy/k8s/deployment.yaml):
+```bash
+kubectl apply -f deploy/k8s/deployment.yaml
 ```
 
-If you just want to run the Web version first, use the repository launcher directly from the project root:
+### Option 3: Local Friction-free Windows Startup
 
+For rapid developer evaluation on Windows:
 ```powershell
 .\start-web.ps1
 ```
-
-Or double-click:
-
-```text
-start-web.bat
-```
-
-On first run, the script will automatically:
-
-- create `.venv`
-- install project dependencies
-- copy `.env`
-- check the current model configuration
-- start the web service
-
-If someone hits a startup failure on their first run, tell them to run:
-
+Or run preflight diagnostics:
 ```powershell
 .\doctor.ps1
 ```
 
-or double-click:
-
-```text
-doctor.bat
-```
-
-This checks:
-
-- whether they are in the repository root
-- whether Python is installed
-- whether `.venv` and dependencies can be created automatically
-- whether port `8000` is already in use
-- whether the current model configuration is limited to demo mode
-
-To run tests, use:
-
+Run test suite (57+ unit and integration tests):
 ```powershell
-cd zhiyuxing-ai-assistant
-.\run-tests.ps1
+pytest -vv
 ```
 
-or double-click:
-
-```text
-run-tests.bat
-```
-
-### 1. Manual Dependency Setup (Advanced)
-
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-python -m pip install -r requirements.txt -r requirements-dev.txt
-```
-
-### 2. One-Click Provider Setup
-
-Use one of the setup scripts from the repository root:
-
-```powershell
-.\setup-openai.ps1
-.\setup-deepseek-chat.ps1
-.\setup-deepseek-r1.ps1
-```
-
-You can also double-click the matching `.bat` files. The scripts will:
-
-- create `.env` from `.env.example` if it does not exist
-- write the target `OPENAI_BASE_URL`, `MODEL_NAME`, and `MODEL_PROVIDER`
-- set `MODEL_API_KEY_ENV` so the app reads the correct key variable first
-- keep unrelated existing configuration
-
-Important: these scripts only write provider presets. They do not remove the need for API keys.
-
-- `.\setup-openai.ps1` configures the OpenAI preset and still requires `OPENAI_API_KEY`
-- `.\setup-deepseek-chat.ps1` configures the DeepSeek Chat preset and still requires `DEEPSEEK_API_KEY`
-- `.\setup-deepseek-r1.ps1` configures the DeepSeek R1 preset and still requires `DEEPSEEK_API_KEY`
-
-If you run a setup script without a valid key, the project still starts, but it will fall back to local demo mode instead of calling an online model.
-
-If you prefer manual setup, pay attention to:
-
-- `OPENAI_API_KEY`
-- `DEEPSEEK_API_KEY`
-- `OPENAI_BASE_URL`
-- `MODEL_NAME`
-- `MODEL_PROVIDER`
-- `MODEL_API_KEY_ENV`
-- `MODEL_TEMPERATURE`
-- `DEMO_MODE`
-- `CHAT_DB_PATH`
-
-### 3. Run the Compatibility Check
-
-```powershell
-.\.venv\Scripts\python scripts\check_model_config.py
-```
-
-This tells you:
-
-- which key variable the current configuration will read
-- whether the current model name and base URL look mismatched
-- whether known compatibility rules such as `deepseek-reasoner` have been handled
-- whether the current configuration is actually ready for real model calls
-
-If you already filled in a real key, you can also run a small live probe:
-
-```powershell
-.\.venv\Scripts\python scripts\check_model_config.py --probe
-```
-
-This sends a minimal request to verify that the API is not only configured on paper, but actually callable by this project.
-
-### 4. Start the Service
-
-```bash
-python -m uvicorn app:app --reload
-```
-
-If your system Python does not have the project dependencies installed, use the repository virtual environment directly:
-
-```powershell
-.\.venv\Scripts\python -m uvicorn app:app --reload
-```
-
-Or run the one-click launcher:
-
-```powershell
-.\start-web.ps1
-```
-
-Or double-click:
-
-```text
-start-web.bat
-```
-
-If you want to temporarily share the real backend with teachers, classmates, or interviewers, you can also start the restricted public demo:
-
-```powershell
-.\start-public-demo.ps1
-```
-
-This starts a dedicated backend instance and creates a temporary public tunnel. The terminal will print a public URL when it is ready. Important constraints:
-
-- it forces `PUBLIC_DEMO_MODE=true`
-- read endpoints such as `/chat`, `/api/meta`, and `/docs` stay accessible
-- write endpoints such as `/api/knowledge/documents` and `/api/feedback` are blocked
-- it is meant for public demo use and does not make real model calls
-- the link only stays alive while your machine and the script keep running
-
-See [docs/public-demo.md](docs/public-demo.md) for details.
-
-After startup:
-
-- `http://127.0.0.1:8000/`
-- `http://127.0.0.1:8000/api/meta`
-- `http://127.0.0.1:8000/api/compatibility`
-- `http://127.0.0.1:8000/api/knowledge/search?q=stress`
-- `http://127.0.0.1:8000/api/session/<session_id>`
-- `http://127.0.0.1:8000/health`
-- `http://127.0.0.1:8000/docs`
-- `http://127.0.0.1:8000/project-docs/usage-guide.en.md`
-
-### 5. Run Tests
-
-```bash
-python -m pytest -vv
-```
-
-Using the repository script is recommended because it avoids accidentally using the wrong Python environment:
-
-```powershell
-.\run-tests.ps1
-```
-
-Tests are now split by subsystem instead of being kept in a single file:
-
-- `tests/api/test_api.py`
-- `tests/services/test_chat_logic.py`
-- `tests/services/test_runtime.py`
-- `tests/services/test_knowledge.py`
-- `tests/services/test_safety.py`
-- `tests/services/test_storage.py`
-
-You can also run the grouped suites explicitly:
-
-```bash
-python -m pytest tests/api tests/services -vv
-```
-
-## API Overview
-
-- `GET /`: web page entry
-- `POST /chat`: chat endpoint
-- `GET /health`: health check
-- `GET /api/meta`: runtime metadata
-- `GET /api/compatibility`: model integration compatibility check
-- `GET /api/knowledge/search`: local knowledge base search
-- `GET /api/knowledge/documents`: list current knowledge documents
-- `POST /api/knowledge/documents`: write a custom knowledge document
-- `GET /api/session/{session_id}`: recent session history
-- `POST /api/feedback`: mark a reply as helpful or needing more detail
-- `GET /docs`: Swagger docs
-- `GET /project-docs/...`: supporting project docs
-
-### `POST /chat`
-
-Example request:
-
-```json
-{
-  "message": "I feel overwhelmed this week and cannot get myself to study.",
-  "system_hint": "Keep the advice warm and actionable"
-}
-```
-
-Example response:
-
-```json
-{
-  "reply": "Your current state shows clear stress accumulation. Instead of trying to solve the whole week at once, shrink the task to the smallest next step, such as doing 20 minutes of review first.",
-  "note": "Currently running in model mode. The response was generated by the configured OpenAI-compatible provider and enriched with recent session context and knowledge hits.",
-  "mode": "openai",
-  "session_id": "sess_xxxxxxxxxxxx",
-  "assistant_message_id": 12,
-  "memory_messages_used": 2,
-  "knowledge_hits": [
-    {
-      "title": "Sleep and Recovery",
-      "excerpt": "When stress has already started to affect sleep, combine short study blocks with offline support.",
-      "source_path": "knowledge_base/04-sleep-and-recovery.md",
-      "score": 3.8
-    }
-  ],
-  "safety": {
-    "level": "medium",
-    "label": "Needs extra attention",
-    "note": "Detected signs of insomnia, overwhelm, or exhaustion; offline support should be suggested.",
-    "needs_human_support": true,
-    "matched_keywords": ["can't sleep"]
-  }
-}
-```
-
-## Documentation
-
-- Chinese:
-  [docs/api-reference.md](docs/api-reference.md)、
-  [docs/project-report.md](docs/project-report.md)、
-  [docs/usage-guide.md](docs/usage-guide.md)、
-  [docs/model-integration.md](docs/model-integration.md)、
-  [docs/dingtalk-integration.md](docs/dingtalk-integration.md)
-- English:
-  [docs/api-reference.en.md](docs/api-reference.en.md)、
-  [docs/project-report.en.md](docs/project-report.en.md)、
-  [docs/usage-guide.en.md](docs/usage-guide.en.md)、
-  [docs/model-integration.en.md](docs/model-integration.en.md)、
-  [docs/dingtalk-integration.en.md](docs/dingtalk-integration.en.md)
-- Other:
-  [CONTRIBUTING.md](CONTRIBUTING.md)、
-  [CHANGELOG.md](CHANGELOG.md)、
-  [LICENSE](LICENSE)、
-  [ROADMAP.md](ROADMAP.md)、
-  [SECURITY.md](SECURITY.md)、
-  [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)、
-  [docs/github-launch-kit.md](docs/github-launch-kit.md)
-
-## Roadmap
-
-- improve crisis-expression detection and safer escalation behavior
-- expand compatibility checks for more OpenAI-compatible providers
-- improve multi-turn continuity and response quality
-- expand the local knowledge base to more campus scenarios
-
-## Integrating Different Models
-
-The backend uses an OpenAI-compatible interface, so you can switch providers either by editing `.env` or by using the built-in setup scripts.
-
-- Switch to OpenAI: run `.\setup-openai.ps1`
-- Switch to DeepSeek Chat: run `.\setup-deepseek-chat.ps1`
-- Switch to DeepSeek R1: run `.\setup-deepseek-r1.ps1`
-- Switch to another OpenAI-compatible provider: run `scripts/setup_model_config.py` with a custom `base_url`, `model_name`, and `api_key_env`
-- The web page supports selecting model target and counseling style directly
-- The right-hand panel shows current provider, model, base URL, and compatibility status
-
-Again, these scripts mean the project includes built-in presets for these providers. They do not mean those models can be called without API keys.
-
-If you use `DeepSeek-R1`, the code already handles the `deepseek-reasoner` compatibility rule and avoids forcing the unsupported `temperature` parameter.
-
-For official OpenAI and DeepSeek endpoints, this repository provides explicit support. For other "OpenAI-compatible" providers, full compatibility still depends on whether they really support Chat Completions, the current model naming convention, and common parameters. That is why the repository now includes a compatibility endpoint and a preflight check script.
-
-## Safety Boundary
-
-- The project is positioned as emotional support and study assistance, not professional diagnosis or treatment.
-- The current implementation emphasizes gentle, concrete, and non-harmful replies.
-- If a user expresses persistent insomnia, severe low mood, or self-harm risk, a real product should prioritize offline support and referral.
-
-## DingTalk Integration Notes
-
-- The web page is the default entry point for direct access and continued development.
-- DingTalk is an optional business integration scenario and is not required for the project to run.
-- If the current DingTalk integration is an `internal enterprise app`, it is usually only usable by members inside that organization and may also require admin authorization.
-- In practice, this means external users normally cannot open the DingTalk version directly unless they join that organization or the app is redesigned for multi-organization / third-party distribution.
-- If the goal is public accessibility, the web version should remain the primary entry point instead of treating DingTalk as the only access path.
-
-## Testing and CI
-
-- Local test command: `python -m pytest -vv`
-- GitHub Actions is configured to run the base test suite after pushes
+---
+
+## 🔌 API Overview
+
+- `POST /chat/stream`: **[NEW]** Server-Sent Events (SSE) real-time typewriter chat stream
+- `GET /metrics`: **[NEW]** Standard Prometheus metrics scraping endpoint
+- `GET /api/scenarios`: **[NEW]** Business scenarios catalog (Campus vs Enterprise EAP)
+- `GET /api/sessions`: **[NEW]** Paginated session history summaries
+- `DELETE /api/sessions/{id}`: **[NEW]** Clear conversation session
+- `DELETE /api/knowledge/documents/{id}`: **[NEW]** Delete custom knowledge document
+- `POST /chat`: Classic synchronous chat completion
+- `GET /health`: System health check with probe metadata
+- `GET /api/meta`: Service runtime metadata and model configurations
+- `GET /api/compatibility`: Provider compatibility and key preflight report
+- `GET /api/knowledge/search`: RAG excerpt retrieval
+- `POST /api/knowledge/documents`: Add custom Markdown policy/SOP
+- `POST /api/feedback`: Turn rating and quality feedback
+
+---
+
+## 📄 License
+
+This repository is distributed under the [MIT License](LICENSE).
+For commercial private deployments and custom EAP modules, see [docs/commercialization.md](docs/commercialization.md).

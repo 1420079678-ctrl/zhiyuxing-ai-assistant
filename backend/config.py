@@ -6,7 +6,7 @@ from typing import Optional
 
 from dotenv import load_dotenv
 
-from backend.schemas import ModelPreset, StyleOption
+from backend.schemas import ModelPreset, ScenarioOption, StyleOption
 
 
 load_dotenv()
@@ -15,6 +15,23 @@ BASE_DIR = Path(__file__).resolve().parents[1]
 STATIC_DIR = BASE_DIR / "static"
 DOCS_DIR = BASE_DIR / "docs"
 
+
+SCENARIO_OPTIONS = [
+    ScenarioOption(
+        id="campus",
+        label="高校青年成长",
+        description="聚焦学业压力排解、拖延内耗阻断、考研答辩与求职抗压，提供温和可落地的微步建议。",
+        prompt_hint="作为知愈星高校青年成长伴读教练，聚焦学业压力排解、拖延内耗阻断与考试求职辅导。",
+    ),
+    ScenarioOption(
+        id="enterprise",
+        label="企业员工 EAP 关怀",
+        description="面向职场人士与企业团队，聚焦职业倦怠(Burnout)修复、高压交付应对、行动破冰与沟通对齐。",
+        prompt_hint="作为知愈星企业员工关怀 EAP 辅导顾问，聚焦职场高压排解、精力回血、任务切片与跨部门沟通对齐。",
+    ),
+]
+
+SCENARIO_MAP = {option.id: option for option in SCENARIO_OPTIONS}
 
 STYLE_OPTIONS = [
     StyleOption(id="balanced", label="平衡建议", helper_text="兼顾共情、行动建议和安全提醒"),
@@ -58,6 +75,14 @@ MODEL_PRESETS = [
         base_url="https://api.deepseek.com",
         api_key_env="DEEPSEEK_API_KEY",
     ),
+    ModelPreset(
+        id="orcarouter-gpt-4o-mini",
+        label="OrcaRouter · GPT-4o mini (推荐网关)",
+        provider_name="OrcaRouter",
+        model_name="openai/gpt-4o-mini",
+        base_url="https://api.orcarouter.ai/v1",
+        api_key_env="ORCAROUTER_API_KEY",
+    ),
 ]
 
 MODEL_PRESET_MAP = {preset.id: preset for preset in MODEL_PRESETS}
@@ -76,7 +101,7 @@ def resolve_api_key(env_name: Optional[str] = None) -> Optional[str]:
         value = os.getenv(env_name)
         return value if value else None
 
-    for candidate in ("OPENAI_API_KEY", "DEEPSEEK_API_KEY"):
+    for candidate in ("OPENAI_API_KEY", "DEEPSEEK_API_KEY", "ORCAROUTER_API_KEY"):
         value = os.getenv(candidate)
         if value:
             return value
@@ -92,10 +117,19 @@ def configured_api_key_env() -> str:
     base_url = configured_base_url().lower()
     model_name = configured_model_name().lower()
 
+    if "orcarouter" in provider_name or "orcarouter" in base_url:
+        return "ORCAROUTER_API_KEY"
+
     if "deepseek" in provider_name or "deepseek" in base_url or model_name.startswith("deepseek"):
         return "DEEPSEEK_API_KEY"
 
     return "OPENAI_API_KEY"
+
+
+def cors_origins() -> list[str]:
+    raw = os.getenv("CORS_ORIGINS", "*").strip()
+    return [item.strip() for item in raw.split(",") if item.strip()]
+
 
 
 def configured_api_key() -> Optional[str]:

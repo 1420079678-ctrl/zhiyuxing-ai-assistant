@@ -27,8 +27,9 @@ def ensure_database() -> None:
     db_path = database_path()
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with sqlite3.connect(db_path) as connection:
+    with sqlite3.connect(db_path, timeout=10.0) as connection:
         connection.execute("PRAGMA journal_mode=WAL;")
+        connection.execute("PRAGMA busy_timeout=5000;")
         connection.execute(
             """
             CREATE TABLE IF NOT EXISTS sessions (
@@ -69,11 +70,14 @@ def ensure_database() -> None:
             )
             """
         )
+        connection.execute("CREATE INDEX IF NOT EXISTS idx_messages_session_id ON messages(session_id);")
+        connection.execute("CREATE INDEX IF NOT EXISTS idx_feedback_session_id ON feedback(session_id);")
+        connection.execute("CREATE INDEX IF NOT EXISTS idx_sessions_updated_at ON sessions(updated_at DESC);")
 
 
 def connect() -> sqlite3.Connection:
     ensure_database()
-    connection = sqlite3.connect(database_path())
+    connection = sqlite3.connect(database_path(), timeout=10.0)
     connection.row_factory = sqlite3.Row
     return connection
 
@@ -242,3 +246,38 @@ def save_feedback(session_id: str, assistant_message_id: int, rating: str, comme
             """,
             (session_id, assistant_message_id, rating, comment, utc_now()),
         )
+
+
+def list_recent_sessions(limit: int = 30) -> list[dict[str, Any]]:
+    with connect() as connection:
+        rows = connection.execute(
+            """
+            SELECT s.session_id, s.title, s.created_at, s.updated_at,
+                   COUNT(m.id) AS message_count
+            FROM sessions s
+            LEFT JOIN messages m ON s.session_id = m.session_id
+            GROUP BY s.session_id
+            ORDER BY s.updated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        return [
+            {
+                "session_id": row["session_id"],
+                "title": row["title"] or "新会话",
+                "created_at": row["created_at"],
+                "updated_at": row["updated_at"],
+                "message_count": int(row["message_count"] or 0),
+            }
+            for row in rows
+        ]
+
+
+def delete_session(session_id: str) -> bool:
+    with connect() as connection:
+        connection.execute("DELETE FROM feedback WHERE session_id = ?", (session_id,))
+        connection.execute("DELETE FROM messages WHERE session_id = ?", (session_id,))
+        cursor = connection.execute("DELETE FROM sessions WHERE session_id = ?", (session_id,))
+        return cursor.rowcount > 0
+

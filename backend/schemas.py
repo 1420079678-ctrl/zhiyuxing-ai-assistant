@@ -12,6 +12,7 @@ class ChatRequest(BaseModel):
     response_style: Optional[str] = Field(default="balanced", description="回答风格")
     model_target: Optional[str] = Field(default="configured", description="模型目标")
     session_id: Optional[str] = Field(default=None, description="会话 ID；为空时自动创建")
+    scenario: Optional[str] = Field(default="campus", description="业务场景：campus (高校学业成长) 或 enterprise (企业员工EAP关怀)")
 
 
 class RetrievedKnowledge(BaseModel):
@@ -212,3 +213,37 @@ class ModelPreset:
     base_url: str
     api_key_env: str
     mode: str = "openai"
+
+
+class ScenarioOption(BaseModel):
+    id: str
+    label: str
+    description: str
+    prompt_hint: str
+
+
+class SessionSummary(BaseModel):
+    session_id: str
+    title: str
+    created_at: str
+    updated_at: str
+    message_count: int
+
+
+class SessionListResponse(BaseModel):
+    total: int
+    sessions: list[SessionSummary]
+
+
+class DeleteResponse(BaseModel):
+    status: str
+    message: str
+
+
+class MetricsSummaryResponse(BaseModel):
+    uptime_seconds: float
+    total_http_requests: int
+    total_chat_requests: int
+    guardrail_triggers: int
+    tokens_estimated: int
+

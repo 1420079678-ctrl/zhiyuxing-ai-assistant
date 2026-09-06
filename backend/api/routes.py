@@ -1,19 +1,38 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, Query, Request
-from fastapi.responses import FileResponse
+from typing import Optional
 
-from services.knowledge import knowledge_document_count, list_knowledge_documents, search_knowledge, write_knowledge_document
-from services.storage import save_feedback, session_history
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.responses import FileResponse, PlainTextResponse, StreamingResponse
+
+from services.auth import verify_api_key
+from services.knowledge import (
+    delete_knowledge_document,
+    knowledge_document_count,
+    list_knowledge_documents,
+    search_knowledge,
+    write_knowledge_document,
+)
+from services.storage import delete_session, list_recent_sessions, save_feedback, session_history
+from services.telemetry import telemetry
 
 from backend.chat_logic import to_knowledge_models
-from backend.chat_service import handle_chat_request
-from backend.config import STATIC_DIR, STYLE_OPTIONS, api_key_configured, configured_api_key_env, public_demo_mode, supports_temperature
+from backend.chat_service import handle_chat_request, handle_chat_stream
+from backend.config import (
+    SCENARIO_OPTIONS,
+    STATIC_DIR,
+    STYLE_OPTIONS,
+    api_key_configured,
+    configured_api_key_env,
+    public_demo_mode,
+    supports_temperature,
+)
 from backend.runtime import build_configured_target, evaluate_runtime_compatibility, list_model_options
 from backend.schemas import (
     ChatRequest,
     ChatResponse,
     CompatibilityReport,
+    DeleteResponse,
     FeedbackRequest,
     FeedbackResponse,
     HealthResponse,
@@ -22,9 +41,12 @@ from backend.schemas import (
     KnowledgeDocumentSummary,
     KnowledgeDocumentUpsertResponse,
     KnowledgeSearchResponse,
+    ScenarioOption,
     ServiceInfo,
     SessionHistoryResponse,
+    SessionListResponse,
     SessionMessage,
+    SessionSummary,
 )
 
 
@@ -57,6 +79,12 @@ def health(request: Request) -> HealthResponse:
     )
 
 
+@router.get("/metrics", response_class=PlainTextResponse)
+def metrics() -> PlainTextResponse:
+    """Prometheus-compatible scraping endpoint."""
+    return PlainTextResponse(telemetry.format_prometheus(), media_type="text/plain; version=0.0.4")
+
+
 @router.get("/", include_in_schema=False)
 def index() -> FileResponse:
     return FileResponse(STATIC_DIR / "index.html")
@@ -68,7 +96,7 @@ def meta(request: Request) -> ServiceInfo:
     return ServiceInfo(
         name=request.app.title,
         version=request.app.version,
-        description="可直接运行的 AI 情绪支持与学习辅助服务，支持本地演示模式和模型调用模式。",
+        description="知愈星 AI (ZhiYuXing Copilot) · 企业级多场景心身关怀与行动赋能平台，支持高校与企业 EAP 双场景。",
         docs_url="/docs",
         healthcheck="/health",
         demo_page="/",
@@ -93,6 +121,12 @@ def meta(request: Request) -> ServiceInfo:
         available_models=list_model_options(),
         available_styles=STYLE_OPTIONS,
     )
+
+
+@router.get("/api/scenarios", response_model=list[ScenarioOption])
+def list_scenarios() -> list[ScenarioOption]:
+    """List business scenarios (Campus vs Enterprise EAP)."""
+    return SCENARIO_OPTIONS
 
 
 @router.get("/api/compatibility", response_model=CompatibilityReport)
@@ -124,6 +158,22 @@ def create_knowledge_document(req: KnowledgeDocumentCreateRequest) -> KnowledgeD
     )
 
 
+@router.delete("/api/knowledge/documents/{document_id}", response_model=DeleteResponse)
+def remove_knowledge_document(document_id: str) -> DeleteResponse:
+    if public_demo_mode():
+        raise HTTPException(status_code=403, detail="PUBLIC_DEMO_MODE=true，当前公开后端不允许删除知识文档。")
+    deleted = delete_knowledge_document(document_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="自定义知识文档不存在或不可删除（内置文档受系统保护）。")
+    return DeleteResponse(status="ok", message=f"知识文档 '{document_id}' 已成功从知识库删除。")
+
+
+@router.get("/api/sessions", response_model=SessionListResponse)
+def get_sessions(limit: int = Query(30, ge=1, le=100)) -> SessionListResponse:
+    items = [SessionSummary(**item) for item in list_recent_sessions(limit=limit)]
+    return SessionListResponse(total=len(items), sessions=items)
+
+
 @router.get("/api/session/{session_id}", response_model=SessionHistoryResponse)
 def get_session_history(session_id: str) -> SessionHistoryResponse:
     payload = session_history(session_id)
@@ -137,6 +187,16 @@ def get_session_history(session_id: str) -> SessionHistoryResponse:
     )
 
 
+@router.delete("/api/sessions/{session_id}", response_model=DeleteResponse)
+def remove_session(session_id: str) -> DeleteResponse:
+    if public_demo_mode():
+        raise HTTPException(status_code=403, detail="PUBLIC_DEMO_MODE=true，当前公开后端禁止删除会话。")
+    success = delete_session(session_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="会话不存在或已清除。")
+    return DeleteResponse(status="ok", message=f"会话 '{session_id}' 及其历史记录已清除。")
+
+
 @router.post("/api/feedback", response_model=FeedbackResponse)
 def feedback(req: FeedbackRequest) -> FeedbackResponse:
     if public_demo_mode():
@@ -146,5 +206,19 @@ def feedback(req: FeedbackRequest) -> FeedbackResponse:
 
 
 @router.post("/chat", response_model=ChatResponse)
-def chat(req: ChatRequest) -> ChatResponse:
+def chat(req: ChatRequest, _: Optional[str] = Depends(verify_api_key)) -> ChatResponse:
     return handle_chat_request(req)
+
+
+@router.post("/chat/stream")
+async def chat_stream(req: ChatRequest, _: Optional[str] = Depends(verify_api_key)) -> StreamingResponse:
+    """Enterprise SSE streaming endpoint for real-time typewriter output."""
+    return StreamingResponse(
+        handle_chat_stream(req),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )

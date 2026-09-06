@@ -1,12 +1,10 @@
+// ZhiYuXing Copilot Enterprise Frontend Controller (v1.0.0)
+
 const form = document.getElementById("chat-form");
 const messageInput = document.getElementById("message");
 const hintInput = document.getElementById("system_hint");
-const responseText = document.getElementById("response-text");
-const responseMeta = document.getElementById("response-meta");
-const statusBadge = document.getElementById("status-badge");
 const submitButton = document.getElementById("submit-button");
 const runtimeBadge = document.getElementById("runtime-badge");
-const responseMode = document.getElementById("response-mode");
 const providerName = document.getElementById("provider-name");
 const modelName = document.getElementById("model-name");
 const baseUrl = document.getElementById("base-url");
@@ -18,6 +16,7 @@ const compatibilityButton = document.getElementById("compatibility-button");
 const compatibilitySummary = document.getElementById("compatibility-summary");
 const compatibilityList = document.getElementById("compatibility-list");
 const resetSessionButton = document.getElementById("reset-session-button");
+const newChatBtn = document.getElementById("new-chat-btn");
 const feedbackHelpfulButton = document.getElementById("feedback-helpful");
 const feedbackNeedsMoreButton = document.getElementById("feedback-needs-more");
 const feedbackStatus = document.getElementById("feedback-status");
@@ -25,550 +24,616 @@ const sessionIdText = document.getElementById("session-id");
 const memoryCountText = document.getElementById("memory-count");
 const riskLevelText = document.getElementById("risk-level");
 const knowledgeCountText = document.getElementById("knowledge-count");
-const historyList = document.getElementById("history-list");
 const knowledgeList = document.getElementById("knowledge-list");
-const pageParams = new URLSearchParams(window.location.search);
-const previewMode = pageParams.get("preview") === "1";
+const chatTimeline = document.getElementById("chat-timeline");
+const promptChipsContainer = document.getElementById("prompt-chips-container");
+const sessionNavList = document.getElementById("session-nav-list");
+const scenarioPills = document.getElementById("scenario-pills");
+const introBody = document.getElementById("intro-body");
+
+// Knowledge modal elements
+const knowledgeModal = document.getElementById("knowledge-modal");
+const openKnowledgeModalBtn = document.getElementById("open-knowledge-modal-btn");
+const quickAddDocBtn = document.getElementById("quick-add-doc-btn");
+const closeKnowledgeModalBtn = document.getElementById("close-knowledge-modal-btn");
+const modalDocList = document.getElementById("modal-doc-list");
+const uploadDocForm = document.getElementById("upload-doc-form");
+const uploadDocStatus = document.getElementById("upload-doc-status");
+const sidebarDocCount = document.getElementById("sidebar-doc-count");
+
 const SESSION_STORAGE_KEY = "zhiyuxing_demo_session_id";
+const SCENARIO_STORAGE_KEY = "zhiyuxing_active_scenario";
 
 let runtimeMeta = null;
 let currentSessionId = window.localStorage.getItem(SESSION_STORAGE_KEY) || "";
+let activeScenario = window.localStorage.getItem(SCENARIO_STORAGE_KEY) || "campus";
 let currentAssistantMessageId = null;
 
-function buildPreviewMeta() {
-  return {
-    chat_mode: "demo",
-    provider_name: "Local Demo",
-    model_name: "builtin-demo",
-    base_url: "local://preview",
-    knowledge_document_count: 5,
-    available_models: [
-      {
-        id: "configured",
-        label: "当前配置（预览态）",
-        provider_name: "Local Demo",
-        model_name: "builtin-demo",
-        mode: "demo",
-        available: true,
-        reason: "预览态不会发起真实模型调用。",
-      },
-      {
-        id: "demo",
-        label: "本地演示模式",
-        provider_name: "Local Demo",
-        model_name: "builtin-demo",
-        mode: "demo",
-        available: true,
-      },
-    ],
-    available_styles: [
-      { id: "balanced", label: "平衡建议", helper_text: "兼顾共情、行动建议和安全提醒" },
-      { id: "warm", label: "温和陪伴", helper_text: "更重视情绪承接与安抚" },
-      { id: "structured", label: "三步计划", helper_text: "用更清晰的分步结构给建议" },
-      { id: "encouraging", label: "鼓励支持", helper_text: "语气更积极，强调可恢复性" },
-      { id: "brief", label: "简洁直接", helper_text: "减少铺垫，更快给出核心建议" },
-    ],
-  };
-}
+const SCENARIO_PROMPTS = {
+  campus: [
+    { label: "学业压力", text: "这周复习任务很多，越想越焦虑，完全不敢开始。" },
+    { label: "拖延内耗", text: "我最近总拖延，明明知道该学，但一打开书就很烦躁。" },
+    { label: "面试焦虑", text: "我马上要答辩和面试了，越准备越慌，感觉自己不够好。" },
+    { label: "失眠疲惫", text: "最近连续失眠好几天了，整天没精神，特别疲惫。" },
+  ],
+  enterprise: [
+    { label: "职业倦怠", text: "连续加班身体透支，感觉心累麻木、严重职业倦怠，想设立心理离线边界。" },
+    { label: "向上管理与对齐", text: "大方案跨部门对齐口径总有分歧，主管又在催进度，如何向上管理和消除盲区？" },
+    { label: "复杂方案破冰", text: "面对复杂的业务交付方案不知道从何下手，如何用微行动拆解破冰？" },
+    { label: "工位精力回血", text: "在工位上感到严重的心力消耗与无意义感，如何进行 5 分钟微能量回血？" },
+  ],
+};
 
-function riskLabel(level) {
-  if (level === "high") {
-    return "高风险表达";
-  }
-  if (level === "medium") {
-    return "需要额外关注";
-  }
-  return "常规支持场景";
-}
+const SCENARIO_INTROS = {
+  campus: "您好！我是知愈星高校青年成长伴读教练。聚焦学业压力排解、拖延内耗阻断、考研答辩与求职抗压，为您提供温和、具体、可执行的支持性建议。",
+  enterprise: "您好！我是知愈星企业员工关怀 (EAP) 赋能顾问。面向职场人士与企业团队，聚焦职业倦怠(Burnout)修复、高压交付应对、任务切片破冰与沟通对齐。",
+};
 
-function setRiskAppearance(level, label) {
-  riskLevelText.textContent = label;
-  riskLevelText.className = `risk-indicator risk-indicator-${level || "low"}`;
-}
+function setScenario(scenario) {
+  activeScenario = scenario;
+  window.localStorage.setItem(SCENARIO_STORAGE_KEY, scenario);
 
-function formatKnowledgeSummary(hitCount) {
-  const total = runtimeMeta?.knowledge_document_count || 0;
-  if (!total) {
-    return `${hitCount} 命中`;
-  }
-  return `${hitCount} 命中 / ${total} 文档`;
-}
-
-function updateSessionBadge() {
-  sessionIdText.textContent = currentSessionId || "新会话（发送后创建）";
-}
-
-function setFeedbackState(enabled, text) {
-  feedbackHelpfulButton.disabled = !enabled;
-  feedbackNeedsMoreButton.disabled = !enabled;
-  feedbackStatus.textContent = text;
-}
-
-function renderCompatibilityStatus(status) {
-  if (status === "ok") {
-    return "检查通过";
-  }
-  if (status === "warning") {
-    return "存在提醒";
-  }
-  return "需要修正";
-}
-
-function updateModelHelper() {
-  if (!runtimeMeta) {
-    return;
-  }
-
-  const option = runtimeMeta.available_models.find((item) => item.id === modelTargetInput.value);
-  if (!option) {
-    modelHelper.textContent = "当前模型目标不可用。";
-    return;
-  }
-
-  if (option.id === "configured") {
-    modelHelper.textContent =
-      option.reason || "使用 .env 中的默认模型配置；如果没配密钥，会自动回退到本地演示模式。";
-    return;
-  }
-
-  if (option.id === "demo") {
-    modelHelper.textContent = "不调用真实模型，适合展示页面流程、记忆和知识检索效果。";
-    return;
-  }
-
-  modelHelper.textContent = option.available
-    ? `将尝试调用 ${option.provider_name} / ${option.model_name}。`
-    : option.reason || "当前模型不可用。";
-}
-
-function updateStyleHelper() {
-  if (!runtimeMeta) {
-    return;
-  }
-
-  const option = runtimeMeta.available_styles.find((item) => item.id === responseStyleInput.value);
-  styleHelper.textContent = option ? option.helper_text : "当前风格不可用。";
-}
-
-function populateModelOptions(options) {
-  modelTargetInput.innerHTML = "";
-
-  options.forEach((option) => {
-    const element = document.createElement("option");
-    element.value = option.id;
-    element.textContent = option.available ? option.label : `${option.label}（${option.reason || "未配置"}）`;
-    element.disabled = !option.available;
-    if (option.id === "configured") {
-      element.selected = true;
-    }
-    modelTargetInput.appendChild(element);
-  });
-}
-
-function populateStyleOptions(options) {
-  responseStyleInput.innerHTML = "";
-
-  options.forEach((option) => {
-    const element = document.createElement("option");
-    element.value = option.id;
-    element.textContent = option.label;
-    if (option.id === "balanced") {
-      element.selected = true;
-    }
-    responseStyleInput.appendChild(element);
-  });
-}
-
-function renderCompatibilityReport(payload) {
-  compatibilitySummary.textContent = `${renderCompatibilityStatus(payload.status)}：${payload.summary}`;
-  compatibilityList.innerHTML = "";
-
-  (payload.checks || []).forEach((item) => {
-    const element = document.createElement("li");
-    element.className = `compatibility-item compatibility-item-${item.status}`;
-    element.textContent = `[${String(item.status || "").toUpperCase()}] ${item.message}`;
-    compatibilityList.appendChild(element);
+  document.querySelectorAll(".scenario-pill").forEach((pill) => {
+    pill.classList.toggle("active", pill.getAttribute("data-scenario") === scenario);
   });
 
-  if (payload.recommended_setups && payload.recommended_setups.length > 0) {
-    payload.recommended_setups.forEach((item) => {
-      const element = document.createElement("li");
-      element.className = "compatibility-item compatibility-item-setup";
-      element.textContent = `可直接执行：${item.command}`;
-      compatibilityList.appendChild(element);
+  if (introBody) {
+    introBody.textContent = SCENARIO_INTROS[scenario] || SCENARIO_INTROS.campus;
+  }
+
+  renderPromptChips();
+}
+
+function renderPromptChips() {
+  if (!promptChipsContainer) return;
+  promptChipsContainer.innerHTML = "";
+  const prompts = SCENARIO_PROMPTS[activeScenario] || SCENARIO_PROMPTS.campus;
+  prompts.forEach((item) => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "prompt-chip";
+    chip.textContent = `${item.label}: ${item.text.slice(0, 16)}...`;
+    chip.title = item.text;
+    chip.addEventListener("click", () => {
+      messageInput.value = item.text;
+      messageInput.focus();
     });
+    promptChipsContainer.appendChild(chip);
+  });
+}
+
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function formatMarkdown(text) {
+  if (!text) return "";
+  let html = escapeHtml(text);
+  // Code block
+  html = html.replace(/```([\s\S]*?)```/g, "<pre><code>$1</code></pre>");
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+  // Bold
+  html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  return html;
+}
+
+function appendMessageBubble(role, content, meta = {}) {
+  const bubble = document.createElement("div");
+  bubble.className = `chat-bubble ${role === "user" ? "user-bubble" : "assistant-bubble"}`;
+
+  const avatar = document.createElement("div");
+  avatar.className = "bubble-avatar";
+  avatar.textContent = role === "user" ? "👤" : "✨";
+
+  const contentDiv = document.createElement("div");
+  contentDiv.className = "bubble-content";
+
+  const header = document.createElement("div");
+  header.className = "bubble-header";
+  const nameStrong = document.createElement("strong");
+  nameStrong.textContent = role === "user" ? "您" : meta.name || "知愈星 AI";
+  const timeSpan = document.createElement("span");
+  timeSpan.className = "bubble-time";
+  timeSpan.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+  header.appendChild(nameStrong);
+  header.appendChild(timeSpan);
+
+  const body = document.createElement("div");
+  body.className = "bubble-body";
+  body.innerHTML = formatMarkdown(content);
+
+  contentDiv.appendChild(header);
+  contentDiv.appendChild(body);
+
+  if (meta.footerText) {
+    const footer = document.createElement("div");
+    footer.className = "bubble-meta-footer";
+    footer.textContent = meta.footerText;
+    contentDiv.appendChild(footer);
+  }
+
+  bubble.appendChild(avatar);
+  bubble.appendChild(contentDiv);
+
+  chatTimeline.appendChild(bubble);
+  chatTimeline.scrollTop = chatTimeline.scrollHeight;
+
+  return { bubble, body, contentDiv };
+}
+
+async function loadSessionsList() {
+  try {
+    const res = await fetch("/api/sessions?limit=25");
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!sessionNavList) return;
+
+    sessionNavList.innerHTML = "";
+
+    // Active session item
+    const currentItem = document.createElement("li");
+    currentItem.className = `session-nav-item ${!currentSessionId ? "active" : ""}`;
+    currentItem.innerHTML = `
+      <span class="session-title">✨ 当前新会话</span>
+    `;
+    currentItem.addEventListener("click", () => {
+      startNewChat();
+    });
+    sessionNavList.appendChild(currentItem);
+
+    data.sessions.forEach((s) => {
+      const li = document.createElement("li");
+      li.className = `session-nav-item ${currentSessionId === s.session_id ? "active" : ""}`;
+      li.innerHTML = `
+        <span class="session-title" title="${escapeHtml(s.title)}">${escapeHtml(s.title || s.session_id)}</span>
+        <button class="session-del-btn" title="删除会话" type="button">×</button>
+      `;
+
+      li.querySelector(".session-title").addEventListener("click", () => {
+        switchSession(s.session_id);
+      });
+
+      li.querySelector(".session-del-btn").addEventListener("click", async (e) => {
+        e.stopPropagation();
+        if (confirm(`确定清除该会话吗？`)) {
+          await deleteSession(s.session_id);
+        }
+      });
+
+      sessionNavList.appendChild(li);
+    });
+  } catch (err) {
+    console.error("加载会话列表失败:", err);
   }
 }
 
-function renderHistory(messages) {
-  historyList.innerHTML = "";
+async function switchSession(sessionId) {
+  currentSessionId = sessionId;
+  window.localStorage.setItem(SESSION_STORAGE_KEY, sessionId);
+  sessionIdText.textContent = sessionId;
 
-  if (!messages || messages.length === 0) {
-    historyList.innerHTML = "<li>当前会显示最近几轮对话，便于确认会话记忆和本地持久化已生效。</li>";
-    return;
+  document.querySelectorAll(".session-nav-item").forEach((item) => item.classList.remove("active"));
+  loadSessionsList();
+
+  // Load session history
+  try {
+    const res = await fetch(`/api/session/${encodeURIComponent(sessionId)}`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    chatTimeline.innerHTML = "";
+    data.messages.forEach((msg) => {
+      appendMessageBubble(msg.role, msg.content, {
+        name: msg.role === "user" ? "您" : `${msg.provider_name || "知愈星"} · ${msg.model_name || ""}`,
+      });
+      if (msg.role === "assistant") {
+        currentAssistantMessageId = msg.id;
+      }
+    });
+
+    memoryCountText.textContent = String(data.messages.length);
+    feedbackHelpfulButton.disabled = !currentAssistantMessageId;
+    feedbackNeedsMoreButton.disabled = !currentAssistantMessageId;
+    feedbackStatus.textContent = "已加载历史会话记录。";
+  } catch (err) {
+    console.error("加载会话历史失败:", err);
   }
+}
 
-  messages.forEach((message) => {
-    const item = document.createElement("li");
-    item.className = `history-item history-item-${message.role}`;
+async function deleteSession(sessionId) {
+  try {
+    const res = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}`, { method: "DELETE" });
+    if (res.ok) {
+      if (currentSessionId === sessionId) {
+        startNewChat();
+      } else {
+        loadSessionsList();
+      }
+    }
+  } catch (err) {
+    console.error("删除会话失败:", err);
+  }
+}
 
-    const title = document.createElement("div");
-    title.className = "history-item-title";
-    const roleText = message.role === "user" ? "你" : "助手";
-    const modelText = message.provider_name ? ` · ${message.provider_name}` : "";
-    title.textContent = `${roleText}${modelText}`;
+function startNewChat() {
+  currentSessionId = "";
+  window.localStorage.removeItem(SESSION_STORAGE_KEY);
+  currentAssistantMessageId = null;
+  sessionIdText.textContent = "新会话（发送后创建）";
+  memoryCountText.textContent = "0";
+  knowledgeCountText.textContent = "0";
+  riskLevelText.textContent = "常规场景";
+  riskLevelText.className = "risk-indicator risk-indicator-low";
+  knowledgeList.innerHTML = '<li class="empty-hint">发送消息后，系统将自动检索匹配的知识库切片并在此穿透展示。</li>';
+  feedbackHelpfulButton.disabled = true;
+  feedbackNeedsMoreButton.disabled = true;
+  feedbackStatus.textContent = "反馈功能在生成回复后就绪";
 
-    const content = document.createElement("p");
-    content.className = "history-item-content";
-    content.textContent = message.content;
+  chatTimeline.innerHTML = `
+    <div class="chat-bubble assistant-bubble intro-bubble">
+      <div class="bubble-avatar">✨</div>
+      <div class="bubble-content">
+        <div class="bubble-header">
+          <strong>知愈星 AI (ZhiYuXing Copilot)</strong>
+          <span class="bubble-time">系统</span>
+        </div>
+        <div class="bubble-body" id="intro-body">
+          ${SCENARIO_INTROS[activeScenario] || SCENARIO_INTROS.campus}
+        </div>
+      </div>
+    </div>
+  `;
 
-    item.appendChild(title);
-    item.appendChild(content);
-    historyList.appendChild(item);
-  });
+  loadSessionsList();
+  messageInput.focus();
 }
 
 function renderKnowledgeHits(hits) {
   knowledgeList.innerHTML = "";
-
   if (!hits || hits.length === 0) {
-    knowledgeList.innerHTML = "<li>本轮没有命中知识库片段，会直接按常规对话生成回复。</li>";
-    knowledgeCountText.textContent = formatKnowledgeSummary(0);
+    knowledgeList.innerHTML = '<li class="empty-hint">本轮未触发特定知识库切片（基于基础模型常识回答）。</li>';
     return;
   }
-
   hits.forEach((hit) => {
-    const item = document.createElement("li");
-    item.className = "knowledge-item";
-
-    const title = document.createElement("div");
-    title.className = "knowledge-item-title";
-    title.textContent = `${hit.title} · ${hit.score}`;
-
-    const excerpt = document.createElement("p");
-    excerpt.className = "knowledge-item-excerpt";
-    excerpt.textContent = hit.excerpt;
-
-    const source = document.createElement("span");
-    source.className = "knowledge-item-source";
-    source.textContent = hit.source_path;
-
-    item.appendChild(title);
-    item.appendChild(excerpt);
-    item.appendChild(source);
-    knowledgeList.appendChild(item);
+    const card = document.createElement("li");
+    card.className = "knowledge-card";
+    card.innerHTML = `
+      <div class="knowledge-card-header">
+        <span>${escapeHtml(hit.title)}</span>
+        <span class="knowledge-card-score">★ ${hit.score}</span>
+      </div>
+      <div class="knowledge-card-excerpt">${escapeHtml(hit.excerpt)}</div>
+    `;
+    knowledgeList.appendChild(card);
   });
-
-  knowledgeCountText.textContent = formatKnowledgeSummary(hits.length);
 }
 
-function resetChatPanels() {
-  responseText.textContent = "这里会显示回复内容，也可以先点击上方建议问题快速体验。";
-  responseMeta.textContent = "";
-  responseMode.textContent = "等待对话";
-  memoryCountText.textContent = "0";
-  renderHistory([]);
-  renderKnowledgeHits([]);
-  setRiskAppearance("low", "常规支持场景");
-  setFeedbackState(false, "反馈功能会在生成回复后启用。");
+function updateRiskBadge(safety) {
+  if (!safety) return;
+  riskLevelText.textContent = safety.label || "常规场景";
+  riskLevelText.className = `risk-indicator risk-indicator-${safety.level || "low"}`;
 }
 
-function rememberSession(sessionId) {
-  currentSessionId = sessionId;
-  if (sessionId) {
-    window.localStorage.setItem(SESSION_STORAGE_KEY, sessionId);
-  } else {
-    window.localStorage.removeItem(SESSION_STORAGE_KEY);
-  }
-  updateSessionBadge();
-}
+async function handleSendMessage(e) {
+  e.preventDefault();
+  const message = messageInput.value.trim();
+  if (!message) return;
 
-function restoreLatestAssistantMessage(messages) {
-  const latestAssistant = [...messages].reverse().find((message) => message.role === "assistant");
-  if (!latestAssistant) {
-    return;
-  }
+  const hint = hintInput.value.trim();
+  const modelTarget = modelTargetInput.value || "configured";
+  const responseStyle = responseStyleInput.value || "balanced";
 
-  currentAssistantMessageId = latestAssistant.id;
-  responseText.textContent = latestAssistant.content;
-  responseMeta.textContent = "已从本地持久化记录恢复最近一次对话。";
-  responseMode.textContent = latestAssistant.provider_name
-    ? `${latestAssistant.provider_name} / ${latestAssistant.model_name || "unknown"}`
-    : "历史记录";
-  setFeedbackState(true, "你也可以对最近一条回复继续补充反馈。");
-  setRiskAppearance(latestAssistant.risk_level || "low", riskLabel(latestAssistant.risk_level || "low"));
-}
+  // 1. Append user message bubble
+  appendMessageBubble("user", message);
+  messageInput.value = "";
+  submitButton.disabled = true;
 
-async function loadSessionHistory(sessionId, options = {}) {
-  const shouldRestoreLatest = options.restoreLatest !== false;
+  // 2. Prepare assistant placeholder bubble
+  const { body, contentDiv } = appendMessageBubble("assistant", "", { name: "知愈星 AI" });
+  body.innerHTML = '<span class="cursor-blink"></span>';
 
-  if (!sessionId || previewMode) {
-    renderHistory([]);
-    return;
-  }
+  let accumulatedText = "";
+  let metaReceived = false;
 
   try {
-    const response = await fetch(`/api/session/${encodeURIComponent(sessionId)}`);
-    const payload = await response.json();
-    if (!response.ok) {
-      throw new Error(payload.detail || "无法读取会话记录");
-    }
+    const payload = {
+      message,
+      system_hint: hint || undefined,
+      model_target: modelTarget,
+      response_style: responseStyle,
+      scenario: activeScenario,
+      session_id: currentSessionId || undefined,
+    };
 
-    renderHistory(payload.messages || []);
-    if (shouldRestoreLatest) {
-      restoreLatestAssistantMessage(payload.messages || []);
-    }
-  } catch (error) {
-    historyList.innerHTML = `<li class="compatibility-item compatibility-item-error">${String(error)}</li>`;
-  }
-}
-
-function applyPreviewState() {
-  document.body.classList.add("preview-capture");
-  modelTargetInput.value = "demo";
-  responseStyleInput.value = "structured";
-  messageInput.value = "最近总拖延，明明知道该准备考试了，但一打开资料就开始焦虑。";
-  hintInput.value = "更关注考试前启动困难";
-  responseText.textContent =
-    "这更像是启动成本被焦虑放大了，不一定是你不够自律。\n\n当前更适合的顺序是：先稳住情绪，再缩小任务，最后决定是否继续推进。\n\n建议按下面 3 步来：\n1. 先不要要求自己完整复习，只做 15 分钟的启动动作，比如整理提纲或标出重点章节。\n2. 把“准备考试”拆成今天能完成的一小步，例如做 5 道题或复盘 1 个知识点，降低大脑的抗拒感。\n3. 完成后立刻记录一个小反馈，比如在清单上打勾，让自己看到已经开始，而不是一直停留在想开始。\n\n额外提醒：如果这种焦虑已经连续影响到睡眠、饮食或日常状态，建议尽快联系学校心理中心、辅导员或可信任的人获得线下支持。";
-  responseMeta.textContent = "预览态示例：页面展示了会话记忆、知识检索和风险提醒在一次完整回复中的呈现方式。";
-  responseMode.textContent = "Local Demo / builtin-demo";
-  statusBadge.textContent = "预览态";
-  compatibilitySummary.textContent = "预览态示例：这里会显示 API 接入检查结果。";
-  compatibilityList.innerHTML = "<li>预览态下不实际请求接口，仅用于页面展示。</li>";
-
-  rememberSession("preview-session");
-  memoryCountText.textContent = "4";
-  setRiskAppearance("medium", "需要额外关注");
-  knowledgeCountText.textContent = formatKnowledgeSummary(2);
-  renderHistory([
-    { role: "user", content: "最近总拖延，越想开始越焦虑。" },
-    { role: "assistant", content: "先把目标压缩到 15 分钟，只处理一个最小动作。" },
-    { role: "user", content: "我快考试了，一打开书就紧张。" },
-    { role: "assistant", content: "这次回复会继续沿用前面的状态判断和学习建议节奏。" },
-  ]);
-  renderKnowledgeHits([
-    {
-      title: "拖延与启动困难",
-      excerpt: "把任务切成 10 到 15 分钟的启动动作，先恢复最小的执行感。",
-      source_path: "knowledge_base/02-study-actions.md",
-      score: 4.2,
-    },
-    {
-      title: "考试压力与恢复",
-      excerpt: "当考试焦虑已经影响睡眠时，建议同时安排线下支持和短时复习块。",
-      source_path: "knowledge_base/04-sleep-and-recovery.md",
-      score: 3.8,
-    },
-  ]);
-  setFeedbackState(true, "预览态下展示反馈入口，不会真正提交。");
-}
-
-async function loadCompatibility() {
-  if (previewMode) {
-    return;
-  }
-
-  compatibilityButton.disabled = true;
-  compatibilitySummary.textContent = "正在检查当前模型接入配置...";
-
-  try {
-    const response = await fetch("/api/compatibility");
-    const payload = await response.json();
-
-    if (!response.ok) {
-      throw new Error(payload.detail || "无法读取兼容性信息");
-    }
-
-    renderCompatibilityReport(payload);
-  } catch (error) {
-    compatibilitySummary.textContent = "兼容性检查失败，请确认服务已正常启动。";
-    compatibilityList.innerHTML = `<li class="compatibility-item compatibility-item-error">${String(error)}</li>`;
-  } finally {
-    compatibilityButton.disabled = false;
-  }
-}
-
-function syncRuntimeInfo(payload) {
-  runtimeBadge.textContent =
-    payload.chat_mode === "demo" ? "当前运行：本地演示模式" : "当前运行：模型调用模式";
-  providerName.textContent = payload.provider_name;
-  modelName.textContent = payload.model_name;
-  baseUrl.textContent = payload.base_url;
-  knowledgeCountText.textContent = formatKnowledgeSummary(0);
-  updateSessionBadge();
-  if (!currentSessionId) {
-    setRiskAppearance("low", "常规支持场景");
-  }
-}
-
-async function loadRuntimeMeta() {
-  try {
-    if (!previewMode) {
-      const response = await fetch("/api/meta");
-      const metaPayload = await response.json();
-      if (!response.ok) {
-        throw new Error(metaPayload.detail || "无法读取服务信息");
-      }
-      runtimeMeta = metaPayload;
-    } else {
-      runtimeMeta = buildPreviewMeta();
-    }
-
-    populateModelOptions(runtimeMeta.available_models || []);
-    populateStyleOptions(runtimeMeta.available_styles || []);
-    syncRuntimeInfo(runtimeMeta);
-    updateModelHelper();
-    updateStyleHelper();
-
-    if (previewMode) {
-      applyPreviewState();
-      return;
-    }
-
-    if (currentSessionId) {
-      await loadSessionHistory(currentSessionId);
-      statusBadge.textContent = "已恢复会话";
-    }
-
-    await loadCompatibility();
-  } catch (error) {
-    runtimeBadge.textContent = "当前运行：服务信息读取失败";
-    providerName.textContent = "读取失败";
-    modelName.textContent = "读取失败";
-    baseUrl.textContent = "读取失败";
-    compatibilitySummary.textContent = "兼容性检查不可用";
-    compatibilityList.innerHTML = `<li class="compatibility-item compatibility-item-error">${String(error)}</li>`;
-  }
-}
-
-async function submitFeedback(rating) {
-  if (previewMode) {
-    feedbackStatus.textContent = "预览态不提交反馈；本地启动后会写入 SQLite。";
-    return;
-  }
-
-  if (!currentSessionId || !currentAssistantMessageId) {
-    feedbackStatus.textContent = "当前没有可提交反馈的回复。";
-    return;
-  }
-
-  setFeedbackState(false, "正在提交反馈...");
-
-  try {
-    const response = await fetch("/api/feedback", {
+    const response = await fetch("/chat/stream", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n\n");
+      buffer = lines.pop(); // Keep incomplete chunk
+
+      for (const line of lines) {
+        if (line.startsWith("data: ")) {
+          try {
+            const eventData = JSON.parse(line.slice(6));
+
+            if (eventData.event === "start") {
+              metaReceived = true;
+              currentSessionId = eventData.session_id;
+              window.localStorage.setItem(SESSION_STORAGE_KEY, currentSessionId);
+              sessionIdText.textContent = currentSessionId;
+              memoryCountText.textContent = String(eventData.memory_messages_used || 0);
+              knowledgeCountText.textContent = String(eventData.knowledge_hits ? eventData.knowledge_hits.length : 0);
+              renderKnowledgeHits(eventData.knowledge_hits);
+              updateRiskBadge(eventData.safety);
+              loadSessionsList();
+            } else if (eventData.event === "delta") {
+              accumulatedText += eventData.content;
+              body.innerHTML = formatMarkdown(accumulatedText) + '<span class="cursor-blink"></span>';
+              chatTimeline.scrollTop = chatTimeline.scrollHeight;
+            } else if (eventData.event === "done") {
+              body.innerHTML = formatMarkdown(eventData.reply || accumulatedText);
+              currentAssistantMessageId = eventData.assistant_message_id;
+              feedbackHelpfulButton.disabled = !currentAssistantMessageId;
+              feedbackNeedsMoreButton.disabled = !currentAssistantMessageId;
+              feedbackStatus.textContent = eventData.note || "回复已生成。";
+
+              const footer = document.createElement("div");
+              footer.className = "bubble-meta-footer";
+              footer.textContent = eventData.note || "";
+              contentDiv.appendChild(footer);
+
+              loadSessionsList();
+            } else if (eventData.event === "error") {
+              body.innerHTML = `<span style="color:var(--risk-high)">${escapeHtml(eventData.message)}</span>`;
+            }
+          } catch (parseErr) {
+            console.warn("SSE parse error:", parseErr);
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error("对话调用失败:", err);
+    body.innerHTML = `<span style="color:var(--risk-high)">请求异常：${escapeHtml(err.message)}</span>`;
+  } finally {
+    submitButton.disabled = false;
+    messageInput.focus();
+  }
+}
+
+async function sendFeedback(rating) {
+  if (!currentSessionId || !currentAssistantMessageId) return;
+  try {
+    const res = await fetch("/api/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         session_id: currentSessionId,
         assistant_message_id: currentAssistantMessageId,
         rating,
-        comment: null,
       }),
     });
-    const payload = await response.json();
-    if (!response.ok) {
-      throw new Error(payload.detail || "反馈提交失败");
+    if (res.ok) {
+      feedbackStatus.textContent = rating === "helpful" ? "感谢支持！我们会继续保持。" : "已记录反馈，后续将更细化拆解步骤。";
+      feedbackHelpfulButton.disabled = true;
+      feedbackNeedsMoreButton.disabled = true;
     }
-
-    feedbackStatus.textContent =
-      rating === "helpful" ? "反馈已记录：这条回复对你有帮助。" : "反馈已记录：后续可继续把建议做得更具体。";
-  } catch (error) {
-    feedbackStatus.textContent = `反馈提交失败：${String(error)}`;
-  } finally {
-    setFeedbackState(true, feedbackStatus.textContent);
+  } catch (err) {
+    console.error("提交反馈失败:", err);
   }
 }
 
-document.querySelectorAll(".suggestion-chip").forEach((button) => {
-  button.addEventListener("click", () => {
-    messageInput.value = button.dataset.message || "";
-    messageInput.focus();
-  });
-});
+// Knowledge Modal Logic
+async function openKnowledgeModal() {
+  knowledgeModal.style.display = "flex";
+  await refreshDocList();
+}
 
-modelTargetInput.addEventListener("change", updateModelHelper);
-responseStyleInput.addEventListener("change", updateStyleHelper);
-compatibilityButton.addEventListener("click", loadCompatibility);
-resetSessionButton.addEventListener("click", () => {
-  rememberSession("");
-  currentAssistantMessageId = null;
-  resetChatPanels();
-  statusBadge.textContent = "已重置";
-});
-feedbackHelpfulButton.addEventListener("click", () => submitFeedback("helpful"));
-feedbackNeedsMoreButton.addEventListener("click", () => submitFeedback("needs_more"));
+function closeKnowledgeModal() {
+  knowledgeModal.style.display = "none";
+}
 
-form.addEventListener("submit", async (event) => {
-  event.preventDefault();
+async function refreshDocList() {
+  try {
+    const res = await fetch("/api/knowledge/documents");
+    if (!res.ok) return;
+    const data = await res.json();
+    modalDocList.innerHTML = "";
 
-  if (previewMode) {
-    statusBadge.textContent = "预览态";
-    feedbackStatus.textContent = "预览态不真正发请求；本地启动后可体验真实接口。";
+    sidebarDocCount.textContent = `当前挂载 ${data.total_documents} 篇政策与干预指南`;
+
+    data.documents.forEach((doc) => {
+      const li = document.createElement("li");
+      li.className = "doc-item";
+      const isCustom = doc.category === "custom";
+      li.innerHTML = `
+        <div>
+          <span class="doc-item-title">${escapeHtml(doc.title)}</span>
+          <span class="doc-item-badge ${isCustom ? "doc-item-badge-custom" : ""}">${isCustom ? "自定义" : "内置"}</span>
+        </div>
+        ${isCustom ? `<button class="text-btn doc-del-btn" style="color:#ef4444;" type="button">删除</button>` : ""}
+      `;
+
+      if (isCustom) {
+        li.querySelector(".doc-del-btn").addEventListener("click", async () => {
+          if (confirm(`确定删除自定义文档 "${doc.title}" 吗？`)) {
+            const delRes = await fetch(`/api/knowledge/documents/${encodeURIComponent(doc.document_id)}`, { method: "DELETE" });
+            if (delRes.ok) {
+              refreshDocList();
+            }
+          }
+        });
+      }
+
+      modalDocList.appendChild(li);
+    });
+  } catch (err) {
+    console.error("获取文档列表失败:", err);
+  }
+}
+
+async function handleUploadDoc(e) {
+  e.preventDefault();
+  const title = document.getElementById("doc-title-input").value.trim();
+  const docId = document.getElementById("doc-id-input").value.trim();
+  const content = document.getElementById("doc-content-input").value.trim();
+
+  if (content.length < 20) {
+    uploadDocStatus.textContent = "内容长度至少需 20 字符。";
+    uploadDocStatus.style.color = "var(--risk-high)";
     return;
   }
-
-  const message = messageInput.value.trim();
-  const systemHint = hintInput.value.trim();
-  const modelTarget = modelTargetInput.value;
-  const responseStyle = responseStyleInput.value;
-
-  if (!message) {
-    return;
-  }
-
-  submitButton.disabled = true;
-  statusBadge.textContent = "生成中";
-  responseText.textContent = "正在生成回复，请稍等...";
-  responseMeta.textContent = "";
-  setFeedbackState(false, "等待本轮回复返回后再提交反馈。");
 
   try {
-    const response = await fetch("/chat", {
+    uploadDocStatus.textContent = "上传写入中...";
+    const res = await fetch("/api/knowledge/documents", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        message,
-        system_hint: systemHint || null,
-        model_target: modelTarget || "configured",
-        response_style: responseStyle || "balanced",
-        session_id: currentSessionId || null,
+        title,
+        document_id: docId || undefined,
+        content,
       }),
     });
 
-    const payload = await response.json();
-
-    if (!response.ok) {
-      throw new Error(payload.detail || "请求失败");
+    if (res.ok) {
+      uploadDocStatus.textContent = "文档已成功写入知识库！";
+      uploadDocStatus.style.color = "var(--risk-low)";
+      uploadDocForm.reset();
+      refreshDocList();
+    } else {
+      const err = await res.json();
+      uploadDocStatus.textContent = err.detail || "上传失败";
+      uploadDocStatus.style.color = "var(--risk-high)";
     }
-
-    currentAssistantMessageId = payload.assistant_message_id;
-    rememberSession(payload.session_id);
-    providerName.textContent = payload.provider_name;
-    modelName.textContent = payload.model_name;
-    responseText.textContent = payload.reply;
-    responseMeta.textContent = payload.note;
-    responseMode.textContent = `${payload.provider_name} / ${payload.model_name} / ${payload.mode}`;
-    memoryCountText.textContent = String(payload.memory_messages_used);
-    renderKnowledgeHits(payload.knowledge_hits || []);
-    setRiskAppearance(payload.safety.level, payload.safety.label);
-    setFeedbackState(true, "可以对本条回复提交反馈。");
-    statusBadge.textContent = "已完成";
-    await loadSessionHistory(payload.session_id, { restoreLatest: false });
-  } catch (error) {
-    responseText.textContent =
-      "当前没有成功返回回复。请检查服务是否已启动；如需真实模型结果，请确认 .env 中已正确配置 OPENAI_API_KEY 或 DEEPSEEK_API_KEY。";
-    responseMeta.textContent = String(error);
-    responseMode.textContent = "调用失败";
-    statusBadge.textContent = "调用失败";
-  } finally {
-    submitButton.disabled = false;
+  } catch (err) {
+    uploadDocStatus.textContent = `上传出错: ${err.message}`;
+    uploadDocStatus.style.color = "var(--risk-high)";
   }
-});
+}
 
-resetChatPanels();
-loadRuntimeMeta();
+// Compatibility Check
+async function runCompatibilityCheck() {
+  compatibilitySummary.textContent = "检测中...";
+  compatibilityList.innerHTML = "";
+  try {
+    const res = await fetch("/api/compatibility");
+    if (!res.ok) return;
+    const data = await res.json();
+    compatibilitySummary.textContent = data.summary;
+
+    data.checks.forEach((check) => {
+      const li = document.createElement("li");
+      li.className = `compat-item ${check.status === "ok" ? "compat-ok" : "compat-warn"}`;
+      li.innerHTML = `
+        <strong>${escapeHtml(check.label)}</strong>: ${escapeHtml(check.detail)}
+      `;
+      compatibilityList.appendChild(li);
+    });
+  } catch (err) {
+    compatibilitySummary.textContent = `检测失败: ${err.message}`;
+  }
+}
+
+// Bootstrapping
+async function init() {
+  // 1. Setup scenario
+  setScenario(activeScenario);
+  if (scenarioPills) {
+    scenarioPills.querySelectorAll(".scenario-pill").forEach((pill) => {
+      pill.addEventListener("click", () => {
+        setScenario(pill.getAttribute("data-scenario"));
+      });
+    });
+  }
+
+  // 2. Fetch meta
+  try {
+    const res = await fetch("/api/meta");
+    if (res.ok) {
+      runtimeMeta = await res.json();
+      providerName.textContent = runtimeMeta.provider_name || "-";
+      modelName.textContent = runtimeMeta.model_name || "-";
+      baseUrl.textContent = runtimeMeta.base_url || "-";
+      runtimeBadge.textContent = runtimeMeta.chat_mode === "demo" ? "本地演示模式 (无需Key)" : "模型服务已就绪";
+
+      // Populate models
+      modelTargetInput.innerHTML = "";
+      runtimeMeta.available_models.forEach((m) => {
+        const opt = document.createElement("option");
+        opt.value = m.id;
+        opt.textContent = `${m.label}${m.available ? "" : " (需配置Key)"}`;
+        modelTargetInput.appendChild(opt);
+      });
+
+      // Populate styles
+      responseStyleInput.innerHTML = "";
+      runtimeMeta.available_styles.forEach((s) => {
+        const opt = document.createElement("option");
+        opt.value = s.id;
+        opt.textContent = s.label;
+        responseStyleInput.appendChild(opt);
+      });
+
+      if (runtimeMeta.knowledge_document_count) {
+        sidebarDocCount.textContent = `当前挂载 ${runtimeMeta.knowledge_document_count} 篇政策与干预指南`;
+      }
+    }
+  } catch (err) {
+    console.warn("拉取元信息失败:", err);
+  }
+
+  // 3. Load initial sessions
+  if (currentSessionId) {
+    switchSession(currentSessionId);
+  } else {
+    startNewChat();
+  }
+
+  // 4. Bind event listeners
+  form.addEventListener("submit", handleSendMessage);
+  messageInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      form.requestSubmit();
+    }
+  });
+
+  resetSessionButton.addEventListener("click", startNewChat);
+  newChatBtn.addEventListener("click", startNewChat);
+
+  feedbackHelpfulButton.addEventListener("click", () => sendFeedback("helpful"));
+  feedbackNeedsMoreButton.addEventListener("click", () => sendFeedback("needs_more"));
+
+  compatibilityButton.addEventListener("click", runCompatibilityCheck);
+
+  openKnowledgeModalBtn.addEventListener("click", openKnowledgeModal);
+  quickAddDocBtn.addEventListener("click", openKnowledgeModal);
+  closeKnowledgeModalBtn.addEventListener("click", closeKnowledgeModal);
+  uploadDocForm.addEventListener("submit", handleUploadDoc);
+
+  // Initial compatibility run
+  runCompatibilityCheck();
+}
+
+window.addEventListener("DOMContentLoaded", init);

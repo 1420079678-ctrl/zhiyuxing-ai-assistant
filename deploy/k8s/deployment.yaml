@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zhiyuxing-copilot
+  labels:
+    app: zhiyuxing-copilot
+    tier: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: zhiyuxing-copilot
+  template:
+    metadata:
+      labels:
+        app: zhiyuxing-copilot
+    spec:
+      containers:
+        - name: api
+          image: zhiyuxing-ai-assistant:v1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: ENVIRONMENT
+              value: "production"
+            - name: CHAT_DB_PATH
+              value: "/app/data/zhiyuxing.db"
+            - name: API_KEY_AUTH_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: zhiyuxing-config
+                  key: API_KEY_AUTH_ENABLED
+                  optional: true
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: zhiyuxing-secrets
+                  key: OPENAI_API_KEY
+                  optional: true
+            - name: DEEPSEEK_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: zhiyuxing-secrets
+                  key: DEEPSEEK_API_KEY
+                  optional: true
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1024Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - name: data-volume
+              mountPath: /app/data
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: zhiyuxing-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zhiyuxing-service
+  labels:
+    app: zhiyuxing-copilot
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    app: zhiyuxing-copilot
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: zhiyuxing-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+spec:
+  rules:
+    - host: copilot.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: zhiyuxing-service
+                port:
+                  number: 80

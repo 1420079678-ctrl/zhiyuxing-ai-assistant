@@ -3,221 +3,280 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>知愈星 AI Assistant Demo</title>
+    <title>知愈星 AI Assistant (ZhiYuXing Copilot) · 企业级多场景心身关怀与行动赋能平台</title>
     <link rel="stylesheet" href="/static/style.css" />
   </head>
   <body>
-    <div class="page-shell">
-      <div class="page-glow page-glow-left"></div>
-      <div class="page-glow page-glow-right"></div>
+    <div class="app-shell">
+      <!-- Top Navigation Bar -->
+      <header class="top-nav">
+        <div class="nav-brand">
+          <div class="brand-icon">✨</div>
+          <div class="brand-text">
+            <h1>知愈星 AI Assistant</h1>
+            <span class="brand-sub">ZhiYuXing Copilot Enterprise</span>
+          </div>
+          <span class="badge badge-primary">v1.0.0 Commercial</span>
+        </div>
 
-      <main class="layout">
-        <section class="hero-card">
-          <p class="eyebrow">AI Support Service</p>
-          <h1>知愈星 AI Assistant</h1>
-          <p class="hero-copy">
-            一个面向大学生场景的 AI 情绪支持与学习辅助服务，围绕学业压力、拖延内耗、
-            考试与面试焦虑等高频问题提供温和、具体、可执行的支持性建议。
-          </p>
+        <div class="scenario-selector-bar">
+          <span class="scenario-label">场景模式:</span>
+          <div class="scenario-pills" id="scenario-pills">
+            <button type="button" class="scenario-pill active" data-scenario="campus">
+              🎓 高校青年成长
+            </button>
+            <button type="button" class="scenario-pill" data-scenario="enterprise">
+              🏢 企业员工 EAP 关怀
+            </button>
+          </div>
+        </div>
 
-          <div class="hero-points">
-            <div class="point-card">
-              <span class="point-label">能力</span>
-              <strong>情绪支持 + 学习行动建议</strong>
-            </div>
-            <div class="point-card">
-              <span class="point-label">增强</span>
-              <strong>知识检索 + 会话记忆</strong>
-            </div>
-            <div class="point-card">
-              <span class="point-label">安全</span>
-              <strong>风险识别 + 转介兜底</strong>
-            </div>
+        <div class="nav-actions">
+          <a href="/docs" target="_blank" class="nav-link">Swagger API</a>
+          <a href="/metrics" target="_blank" class="nav-link">Prometheus Metrics</a>
+          <span id="runtime-badge" class="status-badge">系统检测中</span>
+        </div>
+      </header>
+
+      <!-- Main Layout: 3 Columns -->
+      <div class="workspace-grid">
+        <!-- Column 1: Sidebar -->
+        <aside class="sidebar-pane">
+          <div class="sidebar-action">
+            <button id="new-chat-btn" class="btn btn-primary btn-block" type="button">
+              + 新建会话
+            </button>
           </div>
 
-          <div class="hero-actions">
-            <a href="/docs" class="ghost-link">查看 Swagger 文档</a>
-            <a href="/api/meta" class="ghost-link">查看接口元信息</a>
-            <span id="runtime-badge" class="status-badge">当前运行：读取中</span>
-          </div>
-        </section>
-
-        <section class="demo-grid">
-          <article class="chat-card">
-            <div class="card-header">
-              <div>
-                <p class="card-kicker">Demo Chat</p>
-                <h2>对话演示</h2>
-              </div>
-              <div class="header-actions">
-                <button id="reset-session-button" class="secondary-button" type="button">重置会话</button>
-                <span id="status-badge" class="status-badge">等待输入</span>
-              </div>
+          <div class="sidebar-section">
+            <div class="section-title-row">
+              <span class="sidebar-section-title">最近会话 (Sessions)</span>
+              <button id="reset-session-button" class="text-btn" type="button" title="重置当前会话">重置</button>
             </div>
-
-            <div class="suggestion-row">
-              <button class="suggestion-chip" type="button" data-message="这周作业很多，我越想越焦虑，完全不敢开始。">
-                学业压力
-              </button>
-              <button class="suggestion-chip" type="button" data-message="我最近总拖延，明明知道该学，但一打开书就很烦躁。">
-                拖延内耗
-              </button>
-              <button class="suggestion-chip" type="button" data-message="我马上要面试了，越准备越慌，感觉自己不够好。">
-                面试焦虑
-              </button>
-            </div>
-
-            <form id="chat-form" class="chat-form">
-              <div class="field-grid">
-                <div>
-                  <label class="field-label" for="model_target">模型选择</label>
-                  <select id="model_target" name="model_target"></select>
-                  <p id="model-helper" class="field-helper">
-                    这里会显示当前可切换的模型目标。
-                  </p>
-                </div>
-
-                <div>
-                  <label class="field-label" for="response_style">辅导风格</label>
-                  <select id="response_style" name="response_style"></select>
-                  <p id="style-helper" class="field-helper">
-                    这里会显示当前风格更适合什么样的回答方式。
-                  </p>
-                </div>
-              </div>
-
-              <label class="field-label" for="message">输入问题</label>
-              <textarea
-                id="message"
-                name="message"
-                rows="5"
-                placeholder="例如：最近考试周压力很大，越到晚上越学不进去。"
-                required
-              ></textarea>
-
-              <label class="field-label" for="system_hint">补充要求</label>
-              <input
-                id="system_hint"
-                name="system_hint"
-                type="text"
-                placeholder="例如：更关注考试焦虑 / 建议更落地一些"
-              />
-
-              <button id="submit-button" class="submit-button" type="submit">发送并生成回复</button>
-            </form>
-
-            <div class="response-panel">
-              <div class="response-header">
-                <h3>模型回复</h3>
-                <span id="response-mode" class="response-note">等待对话</span>
-              </div>
-              <p id="response-text" class="response-text">
-                这里会显示回复内容，也可以先点击上方建议问题快速体验。
-              </p>
-              <p id="response-meta" class="response-meta"></p>
-              <div class="response-actions">
-                <button id="feedback-helpful" class="secondary-button" type="button" disabled>这条有帮助</button>
-                <button id="feedback-needs-more" class="secondary-button" type="button" disabled>还想更具体</button>
-                <span id="feedback-status" class="feedback-status">反馈功能会在生成回复后启用。</span>
-              </div>
-            </div>
-          </article>
-
-          <aside class="info-card">
-            <p class="card-kicker">Run & Integrate</p>
-            <h2>运行与接入说明</h2>
-            <p>
-              项目默认提供浏览器可直接访问的 Web 服务，也保留了钉钉平台集成的扩展空间。
-            </p>
-            <ul class="info-list">
-              <li>未配置模型密钥时，系统会自动切换到本地演示模式，保证页面和接口可直接运行。</li>
-              <li>每次回复会结合本地知识库、最近会话记录和风险判断，让 Demo 不只是固定模板。</li>
-              <li>现在支持一键写入 OpenAI、DeepSeek Chat、DeepSeek R1 的模型配置，但真实调用仍需填写对应 API Key。</li>
-              <li>如果接入钉钉企业内部应用，通常只对组织内成员可用；对外公开体验应优先使用 Web 版。</li>
+            <ul id="session-nav-list" class="session-nav-list">
+              <li class="session-nav-item active" data-id="">
+                <span class="session-title">当前活动会话</span>
+              </li>
             </ul>
+          </div>
 
-            <div class="runtime-info">
-              <div class="runtime-item">
-                <span class="runtime-label">当前会话</span>
-                <strong id="session-id">读取中</strong>
+          <div class="sidebar-section">
+            <div class="section-title-row">
+              <span class="sidebar-section-title">知识库 (Enterprise RAG)</span>
+              <button id="open-knowledge-modal-btn" class="text-btn" type="button">管理</button>
+            </div>
+            <div class="sidebar-knowledge-summary">
+              <span id="sidebar-doc-count">内置 7 篇核心政策与干预指南</span>
+              <button id="quick-add-doc-btn" class="btn btn-secondary btn-sm" type="button">+ 上传新知识</button>
+            </div>
+          </div>
+
+          <div class="sidebar-footer">
+            <div class="partner-card">
+              <div class="partner-header">
+                <span class="partner-badge">推荐网关</span>
+                <a href="https://www.orcarouter.ai/ref/ref_f60521be8c405c4c116f" target="_blank" class="partner-name">OrcaRouter</a>
               </div>
-              <div class="runtime-item">
-                <span class="runtime-label">记忆条数</span>
-                <strong id="memory-count">0</strong>
-              </div>
-              <div class="runtime-item">
-                <span class="runtime-label">风险等级</span>
-                <strong id="risk-level">读取中</strong>
-              </div>
-              <div class="runtime-item">
-                <span class="runtime-label">知识检索</span>
-                <strong id="knowledge-count">0</strong>
-              </div>
-              <div class="runtime-item">
-                <span class="runtime-label">当前提供商</span>
-                <strong id="provider-name">读取中</strong>
-              </div>
-              <div class="runtime-item">
-                <span class="runtime-label">当前模型</span>
-                <strong id="model-name">读取中</strong>
-              </div>
-              <div class="runtime-item runtime-item-wide">
-                <span class="runtime-label">API 地址</span>
-                <strong id="base-url">读取中</strong>
-              </div>
+              <p class="partner-desc">一键接入弹性多模型路由与高并发负载</p>
+              <a href="/project-docs/orcarouter.md" target="_blank" class="partner-link">查看接入说明 →</a>
             </div>
 
-            <div class="compatibility-panel">
-              <div class="compatibility-header">
-                <div>
-                  <p class="card-kicker">Session Memory</p>
-                  <h3>最近会话记录</h3>
+            <div class="repo-links">
+              <a href="https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant" target="_blank" class="repo-link">
+                ⭐ GitHub 开源主页
+              </a>
+              <a href="/project-docs/commercialization.md" target="_blank" class="repo-link">
+                📄 商业落地白皮书
+              </a>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Column 2: Chat Main Workspace -->
+        <main class="chat-workspace">
+          <!-- Suggestion Prompts Banner -->
+          <div class="prompt-chips-container" id="prompt-chips-container">
+            <!-- Dynamic suggestion chips injected by JS based on active scenario -->
+          </div>
+
+          <!-- Chat Timeline (Message Bubbles) -->
+          <div class="chat-timeline" id="chat-timeline">
+            <div class="chat-bubble assistant-bubble intro-bubble">
+              <div class="bubble-avatar">✨</div>
+              <div class="bubble-content">
+                <div class="bubble-header">
+                  <strong>知愈星 AI (ZhiYuXing Copilot)</strong>
+                  <span class="bubble-time">系统</span>
+                </div>
+                <div class="bubble-body" id="intro-body">
+                  您好！我是知愈星 AI 心身关怀与行动赋能智能体。无论是学业压力排解、拖延内耗阻断，还是职场倦怠修复与任务切片破冰，我都可以为您提供兼具共情与可执行微步的支持。
                 </div>
               </div>
-              <ul id="history-list" class="compatibility-list">
-                <li>当前会显示最近几轮对话，便于确认会话记忆和本地持久化已生效。</li>
-              </ul>
+            </div>
+          </div>
+
+          <!-- Chat Input Controls -->
+          <div class="chat-input-deck">
+            <!-- Hidden backward-compatible response fields -->
+            <div style="display:none;">
+              <span id="status-badge">等待输入</span>
+              <span id="response-mode">等待对话</span>
+              <p id="response-text"></p>
+              <p id="response-meta"></p>
+              <ul id="history-list"></ul>
             </div>
 
-            <div class="compatibility-panel">
-              <div class="compatibility-header">
-                <div>
-                  <p class="card-kicker">Knowledge</p>
-                  <h3>本轮知识库命中</h3>
+            <!-- Configuration Selector Strip -->
+            <div class="config-strip">
+              <div class="config-item">
+                <label for="model_target">模型目标:</label>
+                <select id="model_target" name="model_target"></select>
+                <span id="model-helper" class="helper-bubble"></span>
+              </div>
+
+              <div class="config-item">
+                <label for="response_style">回答风格:</label>
+                <select id="response_style" name="response_style"></select>
+                <span id="style-helper" class="helper-bubble"></span>
+              </div>
+
+              <div class="config-item hint-toggle-item">
+                <label for="system_hint">补充指令:</label>
+                <input
+                  id="system_hint"
+                  name="system_hint"
+                  type="text"
+                  placeholder="例如：突出三步拆解 / 强调边界对齐"
+                />
+              </div>
+            </div>
+
+            <!-- Input Box -->
+            <form id="chat-form" class="input-form">
+              <div class="textarea-wrapper">
+                <textarea
+                  id="message"
+                  name="message"
+                  rows="3"
+                  placeholder="输入您正在面临的压力、困惑或交付挑战... (Enter 发送，Shift+Enter 换行)"
+                  required
+                ></textarea>
+                <div class="form-actions">
+                  <div class="stream-toggle-badge">⚡ 实时流式响应已启用</div>
+                  <button id="submit-button" class="btn btn-primary submit-btn" type="submit">
+                    发送 (Send)
+                  </button>
                 </div>
               </div>
-              <ul id="knowledge-list" class="compatibility-list">
-                <li>发送消息后，这里会展示本轮检索到的知识片段。</li>
-              </ul>
-            </div>
+            </form>
+          </div>
+        </main>
 
-            <div class="compatibility-panel">
-              <div class="compatibility-header">
-                <div>
-                  <p class="card-kicker">API Check</p>
-                  <h3>接入兼容检查</h3>
-                </div>
-                <button id="compatibility-button" class="secondary-button" type="button">
-                  测试当前配置
-                </button>
+        <!-- Column 3: Live Observability & RAG Inspector -->
+        <aside class="inspector-pane">
+          <div class="inspector-section">
+            <h3 class="inspector-title">系统状态与遥测 (Telemetry)</h3>
+            <div class="metrics-grid">
+              <div class="metric-cell">
+                <span class="metric-label">当前提供商</span>
+                <strong id="provider-name" class="metric-val">-</strong>
               </div>
-              <p id="compatibility-summary" class="compatibility-summary">
-                会检查当前 `.env` 中的 API Key、模型名、Base URL 和已知兼容规则。
-              </p>
-              <ul id="compatibility-list" class="compatibility-list">
-                <li>页面初始化后会自动拉取一次，也可以手动重新检查。</li>
-              </ul>
+              <div class="metric-cell">
+                <span class="metric-label">当前模型</span>
+                <strong id="model-name" class="metric-val">-</strong>
+              </div>
+              <div class="metric-cell">
+                <span class="metric-label">风险等级</span>
+                <strong id="risk-level" class="risk-indicator risk-indicator-low">常规场景</strong>
+              </div>
+              <div class="metric-cell">
+                <span class="metric-label">记忆条数</span>
+                <strong id="memory-count" class="metric-val">0</strong>
+              </div>
+              <div class="metric-cell">
+                <span class="metric-label">知识命中</span>
+                <strong id="knowledge-count" class="metric-val">0</strong>
+              </div>
+              <div class="metric-cell">
+                <span class="metric-label">活动会话</span>
+                <strong id="session-id" class="metric-val metric-val-mono">新会话</strong>
+              </div>
+              <div class="metric-cell metric-cell-full">
+                <span class="metric-label">API 接入地址</span>
+                <strong id="base-url" class="metric-val metric-val-mono">-</strong>
+              </div>
             </div>
+          </div>
 
-            <div class="info-links">
-              <a href="/project-docs/usage-guide.md" class="ghost-link">查看使用说明</a>
-              <a href="/project-docs/model-integration.md" class="ghost-link">查看模型接入说明</a>
-              <a href="/project-docs/dingtalk-integration.md" class="ghost-link">查看钉钉接入说明</a>
-              <a href="https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant" class="ghost-link">查看 GitHub 仓库</a>
+          <!-- RAG Hits Panel -->
+          <div class="inspector-section">
+            <h3 class="inspector-title">本轮知识检索 (RAG Citations)</h3>
+            <ul id="knowledge-list" class="knowledge-cards-list">
+              <li class="empty-hint">发送消息后，系统将自动检索匹配的知识库切片并在此穿透展示。</li>
+            </ul>
+          </div>
+
+          <!-- Compatibility & Security Check -->
+          <div class="inspector-section">
+            <div class="section-title-row">
+              <h3 class="inspector-title">API 接入合规检查</h3>
+              <button id="compatibility-button" class="text-btn" type="button">重新检测</button>
             </div>
-          </aside>
-        </section>
-      </main>
+            <p id="compatibility-summary" class="compatibility-summary">检测中...</p>
+            <ul id="compatibility-list" class="compatibility-checks-list"></ul>
+          </div>
+
+          <!-- Quick Actions & Feedback -->
+          <div class="inspector-section">
+            <h3 class="inspector-title">回复质量反馈</h3>
+            <div class="feedback-actions">
+              <button id="feedback-helpful" class="btn btn-secondary btn-sm" type="button" disabled>👍 建议很有帮助</button>
+              <button id="feedback-needs-more" class="btn btn-secondary btn-sm" type="button" disabled>💡 希望更具体</button>
+            </div>
+            <span id="feedback-status" class="feedback-status">反馈功能在生成回复后就绪</span>
+          </div>
+        </aside>
+      </div>
+
+      <!-- Knowledge Base Modal -->
+      <div id="knowledge-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-dialog">
+          <div class="modal-header">
+            <h3>企业知识库与干预政策管理</h3>
+            <button id="close-knowledge-modal-btn" class="modal-close-btn">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="modal-split">
+              <!-- Left: Document List -->
+              <div class="doc-list-col">
+                <h4>已挂载文档列表</h4>
+                <ul id="modal-doc-list" class="doc-table-list"></ul>
+              </div>
+
+              <!-- Right: Upload Form -->
+              <div class="doc-upload-col">
+                <h4>上传自定义政策 / SOP / 指南</h4>
+                <form id="upload-doc-form">
+                  <div class="form-group">
+                    <label for="doc-title-input">文档标题:</label>
+                    <input type="text" id="doc-title-input" placeholder="例如：某企业 EAP 心理关怀指引" required />
+                  </div>
+                  <div class="form-group">
+                    <label for="doc-id-input">文档唯一标识 (可选):</label>
+                    <input type="text" id="doc-id-input" placeholder="例如：company-eap-guide" />
+                  </div>
+                  <div class="form-group">
+                    <label for="doc-content-input">Markdown 内容 (至少 20 字符):</label>
+                    <textarea id="doc-content-input" rows="8" placeholder="粘贴 Markdown 文本，系统将自动进行分词索引并参与 RAG 检索..." required></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary">写入知识库并立即生效</button>
+                  <span id="upload-doc-status" class="status-msg"></span>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script src="/static/app.js"></script>

@@ -158,6 +158,15 @@ def write_knowledge_document(title: str, content: str, document_id: str | None =
     )
 
 
+def delete_knowledge_document(document_id: str) -> bool:
+    resolved_id = sanitize_document_id(document_id)
+    target_path = upload_knowledge_dir() / f"{resolved_id}.md"
+    if target_path.exists() and target_path.is_file():
+        target_path.unlink()
+        return True
+    return False
+
+
 def parse_knowledge_file(path: Path) -> list[KnowledgeChunk]:
     text = path.read_text(encoding="utf-8")
     lines = text.splitlines()
