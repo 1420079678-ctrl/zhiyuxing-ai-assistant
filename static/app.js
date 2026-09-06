@@ -41,6 +41,12 @@ const sessionNavList = document.getElementById("session-nav-list");
 const scenarioPills = document.getElementById("scenario-pills");
 const introBody = document.getElementById("intro-body");
 
+// Layout controls
+const workspaceGrid = document.getElementById("workspace-grid");
+const toggleSidebarBtn = document.getElementById("toggle-sidebar-btn");
+const toggleInspectorBtn = document.getElementById("toggle-inspector-btn");
+const closeInspectorBtn = document.getElementById("close-inspector-btn");
+
 // Knowledge modal elements
 const knowledgeModal = document.getElementById("knowledge-modal");
 const openKnowledgeModalBtn = document.getElementById("open-knowledge-modal-btn");
@@ -959,6 +965,43 @@ async function init() {
       applyPreset(preset);
     });
   });
+
+  // Layout toggles
+  const SIDEBAR_COLLAPSED_KEY = "zhiyuxing_sidebar_collapsed";
+  const INSPECTOR_OPEN_KEY = "zhiyuxing_inspector_open";
+
+  if (window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "true") {
+    workspaceGrid?.classList.add("sidebar-collapsed");
+  }
+  // Default inspector open state: check storage, default to false (collapsed) for clean spacious chat
+  const inspectorStored = window.localStorage.getItem(INSPECTOR_OPEN_KEY);
+  if (inspectorStored === "true") {
+    workspaceGrid?.classList.add("inspector-open");
+    toggleInspectorBtn?.classList.add("active");
+  }
+
+  if (toggleSidebarBtn && workspaceGrid) {
+    toggleSidebarBtn.addEventListener("click", () => {
+      const isCollapsed = workspaceGrid.classList.toggle("sidebar-collapsed");
+      window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, isCollapsed ? "true" : "false");
+    });
+  }
+
+  if (toggleInspectorBtn && workspaceGrid) {
+    toggleInspectorBtn.addEventListener("click", () => {
+      const isOpen = workspaceGrid.classList.toggle("inspector-open");
+      toggleInspectorBtn.classList.toggle("active", isOpen);
+      window.localStorage.setItem(INSPECTOR_OPEN_KEY, isOpen ? "true" : "false");
+    });
+  }
+
+  if (closeInspectorBtn && workspaceGrid) {
+    closeInspectorBtn.addEventListener("click", () => {
+      workspaceGrid.classList.remove("inspector-open");
+      toggleInspectorBtn?.classList.remove("active");
+      window.localStorage.setItem(INSPECTOR_OPEN_KEY, "false");
+    });
+  }
 
   // Initial compatibility run
   runCompatibilityCheck();
