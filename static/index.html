@@ -23,14 +23,23 @@
           </button>
           <div class="nav-brand">
             <div class="brand-avatar">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <defs>
+                  <linearGradient id="brand-star-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#3b82f6" />
+                    <stop offset="100%" stop-color="#6366f1" />
+                  </linearGradient>
+                </defs>
+                <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="url(#brand-star-grad)"/>
+                <circle cx="12" cy="12" r="2.2" fill="#ffffff"/>
+              </svg>
             </div>
             <div class="brand-titles">
               <div class="brand-name-row">
                 <span class="brand-title">知愈星 Copilot</span>
-                <span class="pill-badge pill-badge-pro">Enterprise v1.2</span>
+                <span class="pill-badge pill-badge-pro">Studio Pro</span>
               </div>
-              <span class="brand-sub">ZhiYuXing AI Assistant · 心身关怀与行动赋能</span>
+              <span class="brand-sub">心身关怀与行动赋能智能体 · CBT 赋能引擎</span>
             </div>
           </div>
         </div>
@@ -135,33 +144,44 @@
         <!-- Main Chat Area -->
         <main class="chat-workspace">
           <div class="chat-inner-container">
-            <!-- Suggestion Chips Scroll Track -->
-            <div class="prompt-chips-wrapper">
-              <div class="prompt-chips-container" id="prompt-chips-container">
-                <!-- Dynamically populated chips -->
+            <!-- Masterpiece Ethereal Hero State (Active when chat is fresh/empty) -->
+            <div class="hero-workspace" id="hero-workspace">
+              <div class="hero-brand-aura">
+                <div class="hero-brand-glyph">
+                  <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
+                    <defs>
+                      <linearGradient id="hero-star-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#3b82f6" />
+                        <stop offset="50%" stop-color="#6366f1" />
+                        <stop offset="100%" stop-color="#8b5cf6" />
+                      </linearGradient>
+                    </defs>
+                    <path d="M12 2L14.6 9.4L22 12L14.6 14.6L12 22L9.4 14.6L2 12L9.4 9.4L12 2Z" fill="url(#hero-star-grad)"/>
+                    <circle cx="12" cy="12" r="2.8" fill="#ffffff" />
+                  </svg>
+                </div>
+              </div>
+              
+              <div class="hero-scenario-badge" id="hero-scenario-badge">
+                <span class="pulse-indicator"></span>
+                <span id="hero-scenario-text">高校青年成长 · CBT 认知赋能引擎</span>
+              </div>
+
+              <h1 class="hero-headline">
+                心身沉淀，<span class="hero-gradient-text">微步前行。</span>
+              </h1>
+              <p class="hero-subtitle" id="intro-body">
+                融合认知行为学 (CBT) 与结构化任务切片 · 随时为您卸下负重、破冰启程
+              </p>
+
+              <!-- Curated Architectural Inspiration Matrix (4 Artisan Cards) -->
+              <div class="hero-prompt-grid" id="prompt-chips-container">
+                <!-- Dynamically populated by app.js -->
               </div>
             </div>
 
-            <!-- Chat Messages Timeline -->
-            <div class="chat-timeline" id="chat-timeline">
-              <div class="chat-bubble assistant-bubble intro-bubble">
-                <div class="bubble-avatar-wrapper">
-                  <div class="bubble-avatar assistant-avatar">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
-                  </div>
-                </div>
-                <div class="bubble-content-box">
-                  <div class="bubble-top-meta">
-                    <span class="sender-name">知愈星 Copilot</span>
-                    <span class="sender-tag">心身关怀与赋能</span>
-                    <span class="bubble-time">系统</span>
-                  </div>
-                  <div class="bubble-body" id="intro-body">
-                    您好！我是知愈星 AI 心身关怀与行动赋能智能体。无论是学业压力排解、拖延内耗阻断，还是职场倦怠修复与任务切片破冰，我都可以为您提供兼具共情与可执行微步的支持。
-                  </div>
-                </div>
-              </div>
-            </div>
+            <!-- Conversational Stream Timeline (Active during conversation) -->
+            <div class="chat-timeline" id="chat-timeline" style="display:none;"></div>
 
             <!-- Bottom Floating Input Studio Deck -->
             <div class="chat-input-studio">
@@ -349,8 +369,14 @@
               <h3 class="inspector-title">回复质量反馈</h3>
             </div>
             <div class="feedback-btn-group">
-              <button id="feedback-helpful" class="btn-feedback" type="button" disabled>👍 建议很有帮助</button>
-              <button id="feedback-needs-more" class="btn-feedback" type="button" disabled>💡 希望更具体</button>
+              <button id="feedback-helpful" class="btn-feedback" type="button" disabled>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"/></svg>
+                <span>建议很有帮助</span>
+              </button>
+              <button id="feedback-needs-more" class="btn-feedback" type="button" disabled>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                <span>希望更具体</span>
+              </button>
             </div>
             <span id="feedback-status" class="feedback-status">生成回复后可直接评价</span>
           </div>
@@ -415,17 +441,50 @@
                 <span class="preset-section-sub">支持所有标准 OpenAI API 格式兼容接口</span>
               </div>
               <div class="preset-pills-row">
-                <button type="button" class="preset-pill preset-pill-star" data-preset="orcarouter">🌐 OrcaRouter (推荐网关)</button>
-                <button type="button" class="preset-pill" data-preset="deepseek-chat">⚡ DeepSeek V3</button>
-                <button type="button" class="preset-pill" data-preset="deepseek-r1">🧠 DeepSeek R1</button>
-                <button type="button" class="preset-pill" data-preset="openai">🤖 OpenAI GPT-4o</button>
-                <button type="button" class="preset-pill" data-preset="qwen">☁️ 通义千问 Qwen</button>
-                <button type="button" class="preset-pill" data-preset="moonshot">🌙 月之暗面 Kimi</button>
-                <button type="button" class="preset-pill" data-preset="zhipu">✨ 智谱 GLM-4</button>
-                <button type="button" class="preset-pill" data-preset="siliconflow">🌊 硅基流动</button>
-                <button type="button" class="preset-pill" data-preset="groq">⚡ Groq 高速</button>
-                <button type="button" class="preset-pill" data-preset="ollama">🦙 Ollama 本地私有化</button>
-                <button type="button" class="preset-pill preset-pill-user" data-preset="custom">🛠️ 自定义第三方网关</button>
+                <button type="button" class="preset-pill preset-pill-star" data-preset="orcarouter">
+                  <span class="preset-dot dot-cyan"></span>
+                  <span>OrcaRouter (推荐网关)</span>
+                </button>
+                <button type="button" class="preset-pill" data-preset="deepseek-chat">
+                  <span class="preset-dot dot-blue"></span>
+                  <span>DeepSeek V3</span>
+                </button>
+                <button type="button" class="preset-pill" data-preset="deepseek-r1">
+                  <span class="preset-dot dot-purple"></span>
+                  <span>DeepSeek R1 推理</span>
+                </button>
+                <button type="button" class="preset-pill" data-preset="openai">
+                  <span class="preset-dot dot-emerald"></span>
+                  <span>OpenAI GPT-4o</span>
+                </button>
+                <button type="button" class="preset-pill" data-preset="qwen">
+                  <span class="preset-dot dot-amber"></span>
+                  <span>通义千问 Qwen</span>
+                </button>
+                <button type="button" class="preset-pill" data-preset="moonshot">
+                  <span class="preset-dot dot-indigo"></span>
+                  <span>月之暗面 Kimi</span>
+                </button>
+                <button type="button" class="preset-pill" data-preset="zhipu">
+                  <span class="preset-dot dot-rose"></span>
+                  <span>智谱 GLM-4</span>
+                </button>
+                <button type="button" class="preset-pill" data-preset="siliconflow">
+                  <span class="preset-dot dot-sky"></span>
+                  <span>硅基流动 SiliconFlow</span>
+                </button>
+                <button type="button" class="preset-pill" data-preset="groq">
+                  <span class="preset-dot dot-orange"></span>
+                  <span>Groq 超速推理</span>
+                </button>
+                <button type="button" class="preset-pill" data-preset="ollama">
+                  <span class="preset-dot dot-slate"></span>
+                  <span>Ollama 本地私有化</span>
+                </button>
+                <button type="button" class="preset-pill preset-pill-user" data-preset="custom">
+                  <span class="preset-dot dot-violet"></span>
+                  <span>自定义第三方网关</span>
+                </button>
               </div>
             </div>
 
@@ -470,7 +529,8 @@
 
               <div class="settings-dialog-footer">
                 <button type="button" id="settings-probe-btn" class="btn-probe">
-                  🧪 一键连通性测试 (Probe)
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                  <span>网络连通性探测 (Probe)</span>
                 </button>
                 <button type="button" id="settings-reset-demo-btn" class="text-link-btn" style="color:var(--text-tertiary);">
                   重置为本地演示

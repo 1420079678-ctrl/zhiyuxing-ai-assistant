@@ -40,6 +40,8 @@ const promptChipsContainer = document.getElementById("prompt-chips-container");
 const sessionNavList = document.getElementById("session-nav-list");
 const scenarioPills = document.getElementById("scenario-pills");
 const introBody = document.getElementById("intro-body");
+const heroWorkspace = document.getElementById("hero-workspace");
+const heroScenarioText = document.getElementById("hero-scenario-text");
 
 // Layout controls
 const workspaceGrid = document.getElementById("workspace-grid");
@@ -88,16 +90,56 @@ let currentAssistantMessageId = null;
 
 const SCENARIO_PROMPTS = {
   campus: [
-    { label: "学业压力", text: "这周复习任务很多，越想越焦虑，完全不敢开始。" },
-    { label: "拖延内耗", text: "我最近总拖延，明明知道该学，但一打开书就很烦躁。" },
-    { label: "面试焦虑", text: "我马上要答辩和面试了，越准备越慌，感觉自己不够好。" },
-    { label: "失眠疲惫", text: "最近连续失眠好几天了，整天没精神，特别疲惫。" },
+    {
+      label: "拖延阻断 · 瑞士奶酪法",
+      text: "我最近总拖延，明明知道该学，但一打开书就很烦躁，如何用 3 分钟微步切片破冰？",
+      tag: "行动破冰",
+      method: "降低行动启动阻力 · 3分钟极小化切片"
+    },
+    {
+      label: "认知重塑 · 学业抗压",
+      text: "这周复习任务非常繁重，越想越焦虑完全不敢开始，帮我梳理优先级与精力分配。",
+      tag: "焦虑卸载",
+      method: "建立确定性控制感 · 漏斗式任务排期"
+    },
+    {
+      label: "心理着陆 · 面试答辩",
+      text: "我马上要答辩和面试了，越准备越慌乱，感觉自己不够好，如何做心理着陆与脱敏预演？",
+      tag: "脱敏应对",
+      method: "结构化心理暴露 · 行为预演支撑"
+    },
+    {
+      label: "精力降噪 · 改善失眠",
+      text: "最近连续失眠好几天了，整天没精神，思维反刍严重，带我做一次睡前能量降载。",
+      tag: "身心平复",
+      method: "4-7-8 呼吸节律 · 睡前大脑思维降噪"
+    },
   ],
   enterprise: [
-    { label: "职业倦怠", text: "连续加班身体透支，感觉心累麻木、严重职业倦怠，想设立心理离线边界。" },
-    { label: "向上管理与对齐", text: "大方案跨部门对齐口径总有分歧，主管又在催进度，如何向上管理和消除盲区？" },
-    { label: "复杂方案破冰", text: "面对复杂的业务交付方案不知道从何下手，如何用微行动拆解破冰？" },
-    { label: "工位精力回血", text: "在工位上感到严重的心力消耗与无意义感，如何进行 5 分钟微能量回血？" },
+    {
+      label: "能量盘点 · 职业倦怠",
+      text: "连续高压加班身体透支，感觉心累麻木、严重职业倦怠，帮我做一次精力电量盘点与离线防护。",
+      tag: "倦怠修复",
+      method: "马斯拉奇量表三维度 · 建立离线心理隔离舱"
+    },
+    {
+      label: "向上管理 · 期望对齐",
+      text: "重大业务交付跨部门口径总有分歧，主管又在催进度，如何向上管理和消除协作盲区？",
+      tag: "对齐沟通",
+      method: "三明治对齐模型 · 明确交付预期与底线"
+    },
+    {
+      label: "复杂任务 · 微步破冰",
+      text: "面对千头万绪的复杂交付方案不知道从何下手，如何用微行动拆解消除决策瘫痪？",
+      tag: "破冰行动",
+      method: "第一米微行动切片 · 阻断拖延内耗"
+    },
+    {
+      label: "工位急救 · 5分钟回血",
+      text: "在工位上感到严重的心力消耗与无意义感，如何进行 5 分钟微能量回血与情绪着陆？",
+      tag: "情绪急救",
+      method: "五感着陆法 · 阻断皮质醇过度分泌"
+    },
   ],
 };
 
@@ -106,6 +148,12 @@ const SCENARIO_INTROS = {
   enterprise: "您好！我是知愈星企业员工关怀 (EAP) 赋能顾问。面向职场人士与企业团队，聚焦职业倦怠(Burnout)修复、高压交付应对、任务切片破冰与沟通对齐。",
 };
 
+function autoResizeTextarea(el) {
+  if (!el) return;
+  el.style.height = "auto";
+  el.style.height = Math.min(el.scrollHeight, 200) + "px";
+}
+
 function setScenario(scenario) {
   activeScenario = scenario;
   window.localStorage.setItem(SCENARIO_STORAGE_KEY, scenario);
@@ -113,6 +161,12 @@ function setScenario(scenario) {
   document.querySelectorAll(".scenario-pill, .scenario-btn").forEach((pill) => {
     pill.classList.toggle("active", pill.getAttribute("data-scenario") === scenario);
   });
+
+  if (heroScenarioText) {
+    heroScenarioText.textContent = scenario === "enterprise"
+      ? "企业员工 EAP 关怀 · 职场能量枢纽"
+      : "高校青年成长 · CBT 认知赋能引擎";
+  }
 
   if (introBody) {
     introBody.textContent = SCENARIO_INTROS[scenario] || SCENARIO_INTROS.campus;
@@ -126,20 +180,26 @@ function renderPromptChips() {
   promptChipsContainer.innerHTML = "";
   const prompts = SCENARIO_PROMPTS[activeScenario] || SCENARIO_PROMPTS.campus;
   prompts.forEach((item) => {
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = "prompt-chip";
-    chip.innerHTML = `
-      <span class="chip-dot"></span>
-      <span class="chip-title">${escapeHtml(item.label)}</span>
-      <span class="chip-snippet">${escapeHtml(item.text.slice(0, 14))}...</span>
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "hero-prompt-card";
+    card.innerHTML = `
+      <div class="card-head">
+        <span class="card-tag">${escapeHtml(item.tag)}</span>
+        <span class="card-arrow">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </span>
+      </div>
+      <div class="card-title">${escapeHtml(item.label)}</div>
+      <p class="card-text">${escapeHtml(item.text)}</p>
+      <div class="card-footer-hint">${escapeHtml(item.method)}</div>
     `;
-    chip.title = item.text;
-    chip.addEventListener("click", () => {
+    card.addEventListener("click", () => {
       messageInput.value = item.text;
+      autoResizeTextarea(messageInput);
       messageInput.focus();
     });
-    promptChipsContainer.appendChild(chip);
+    promptChipsContainer.appendChild(card);
   });
 }
 
@@ -162,29 +222,63 @@ function formatMarkdown(text) {
 }
 
 function appendMessageBubble(role, content, meta = {}) {
+  if (heroWorkspace) heroWorkspace.style.display = "none";
+  if (chatTimeline) chatTimeline.style.display = "flex";
+
   const bubble = document.createElement("div");
   bubble.className = `chat-bubble ${role === "user" ? "user-bubble" : "assistant-bubble"}`;
 
   const avatar = document.createElement("div");
   avatar.className = `bubble-avatar ${role === "user" ? "user-avatar" : "assistant-avatar"}`;
   avatar.innerHTML = role === "user"
-    ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`
-    : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>`;
+    ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`
+    : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+         <defs>
+           <linearGradient id="bubble-star-grad-${Date.now()}" x1="0%" y1="0%" x2="100%" y2="100%">
+             <stop offset="0%" stop-color="#3b82f6" />
+             <stop offset="100%" stop-color="#6366f1" />
+           </linearGradient>
+         </defs>
+         <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="url(#bubble-star-grad-${Date.now()})"/>
+         <circle cx="12" cy="12" r="2.2" fill="#ffffff"/>
+       </svg>`;
 
   const contentDiv = document.createElement("div");
   contentDiv.className = "bubble-content-box bubble-content";
 
   const header = document.createElement("div");
   header.className = "bubble-top-meta bubble-header";
+  
   const nameStrong = document.createElement("strong");
   nameStrong.className = "sender-name";
-  nameStrong.textContent = role === "user" ? "您" : meta.name || "知愈星 AI";
+  nameStrong.textContent = role === "user" ? "您" : meta.name || "知愈星 Copilot";
+  
   const timeSpan = document.createElement("span");
   timeSpan.className = "bubble-time";
   timeSpan.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   header.appendChild(nameStrong);
   header.appendChild(timeSpan);
+
+  if (role === "assistant") {
+    const copyBtn = document.createElement("button");
+    copyBtn.type = "button";
+    copyBtn.className = "bubble-action-copy-btn";
+    copyBtn.title = "复制此回复内容";
+    copyBtn.innerHTML = `
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+      <span>复制</span>
+    `;
+    copyBtn.addEventListener("click", () => {
+      navigator.clipboard.writeText(content).then(() => {
+        copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span style="color:#10b981">已复制</span>`;
+        setTimeout(() => {
+          copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg><span>复制</span>`;
+        }, 2000);
+      });
+    });
+    header.appendChild(copyBtn);
+  }
 
   const body = document.createElement("div");
   body.className = "bubble-body";
@@ -222,7 +316,8 @@ async function loadSessionsList() {
     const currentItem = document.createElement("li");
     currentItem.className = `session-nav-item ${!currentSessionId ? "active" : ""}`;
     currentItem.innerHTML = `
-      <span class="session-title">✨ 当前新会话</span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      <span class="session-title">当前新会话</span>
     `;
     currentItem.addEventListener("click", () => {
       startNewChat();
@@ -270,16 +365,23 @@ async function switchSession(sessionId) {
     const data = await res.json();
 
     chatTimeline.innerHTML = "";
-    data.messages.forEach((msg) => {
-      appendMessageBubble(msg.role, msg.content, {
-        name: msg.role === "user" ? "您" : `${msg.provider_name || "知愈星"} · ${msg.model_name || ""}`,
+    if (data.messages && data.messages.length > 0) {
+      if (heroWorkspace) heroWorkspace.style.display = "none";
+      if (chatTimeline) chatTimeline.style.display = "flex";
+      data.messages.forEach((msg) => {
+        appendMessageBubble(msg.role, msg.content, {
+          name: msg.role === "user" ? "您" : `${msg.provider_name || "知愈星"} · ${msg.model_name || ""}`,
+        });
+        if (msg.role === "assistant") {
+          currentAssistantMessageId = msg.id;
+        }
       });
-      if (msg.role === "assistant") {
-        currentAssistantMessageId = msg.id;
-      }
-    });
+    } else {
+      if (heroWorkspace) heroWorkspace.style.display = "flex";
+      if (chatTimeline) chatTimeline.style.display = "none";
+    }
 
-    memoryCountText.textContent = String(data.messages.length);
+    memoryCountText.textContent = String(data.messages ? data.messages.length : 0);
     feedbackHelpfulButton.disabled = !currentAssistantMessageId;
     feedbackNeedsMoreButton.disabled = !currentAssistantMessageId;
     feedbackStatus.textContent = "已加载历史会话记录。";
@@ -317,25 +419,18 @@ function startNewChat() {
   feedbackNeedsMoreButton.disabled = true;
   feedbackStatus.textContent = "反馈功能在生成回复后就绪";
 
-  chatTimeline.innerHTML = `
-    <div class="chat-bubble assistant-bubble intro-bubble">
-      <div class="bubble-avatar assistant-avatar">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
-      </div>
-      <div class="bubble-content-box bubble-content">
-        <div class="bubble-top-meta bubble-header">
-          <span class="sender-name">知愈星 Copilot</span>
-          <span class="sender-tag">心身关怀与赋能</span>
-          <span class="bubble-time">系统</span>
-        </div>
-        <div class="bubble-body" id="intro-body">
-          ${SCENARIO_INTROS[activeScenario] || SCENARIO_INTROS.campus}
-        </div>
-      </div>
-    </div>
-  `;
+  if (heroWorkspace) {
+    heroWorkspace.style.display = "flex";
+  }
+  if (chatTimeline) {
+    chatTimeline.innerHTML = "";
+    chatTimeline.style.display = "none";
+  }
 
+  renderPromptChips();
   loadSessionsList();
+  messageInput.value = "";
+  autoResizeTextarea(messageInput);
   messageInput.focus();
 }
 
@@ -963,13 +1058,29 @@ async function init() {
     toggleKeyVisibilityBtn.addEventListener("click", () => {
       if (settingsKeyInput.type === "password") {
         settingsKeyInput.type = "text";
-        toggleKeyVisibilityBtn.textContent = "🔒 隐藏";
+        toggleKeyVisibilityBtn.textContent = "隐藏密钥";
       } else {
         settingsKeyInput.type = "password";
-        toggleKeyVisibilityBtn.textContent = "👁️ 显示";
+        toggleKeyVisibilityBtn.textContent = "显示明文";
       }
     });
   }
+
+  // Auto-resize message textarea on typing
+  if (messageInput) {
+    messageInput.addEventListener("input", () => autoResizeTextarea(messageInput));
+  }
+
+  // Custom target indicator listener
+  function updateCustomTargetIndicator() {
+    const hasCustom = Boolean(customTargetProvider?.value?.trim() || customTargetBaseUrl?.value?.trim());
+    if (toggleCustomTargetBtn) {
+      toggleCustomTargetBtn.classList.toggle("has-custom-config", hasCustom);
+    }
+  }
+  customTargetProvider?.addEventListener("input", updateCustomTargetIndicator);
+  customTargetBaseUrl?.addEventListener("input", updateCustomTargetIndicator);
+  customTargetApiKey?.addEventListener("input", updateCustomTargetIndicator);
 
   // Preset buttons
   document.querySelectorAll(".preset-pill").forEach((btn) => {
@@ -1021,7 +1132,11 @@ async function init() {
   function applyTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-    if (themeIcon) themeIcon.textContent = theme === "dark" ? "🌙" : "☀️";
+    if (themeIcon) {
+      themeIcon.innerHTML = theme === "dark"
+        ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`
+        : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`;
+    }
     if (themeText) themeText.textContent = theme === "dark" ? "深色" : "浅色";
   }
   applyTheme(currentTheme);
