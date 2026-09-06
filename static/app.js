@@ -9,6 +9,8 @@ const providerName = document.getElementById("provider-name");
 const modelName = document.getElementById("model-name");
 const baseUrl = document.getElementById("base-url");
 const modelTargetInput = document.getElementById("model_target");
+const customModelTargetInput = document.getElementById("custom_model_target");
+const toggleCustomTargetBtn = document.getElementById("toggle-custom-target-btn");
 const responseStyleInput = document.getElementById("response_style");
 const modelHelper = document.getElementById("model-helper");
 const styleHelper = document.getElementById("style-helper");
@@ -341,7 +343,10 @@ async function handleSendMessage(e) {
   if (!message) return;
 
   const hint = hintInput.value.trim();
-  const modelTarget = modelTargetInput.value || "configured";
+  let modelTarget = modelTargetInput.value || "configured";
+  if (customModelTargetInput && customModelTargetInput.style.display !== "none" && customModelTargetInput.value.trim()) {
+    modelTarget = `custom:${customModelTargetInput.value.trim()}`;
+  }
   const responseStyle = responseStyleInput.value || "balanced";
 
   // 1. Append user message bubble
@@ -846,6 +851,22 @@ async function init() {
       form.requestSubmit();
     }
   });
+
+  if (toggleCustomTargetBtn && customModelTargetInput && modelTargetInput) {
+    toggleCustomTargetBtn.addEventListener("click", () => {
+      const isCustomVisible = customModelTargetInput.style.display !== "none";
+      if (isCustomVisible) {
+        customModelTargetInput.style.display = "none";
+        modelTargetInput.style.display = "inline-block";
+        toggleCustomTargetBtn.textContent = "✏️ 自定义";
+      } else {
+        customModelTargetInput.style.display = "inline-block";
+        modelTargetInput.style.display = "none";
+        customModelTargetInput.focus();
+        toggleCustomTargetBtn.textContent = "📋 列表";
+      }
+    });
+  }
 
   resetSessionButton.addEventListener("click", startNewChat);
   newChatBtn.addEventListener("click", startNewChat);

@@ -65,9 +65,29 @@ def resolve_model_target(model_target: str | None) -> ResolvedTarget:
         return build_configured_target()
     if target_id == "demo":
         return build_demo_target()
+    if target_id == "custom" or target_id.startswith("custom:"):
+        configured = build_configured_target()
+        if target_id.startswith("custom:") and len(target_id) > 7:
+            custom_model = model_target.strip()[7:].strip()
+            if custom_model:
+                return ResolvedTarget(
+                    id=f"custom:{custom_model}",
+                    label=f"自定义模型 · {custom_model}",
+                    mode=configured.mode,
+                    provider_name=configured.provider_name,
+                    model_name=custom_model,
+                    base_url=configured.base_url,
+                    api_key=configured.api_key,
+                    api_key_env=configured.api_key_env,
+                )
+        return configured
 
     preset = MODEL_PRESET_MAP.get(target_id)
     if not preset:
+        # Check if the target matches current configured model name
+        current_cfg = build_configured_snapshot()
+        if target_id == current_cfg.model_name.lower():
+            return build_configured_target()
         raise HTTPException(status_code=400, detail=f"不支持的模型目标：{target_id}")
 
     api_key = resolve_api_key(preset.api_key_env)
@@ -101,10 +121,17 @@ def list_model_options() -> list[ModelOption]:
     elif not configured_target.api_key and configured_target.api_key_env:
         configured_reason = f"未配置 {configured_target.api_key_env}，当前会回退到本地演示模式"
 
+    is_preset_model = any(preset.model_name.lower() == configured_target.model_name.lower() for preset in MODEL_PRESETS)
+    configured_label = (
+        f"当前配置模型（{configured_target.provider_name} / {configured_target.model_name}）"
+        if is_preset_model
+        else f"自定义配置模型（{configured_target.provider_name} / {configured_target.model_name}）"
+    )
+
     options = [
         ModelOption(
             id="configured",
-            label=f"当前配置（{configured_target.provider_name} / {configured_target.model_name}）",
+            label=configured_label,
             provider_name=configured_target.provider_name,
             model_name=configured_target.model_name,
             mode=configured_mode,

@@ -38,6 +38,30 @@ def test_resolve_model_target_demo() -> None:
     assert target.provider_name == "Local Demo"
 
 
+def test_resolve_model_target_custom_and_fallback(monkeypatch) -> None:
+    monkeypatch.setenv("MODEL_PROVIDER", "CustomProvider")
+    monkeypatch.setenv("MODEL_NAME", "my-custom-v1")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://api.mycustom.ai/v1")
+    monkeypatch.setenv("OPENAI_API_KEY", "custom-secret-key")
+    monkeypatch.delenv("DEMO_MODE", raising=False)
+    monkeypatch.delenv("PUBLIC_DEMO_MODE", raising=False)
+    monkeypatch.delenv("MODEL_API_KEY_ENV", raising=False)
+
+    # 1. "custom" keyword target
+    target1 = resolve_model_target("custom")
+    assert target1.provider_name == "CustomProvider"
+    assert target1.model_name == "my-custom-v1"
+
+    # 2. "custom:<model>" explicit target
+    target2 = resolve_model_target("custom:custom-ultra-70b")
+    assert target2.model_name == "custom-ultra-70b"
+    assert target2.provider_name == "CustomProvider"
+
+    # 3. Direct model name fallback
+    target3 = resolve_model_target("my-custom-v1")
+    assert target3.model_name == "my-custom-v1"
+
+
 def test_configured_api_key_env_matches_model_family(monkeypatch) -> None:
     monkeypatch.setenv("MODEL_NAME", "deepseek-chat")
     monkeypatch.setenv("OPENAI_BASE_URL", "https://api.deepseek.com")

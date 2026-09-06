@@ -132,8 +132,16 @@
             <!-- Configuration Selector Strip -->
             <div class="config-strip">
               <div class="config-item">
-                <label for="model_target">模型目标:</label>
+                <label for="model_target">🎯 目标模型:</label>
                 <select id="model_target" name="model_target"></select>
+                <input
+                  id="custom_model_target"
+                  name="custom_model_target"
+                  type="text"
+                  placeholder="输入自定义模型ID (如 llama-3-70b)"
+                  style="display:none; width: 180px;"
+                />
+                <button type="button" id="toggle-custom-target-btn" class="text-btn" title="切换自定义模型ID输入">✏️ 自定义</button>
                 <span id="model-helper" class="helper-bubble"></span>
               </div>
 
