@@ -16,6 +16,7 @@ class ChatRequest(BaseModel):
     custom_api_key: Optional[str] = Field(default=None, description="自定义模型 API Key")
     session_id: Optional[str] = Field(default=None, description="会话 ID；为空时自动创建")
     scenario: Optional[str] = Field(default="campus", description="业务场景：campus (高校学业成长) 或 enterprise (企业员工EAP关怀)")
+    skill_id: Optional[str] = Field(default=None, description="激活的心理技能 ID (Mental Skill)")
 
 
 class RetrievedKnowledge(BaseModel):
@@ -45,6 +46,19 @@ class ChatResponse(BaseModel):
     memory_messages_used: int
     knowledge_hits: list[RetrievedKnowledge]
     safety: SafetyInfo
+    skill_id: Optional[str] = None
+    skill_name: Optional[str] = None
+
+
+class MentalSkillOption(BaseModel):
+    id: str
+    name: str
+    tag: str
+    category: str
+    clinical_base: str
+    summary: str
+    protocol_steps: list[str]
+    recommended_prompt: str
 
 
 class ModelOption(BaseModel):
@@ -90,6 +104,7 @@ class ServiceInfo(BaseModel):
     knowledge_upload_url: str
     available_models: list[ModelOption]
     available_styles: list[StyleOption]
+    available_skills: list[MentalSkillOption] = Field(default_factory=list)
 
 
 class HealthResponse(BaseModel):

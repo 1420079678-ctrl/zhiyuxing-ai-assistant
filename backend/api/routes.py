@@ -14,6 +14,7 @@ from services.knowledge import (
     write_knowledge_document,
 )
 from services.settings import save_runtime_settings, test_connection_probe
+from services.skills_codex import list_skills
 from services.storage import delete_session, list_recent_sessions, save_feedback, session_history
 from services.telemetry import telemetry
 
@@ -42,6 +43,7 @@ from backend.schemas import (
     KnowledgeDocumentSummary,
     KnowledgeDocumentUpsertResponse,
     KnowledgeSearchResponse,
+    MentalSkillOption,
     ModelSettingsUpdateRequest,
     ModelSettingsUpdateResponse,
     ProbeTestRequest,
@@ -125,7 +127,14 @@ def meta(request: Request) -> ServiceInfo:
         knowledge_upload_url="/api/knowledge/documents",
         available_models=list_model_options(),
         available_styles=STYLE_OPTIONS,
+        available_skills=[MentalSkillOption(**s.to_dict()) for s in list_skills()],
     )
+
+
+@router.get("/api/skills", response_model=list[MentalSkillOption])
+def list_mental_skills() -> list[MentalSkillOption]:
+    """List all psychological skills from the Mental Skills Codex."""
+    return [MentalSkillOption(**s.to_dict()) for s in list_skills()]
 
 
 @router.get("/api/scenarios", response_model=list[ScenarioOption])

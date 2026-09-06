@@ -8,6 +8,7 @@ from fastapi import HTTPException
 
 from services.knowledge import search_knowledge
 from services.safety import assess_risk, high_risk_reply
+from services.skills_codex import get_skill
 from services.storage import ensure_session, recent_messages, save_turn
 from services.telemetry import telemetry
 
@@ -37,6 +38,7 @@ def handle_chat_request(req: ChatRequest) -> ChatResponse:
     conversation_history = recent_messages(session_id, limit=6)
     knowledge_hits = search_knowledge(req.message, limit=3)
     safety_assessment = assess_risk(req.message)
+    active_skill = get_skill(req.skill_id) if req.skill_id else None
 
     telemetry.record_guardrail(safety_assessment.level)
 
@@ -72,6 +74,8 @@ def handle_chat_request(req: ChatRequest) -> ChatResponse:
             memory_messages_used=len(conversation_history),
             knowledge_hits=to_knowledge_models(knowledge_hits),
             safety=to_safety_info(safety_assessment),
+            skill_id=req.skill_id,
+            skill_name=active_skill.name if active_skill else None,
         )
 
     if target.mode == "demo":
@@ -82,6 +86,7 @@ def handle_chat_request(req: ChatRequest) -> ChatResponse:
             conversation_history=conversation_history,
             knowledge_hits=knowledge_hits,
             safety_assessment=safety_assessment,
+            skill_id=req.skill_id,
         )
         assistant_message_id = save_turn(
             session_id,
@@ -108,11 +113,12 @@ def handle_chat_request(req: ChatRequest) -> ChatResponse:
         safety_note = ""
         if safety_assessment.level == "medium":
             safety_note = " 同时检测到需要额外关注的状态，回复里已补充线下支持提醒。"
+        skill_note = f" 已激活专精心理技能【{active_skill.name}】。" if active_skill else ""
         return ChatResponse(
             reply=reply,
             note=(
                 f"当前为本地演示模式。已按“{STYLE_LABELS[style]}”返回演示回复；"
-                f"本轮使用了 {len(conversation_history)} 条会话记忆。{knowledge_note}{safety_note}"
+                f"本轮使用了 {len(conversation_history)} 条会话记忆。{knowledge_note}{safety_note}{skill_note}"
             ).strip(),
             mode=target.mode,
             provider_name=target.provider_name,
@@ -123,6 +129,8 @@ def handle_chat_request(req: ChatRequest) -> ChatResponse:
             memory_messages_used=len(conversation_history),
             knowledge_hits=to_knowledge_models(knowledge_hits),
             safety=to_safety_info(safety_assessment),
+            skill_id=req.skill_id,
+            skill_name=active_skill.name if active_skill else None,
         )
 
     try:
@@ -137,6 +145,7 @@ def handle_chat_request(req: ChatRequest) -> ChatResponse:
                     knowledge_hits=knowledge_hits,
                     safety_assessment=safety_assessment,
                     scenario=scenario,
+                    skill_id=req.skill_id,
                 ),
                 model_name=target.model_name,
             )
@@ -169,6 +178,8 @@ def handle_chat_request(req: ChatRequest) -> ChatResponse:
             note += f" 已结合 {len(knowledge_hits)} 条知识库片段。"
         if safety_assessment.level == "medium":
             note += " 当前表达需要额外关注，系统已加强安全提醒。"
+        if active_skill:
+            note += f" 已应用专精心理技能【{active_skill.name}】。"
         return ChatResponse(
             reply=reply,
             note=note,
@@ -181,6 +192,8 @@ def handle_chat_request(req: ChatRequest) -> ChatResponse:
             memory_messages_used=len(conversation_history),
             knowledge_hits=to_knowledge_models(knowledge_hits),
             safety=to_safety_info(safety_assessment),
+            skill_id=req.skill_id,
+            skill_name=active_skill.name if active_skill else None,
         )
     except HTTPException:
         raise
@@ -202,6 +215,7 @@ async def handle_chat_stream(req: ChatRequest) -> AsyncGenerator[str, None]:
     conversation_history = recent_messages(session_id, limit=6)
     knowledge_hits = search_knowledge(req.message, limit=3)
     safety_assessment = assess_risk(req.message)
+    active_skill = get_skill(req.skill_id) if req.skill_id else None
 
     telemetry.record_guardrail(safety_assessment.level)
 
@@ -216,6 +230,8 @@ async def handle_chat_stream(req: ChatRequest) -> AsyncGenerator[str, None]:
         "memory_messages_used": len(conversation_history),
         "knowledge_hits": [hit.model_dump() for hit in to_knowledge_models(knowledge_hits)],
         "safety": to_safety_info(safety_assessment).model_dump(),
+        "skill_id": req.skill_id,
+        "skill_name": active_skill.name if active_skill else None,
     }
     yield f"data: {json.dumps(start_payload, ensure_ascii=False)}\n\n"
 
@@ -247,6 +263,8 @@ async def handle_chat_stream(req: ChatRequest) -> AsyncGenerator[str, None]:
             "session_id": session_id,
             "assistant_message_id": assistant_message_id,
             "note": "检测到高风险表达，已优先切换到固定安全转介回复。",
+            "skill_id": req.skill_id,
+            "skill_name": active_skill.name if active_skill else None,
         }
         yield f"data: {json.dumps(done_payload, ensure_ascii=False)}\n\n"
         return
@@ -260,6 +278,7 @@ async def handle_chat_stream(req: ChatRequest) -> AsyncGenerator[str, None]:
             conversation_history=conversation_history,
             knowledge_hits=knowledge_hits,
             safety_assessment=safety_assessment,
+            skill_id=req.skill_id,
         )
         # Stream chunks with small delays to emulate real-time typing
         chunk_size = 4
@@ -287,12 +306,15 @@ async def handle_chat_stream(req: ChatRequest) -> AsyncGenerator[str, None]:
             is_stream=True,
         )
         telemetry.record_tokens(len(req.message) + len(reply))
+        skill_suffix = f" · 技能【{active_skill.name}】" if active_skill else ""
         done_payload = {
             "event": "done",
             "reply": reply,
             "session_id": session_id,
             "assistant_message_id": assistant_message_id,
-            "note": f"当前为本地演示模式。已按“{STYLE_LABELS[style]}”流式生成回复。",
+            "note": f"当前为本地演示模式。已按“{STYLE_LABELS[style]}”流式生成回复。{skill_suffix}".strip(),
+            "skill_id": req.skill_id,
+            "skill_name": active_skill.name if active_skill else None,
         }
         yield f"data: {json.dumps(done_payload, ensure_ascii=False)}\n\n"
         return
@@ -311,6 +333,7 @@ async def handle_chat_stream(req: ChatRequest) -> AsyncGenerator[str, None]:
                     knowledge_hits=knowledge_hits,
                     safety_assessment=safety_assessment,
                     scenario=scenario,
+                    skill_id=req.skill_id,
                 ),
                 model_name=target.model_name,
             ),
@@ -343,12 +366,15 @@ async def handle_chat_stream(req: ChatRequest) -> AsyncGenerator[str, None]:
             is_stream=True,
         )
         telemetry.record_tokens(len(req.message) + len(full_reply))
+        skill_suffix = f" · 专精心理技能【{active_skill.name}】" if active_skill else ""
         done_payload = {
             "event": "done",
             "reply": full_reply,
             "session_id": session_id,
             "assistant_message_id": assistant_message_id,
-            "note": f"当前为模型调用模式。流式生成完毕，由 {target.provider_name} / {target.model_name} 提供支持。",
+            "note": f"当前为模型调用模式。流式生成完毕，由 {target.provider_name} / {target.model_name} 提供支持。{skill_suffix}".strip(),
+            "skill_id": req.skill_id,
+            "skill_name": active_skill.name if active_skill else None,
         }
         yield f"data: {json.dumps(done_payload, ensure_ascii=False)}\n\n"
     except Exception as exc:

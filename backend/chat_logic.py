@@ -4,6 +4,7 @@ import secrets
 
 from services.knowledge import KnowledgeHitResult
 from services.safety import RiskAssessment, high_risk_reply, safety_prompt_extension
+from services.skills_codex import build_skill_demo_reply, format_skill_prompt, get_skill
 
 from backend.config import STYLE_LABELS, STYLE_PROMPTS
 from backend.schemas import RetrievedKnowledge, SafetyInfo
@@ -67,6 +68,7 @@ def build_messages(
     knowledge_hits: list[KnowledgeHitResult] | None = None,
     safety_assessment: RiskAssessment | None = None,
     scenario: str = "campus",
+    skill_id: str | None = None,
 ) -> list[dict[str, str]]:
     style = normalize_response_style(response_style, system_hint)
     if scenario == "enterprise":
@@ -84,6 +86,9 @@ def build_messages(
             "不要输出诊断结论，不要给出危险、自伤或伤人建议。"
         )
     system_prompt += "\n回答风格要求：" + STYLE_PROMPTS[style]
+
+    if skill_id:
+        system_prompt += format_skill_prompt(skill_id)
 
     if system_hint:
         system_prompt += "\n额外要求：" + system_hint
@@ -146,9 +151,15 @@ def build_demo_reply(
     conversation_history: list[dict[str, str]] | None = None,
     knowledge_hits: list[KnowledgeHitResult] | None = None,
     safety_assessment: RiskAssessment | None = None,
+    skill_id: str | None = None,
 ) -> str:
     if safety_assessment and safety_assessment.level == "high":
         return high_risk_reply()
+
+    if skill_id:
+        skill = get_skill(skill_id)
+        if skill:
+            return build_skill_demo_reply(skill, user_message)
 
     style = normalize_response_style(response_style, system_hint)
     topic = detect_demo_topic(user_message)

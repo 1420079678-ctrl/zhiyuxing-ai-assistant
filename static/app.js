@@ -80,6 +80,23 @@ const settingsProbeBtn = document.getElementById("settings-probe-btn");
 const settingsResetDemoBtn = document.getElementById("settings-reset-demo-btn");
 const settingsStatusBanner = document.getElementById("settings-status-banner");
 
+// Mental Skills Codex elements & state
+const openSkillsCodexNavBtn = document.getElementById("open-skills-codex-nav-btn");
+const openSkillsCodexBtn = document.getElementById("open-skills-codex-btn");
+const closeSkillsCodexBtn = document.getElementById("close-skills-codex-btn");
+const closeSkillsCodexFooterBtn = document.getElementById("close-skills-codex-footer-btn");
+const skillsCodexModal = document.getElementById("skills-codex-modal");
+const codexSkillsGrid = document.getElementById("codex-skills-grid");
+const activeSkillCapsule = document.getElementById("active-skill-capsule");
+const activeSkillNameEl = document.getElementById("active-skill-name");
+const activeSkillTagEl = document.getElementById("active-skill-tag");
+const clearActiveSkillBtn = document.getElementById("clear-active-skill-btn");
+
+let activeSkillId = null;
+let activeSkillName = null;
+let activeSkillTag = null;
+let availableSkillsCatalog = [];
+
 const SESSION_STORAGE_KEY = "zhiyuxing_demo_session_id";
 const SCENARIO_STORAGE_KEY = "zhiyuxing_active_scenario";
 
@@ -212,12 +229,62 @@ function escapeHtml(text) {
 function formatMarkdown(text) {
   if (!text) return "";
   let html = escapeHtml(text);
-  // Code block
+
+  // 1. Code block with language tag & copy button
+  html = html.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (_match, lang, code) => {
+    return `<div class="code-block-wrapper"><div class="code-block-header"><span>${lang || "code"}</span></div><pre><code>${code.trim()}</code></pre></div>`;
+  });
   html = html.replace(/```([\s\S]*?)```/g, "<pre><code>$1</code></pre>");
-  // Inline code
-  html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
-  // Bold
+
+  // 2. Inline code
+  html = html.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+
+  // 3. Bold & Italic
   html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+
+  // 4. Headings
+  html = html.replace(/^#### (.*$)/gim, '<h4 class="editorial-h4">$1</h4>');
+  html = html.replace(/^### (.*$)/gim, '<h3 class="editorial-h3">$1</h3>');
+  html = html.replace(/^## (.*$)/gim, '<h2 class="editorial-h2">$1</h2>');
+
+  // 5. Blockquotes (escapeHtml turned > into &gt;)
+  html = html.replace(/^&gt; (.*$)/gim, '<blockquote class="editorial-blockquote">$1</blockquote>');
+
+  // 6. Milestone Stage headers
+  html = html.replace(/【(第[一二三四五]阶段[：:].*?)】/g, '<span class="editorial-stage-pill">$1</span>');
+
+  // 7. Lists
+  html = html.replace(/^[•\-\*] (.*$)/gim, '<li class="editorial-list-item">$1</li>');
+  html = html.replace(/^(\d+)\. (.*$)/gim, '<li class="editorial-list-item-num" data-num="$1">$2</li>');
+
+  // Wrap consecutive list items
+  html = html.replace(/(<li class="editorial-list-item">[\s\S]*?<\/li>)/g, '<ul class="editorial-ul">$1</ul>');
+  html = html.replace(/<\/ul>\s*<ul class="editorial-ul">/g, "");
+
+  html = html.replace(/(<li class="editorial-list-item-num"[^>]*>[\s\S]*?<\/li>)/g, '<ol class="editorial-ol">$1</ol>');
+  html = html.replace(/<\/ol>\s*<ol class="editorial-ol">/g, "");
+
+  // 8. Paragraphs
+  const paragraphs = html.split(/\n\n+/);
+  html = paragraphs
+    .map((p) => {
+      p = p.trim();
+      if (!p) return "";
+      if (
+        p.startsWith("<h") ||
+        p.startsWith("<blockquote") ||
+        p.startsWith("<ul") ||
+        p.startsWith("<ol") ||
+        p.startsWith("<div class=\"code-block") ||
+        p.startsWith("<pre")
+      ) {
+        return p;
+      }
+      return `<p class="editorial-paragraph">${p.replace(/\n/g, "<br>")}</p>`;
+    })
+    .join("\n");
+
   return html;
 }
 
@@ -226,7 +293,7 @@ function appendMessageBubble(role, content, meta = {}) {
   if (chatTimeline) chatTimeline.style.display = "flex";
 
   const bubble = document.createElement("div");
-  bubble.className = `chat-bubble ${role === "user" ? "user-bubble" : "assistant-bubble"}`;
+  bubble.className = `chat-bubble ${role === "user" ? "user-bubble" : "assistant-bubble editorial-card"}`;
 
   const avatar = document.createElement("div");
   avatar.className = `bubble-avatar ${role === "user" ? "user-avatar" : "assistant-avatar"}`;
@@ -248,37 +315,40 @@ function appendMessageBubble(role, content, meta = {}) {
 
   const header = document.createElement("div");
   header.className = "bubble-top-meta bubble-header";
-  
+
+  const headerLeft = document.createElement("div");
+  headerLeft.className = "bubble-header-left";
+
   const nameStrong = document.createElement("strong");
   nameStrong.className = "sender-name";
   nameStrong.textContent = role === "user" ? "您" : meta.name || "知愈星 Copilot";
-  
+  headerLeft.appendChild(nameStrong);
+
+  let skillBadgeEl = null;
+  function updateSkillBadge(sName) {
+    if (!sName) return;
+    if (!skillBadgeEl) {
+      skillBadgeEl = document.createElement("span");
+      skillBadgeEl.className = "bubble-skill-badge";
+      headerLeft.appendChild(skillBadgeEl);
+    }
+    skillBadgeEl.innerHTML = `<span class="sparkle">✦</span> <span>${escapeHtml(sName)}</span>`;
+  }
+
+  if (meta.skill_name) {
+    updateSkillBadge(meta.skill_name);
+  }
+
+  const headerRight = document.createElement("div");
+  headerRight.className = "bubble-header-right";
+
   const timeSpan = document.createElement("span");
   timeSpan.className = "bubble-time";
   timeSpan.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  headerRight.appendChild(timeSpan);
 
-  header.appendChild(nameStrong);
-  header.appendChild(timeSpan);
-
-  if (role === "assistant") {
-    const copyBtn = document.createElement("button");
-    copyBtn.type = "button";
-    copyBtn.className = "bubble-action-copy-btn";
-    copyBtn.title = "复制此回复内容";
-    copyBtn.innerHTML = `
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-      <span>复制</span>
-    `;
-    copyBtn.addEventListener("click", () => {
-      navigator.clipboard.writeText(content).then(() => {
-        copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span style="color:#10b981">已复制</span>`;
-        setTimeout(() => {
-          copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg><span>复制</span>`;
-        }, 2000);
-      });
-    });
-    header.appendChild(copyBtn);
-  }
+  header.appendChild(headerLeft);
+  header.appendChild(headerRight);
 
   const body = document.createElement("div");
   body.className = "bubble-body";
@@ -286,6 +356,89 @@ function appendMessageBubble(role, content, meta = {}) {
 
   contentDiv.appendChild(header);
   contentDiv.appendChild(body);
+
+  let ribbon = null;
+  if (role === "assistant") {
+    ribbon = document.createElement("div");
+    ribbon.className = "bubble-action-ribbon";
+
+    // 1. Copy
+    const copyBtn = document.createElement("button");
+    copyBtn.type = "button";
+    copyBtn.className = "ribbon-btn";
+    copyBtn.title = "复制回复正文";
+    copyBtn.innerHTML = `
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+      <span>复制</span>
+    `;
+    copyBtn.addEventListener("click", () => {
+      const textToCopy = body.innerText || content;
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span style="color:#10b981">已复制</span>`;
+        setTimeout(() => {
+          copyBtn.innerHTML = `
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            <span>复制</span>
+          `;
+        }, 2000);
+      });
+    });
+
+    // 2. Helpful
+    const thumbUpBtn = document.createElement("button");
+    thumbUpBtn.type = "button";
+    thumbUpBtn.className = "ribbon-btn";
+    thumbUpBtn.title = "采纳并认同此方案";
+    thumbUpBtn.innerHTML = `
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h3"/><path d="M12 2a2 2 0 0 1 2 2v1.88"/></svg>
+      <span>有启发</span>
+    `;
+    thumbUpBtn.addEventListener("click", () => {
+      sendFeedback("helpful");
+      thumbUpBtn.classList.add("ribbon-btn-active");
+      thumbUpBtn.disabled = true;
+    });
+
+    // 3. Needs more
+    const needsMoreBtn = document.createElement("button");
+    needsMoreBtn.type = "button";
+    needsMoreBtn.className = "ribbon-btn";
+    needsMoreBtn.title = "需要进一步细化或补充";
+    needsMoreBtn.innerHTML = `
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3"/><path d="M12 22a2 2 0 0 1-2-2v-1.88"/></svg>
+      <span>需更具体</span>
+    `;
+    needsMoreBtn.addEventListener("click", () => {
+      sendFeedback("needs_more");
+      needsMoreBtn.classList.add("ribbon-btn-active");
+      needsMoreBtn.disabled = true;
+    });
+
+    // 4. Bookmark
+    const bookmarkBtn = document.createElement("button");
+    bookmarkBtn.type = "button";
+    bookmarkBtn.className = "ribbon-btn";
+    bookmarkBtn.title = "收藏此观点";
+    bookmarkBtn.innerHTML = `
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+      <span>收藏观点</span>
+    `;
+    bookmarkBtn.addEventListener("click", () => {
+      bookmarkBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="#6366f1" stroke="#6366f1" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg><span style="color:#6366f1">已收录</span>`;
+      setTimeout(() => {
+        bookmarkBtn.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+          <span>收藏观点</span>
+        `;
+      }, 2500);
+    });
+
+    ribbon.appendChild(copyBtn);
+    ribbon.appendChild(thumbUpBtn);
+    ribbon.appendChild(needsMoreBtn);
+    ribbon.appendChild(bookmarkBtn);
+    contentDiv.appendChild(ribbon);
+  }
 
   if (meta.footerText) {
     const footer = document.createElement("div");
@@ -300,7 +453,115 @@ function appendMessageBubble(role, content, meta = {}) {
   chatTimeline.appendChild(bubble);
   chatTimeline.scrollTop = chatTimeline.scrollHeight;
 
-  return { bubble, body, contentDiv };
+  return { bubble, body, contentDiv, updateSkillBadge, ribbon };
+}
+
+// ===================================================================
+// Mental Skills Codex Protocol Engine UI Controllers
+// ===================================================================
+
+async function loadSkillsCatalog() {
+  try {
+    const res = await fetch("/api/skills");
+    if (res.ok) {
+      availableSkillsCatalog = await res.json();
+      renderCodexGrid();
+    }
+  } catch (err) {
+    console.warn("加载心理技能失败:", err);
+  }
+}
+
+function renderCodexGrid() {
+  if (!codexSkillsGrid || !availableSkillsCatalog.length) return;
+  codexSkillsGrid.innerHTML = "";
+
+  availableSkillsCatalog.forEach((skill) => {
+    const isCurActive = activeSkillId === skill.id;
+    const card = document.createElement("div");
+    card.className = `codex-card ${isCurActive ? "codex-card-active" : ""}`;
+
+    const stepsHtml = (skill.protocol_steps || [])
+      .map((step) => `<li class="codex-step-item"><span class="step-glyph">✦</span><span>${escapeHtml(step)}</span></li>`)
+      .join("");
+
+    card.innerHTML = `
+      <div class="codex-card-header">
+        <div class="codex-card-top-row">
+          <span class="codex-cat-pill">${escapeHtml(skill.category || "认知专精")}</span>
+          <span class="codex-tag-pill">${escapeHtml(skill.tag || "临床循证")}</span>
+        </div>
+        <h3 class="codex-card-title">${escapeHtml(skill.name)}</h3>
+        <span class="codex-clinical-base">理论基石：${escapeHtml(skill.clinical_base)}</span>
+      </div>
+      <p class="codex-card-desc">${escapeHtml(skill.summary)}</p>
+      <div class="codex-card-steps">
+        <div class="steps-heading">四阶段临床推导架构：</div>
+        <ul class="steps-ul">${stepsHtml}</ul>
+      </div>
+      <div class="codex-card-actions">
+        <button type="button" class="btn-codex-activate ${isCurActive ? "btn-codex-active" : ""}" data-skill-id="${skill.id}">
+          ${isCurActive ? "✓ 技能已在当前挂载" : "✦ 挂载此心理技能"}
+        </button>
+        <button type="button" class="btn-codex-try" data-skill-id="${skill.id}" title="填入此技能典型演练案例">
+          演练提示
+        </button>
+      </div>
+    `;
+
+    card.querySelector(".btn-codex-activate").addEventListener("click", () => {
+      selectSkill(skill);
+      closeSkillsCodex();
+    });
+
+    card.querySelector(".btn-codex-try").addEventListener("click", () => {
+      selectSkill(skill);
+      if (skill.recommended_prompt) {
+        messageInput.value = skill.recommended_prompt;
+        autoResizeTextarea(messageInput);
+      }
+      closeSkillsCodex();
+      messageInput.focus();
+    });
+
+    codexSkillsGrid.appendChild(card);
+  });
+}
+
+function selectSkill(skill) {
+  activeSkillId = skill.id;
+  activeSkillName = skill.name;
+  activeSkillTag = skill.tag || "心理技能";
+
+  if (activeSkillCapsule) {
+    activeSkillCapsule.style.display = "flex";
+    if (activeSkillNameEl) activeSkillNameEl.textContent = skill.name;
+    if (activeSkillTagEl) activeSkillTagEl.textContent = skill.tag || "心理技能";
+  }
+  renderCodexGrid();
+}
+
+function clearActiveSkill() {
+  activeSkillId = null;
+  activeSkillName = null;
+  activeSkillTag = null;
+  if (activeSkillCapsule) {
+    activeSkillCapsule.style.display = "none";
+  }
+  renderCodexGrid();
+}
+
+function openSkillsCodex() {
+  if (skillsCodexModal) {
+    renderCodexGrid();
+    skillsCodexModal.style.display = "flex";
+  }
+}
+
+function closeSkillsCodex() {
+  if (skillsCodexModal) {
+    skillsCodexModal.style.display = "none";
+  }
 }
 
 async function loadSessionsList() {
@@ -490,7 +751,10 @@ async function handleSendMessage(e) {
   submitButton.disabled = true;
 
   // 2. Prepare assistant placeholder bubble
-  const { body, contentDiv } = appendMessageBubble("assistant", "", { name: "知愈星 AI" });
+  const { body, contentDiv, updateSkillBadge } = appendMessageBubble("assistant", "", {
+    name: "知愈星 AI",
+    skill_name: activeSkillName || undefined,
+  });
   body.innerHTML = '<span class="cursor-blink"></span>';
 
   let accumulatedText = "";
@@ -507,6 +771,7 @@ async function handleSendMessage(e) {
       response_style: responseStyle,
       scenario: activeScenario,
       session_id: currentSessionId || undefined,
+      skill_id: activeSkillId || undefined,
     };
 
     const response = await fetch("/chat/stream", {
@@ -545,6 +810,9 @@ async function handleSendMessage(e) {
               knowledgeCountText.textContent = String(eventData.knowledge_hits ? eventData.knowledge_hits.length : 0);
               renderKnowledgeHits(eventData.knowledge_hits);
               updateRiskBadge(eventData.safety);
+              if (eventData.skill_name) {
+                updateSkillBadge(eventData.skill_name);
+              }
               loadSessionsList();
             } else if (eventData.event === "delta") {
               accumulatedText += eventData.content;
@@ -552,6 +820,9 @@ async function handleSendMessage(e) {
               chatTimeline.scrollTop = chatTimeline.scrollHeight;
             } else if (eventData.event === "done") {
               body.innerHTML = formatMarkdown(eventData.reply || accumulatedText);
+              if (eventData.skill_name) {
+                updateSkillBadge(eventData.skill_name);
+              }
               currentAssistantMessageId = eventData.assistant_message_id;
               feedbackHelpfulButton.disabled = !currentAssistantMessageId;
               feedbackNeedsMoreButton.disabled = !currentAssistantMessageId;
@@ -1147,6 +1418,35 @@ async function init() {
       applyTheme(currentTheme);
     });
   }
+
+  // Mental Skills Codex event listeners
+  if (openSkillsCodexBtn) {
+    openSkillsCodexBtn.addEventListener("click", openSkillsCodex);
+  }
+  if (openSkillsCodexNavBtn) {
+    openSkillsCodexNavBtn.addEventListener("click", openSkillsCodex);
+  }
+  if (closeSkillsCodexBtn) {
+    closeSkillsCodexBtn.addEventListener("click", closeSkillsCodex);
+  }
+  if (closeSkillsCodexFooterBtn) {
+    closeSkillsCodexFooterBtn.addEventListener("click", closeSkillsCodex);
+  }
+  if (clearActiveSkillBtn) {
+    clearActiveSkillBtn.addEventListener("click", clearActiveSkill);
+  }
+
+  // Close Codex modal on overlay click
+  if (skillsCodexModal) {
+    skillsCodexModal.addEventListener("click", (e) => {
+      if (e.target === skillsCodexModal) {
+        closeSkillsCodex();
+      }
+    });
+  }
+
+  // Load Codex skills catalog
+  loadSkillsCatalog();
 
   // Initial compatibility run
   runCompatibilityCheck();
