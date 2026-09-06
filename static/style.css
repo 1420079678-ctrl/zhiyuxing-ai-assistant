@@ -956,12 +956,24 @@ body {
   border-radius: 8px;
 }
 
+.preset-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .preset-label {
   font-size: 0.78rem;
   font-weight: 700;
   color: var(--text-muted);
-  display: block;
-  margin-bottom: 8px;
+}
+
+.preset-subhint {
+  font-size: 0.72rem;
+  color: var(--text-light);
 }
 
 .preset-pills {
@@ -992,6 +1004,12 @@ body {
   border-color: #93c5fd;
   background: #eff6ff;
   color: #1d4ed8;
+}
+
+.preset-pill-custom {
+  border-color: #fcd34d;
+  background: #fffbeb;
+  color: #b45309;
 }
 
 .form-row-2 {

@@ -144,6 +144,14 @@ def detect_model_family(model_name: str) -> str:
         return "deepseek"
     if normalized.startswith(("gpt", "o1", "o3", "o4")):
         return "openai"
+    if "qwen" in normalized:
+        return "qwen"
+    if "moonshot" in normalized or "kimi" in normalized:
+        return "moonshot"
+    if "glm" in normalized:
+        return "zhipu"
+    if "llama" in normalized:
+        return "groq"
     return "compatible"
 
 
@@ -153,6 +161,18 @@ def detect_endpoint_family(base_url: str) -> str:
         return "deepseek"
     if "api.openai.com" in normalized:
         return "openai"
+    if "dashscope.aliyuncs.com" in normalized:
+        return "qwen"
+    if "api.moonshot.cn" in normalized:
+        return "moonshot"
+    if "bigmodel.cn" in normalized:
+        return "zhipu"
+    if "api.siliconflow.cn" in normalized:
+        return "siliconflow"
+    if "api.groq.com" in normalized:
+        return "groq"
+    if "11434" in normalized or "localhost" in normalized or "127.0.0.1" in normalized:
+        return "ollama"
     return "compatible"
 
 
@@ -162,6 +182,18 @@ def detect_provider_family(provider_name: str) -> str:
         return "deepseek"
     if "openai" in normalized:
         return "openai"
+    if "qwen" in normalized or "tongyi" in normalized or "aliyun" in normalized:
+        return "qwen"
+    if "moonshot" in normalized or "kimi" in normalized:
+        return "moonshot"
+    if "zhipu" in normalized or "glm" in normalized:
+        return "zhipu"
+    if "siliconflow" in normalized:
+        return "siliconflow"
+    if "groq" in normalized:
+        return "groq"
+    if "ollama" in normalized:
+        return "ollama"
     return "compatible"
 
 

@@ -89,3 +89,43 @@ def test_public_demo_mode_forces_demo_target(monkeypatch) -> None:
 
     assert target.mode == "demo"
     assert report.ready_for_model_call is False
+
+
+def test_multiple_provider_presets_resolution(monkeypatch) -> None:
+    # Test Qwen
+    monkeypatch.setenv("MODEL_PROVIDER", "Qwen")
+    monkeypatch.setenv("MODEL_NAME", "qwen-plus")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1")
+    monkeypatch.delenv("MODEL_API_KEY_ENV", raising=False)
+    assert configured_api_key_env() == "DASHSCOPE_API_KEY"
+
+    # Test Moonshot
+    monkeypatch.setenv("MODEL_PROVIDER", "Moonshot")
+    monkeypatch.setenv("MODEL_NAME", "moonshot-v1-8k")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://api.moonshot.cn/v1")
+    assert configured_api_key_env() == "MOONSHOT_API_KEY"
+
+    # Test Zhipu
+    monkeypatch.setenv("MODEL_PROVIDER", "Zhipu")
+    monkeypatch.setenv("MODEL_NAME", "glm-4-flash")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://open.bigmodel.cn/api/paas/v4")
+    assert configured_api_key_env() == "ZHIPU_API_KEY"
+
+    # Test SiliconFlow
+    monkeypatch.setenv("MODEL_PROVIDER", "SiliconFlow")
+    monkeypatch.setenv("MODEL_NAME", "deepseek-ai/DeepSeek-V3")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://api.siliconflow.cn/v1")
+    assert configured_api_key_env() == "SILICONFLOW_API_KEY"
+
+    # Test Groq
+    monkeypatch.setenv("MODEL_PROVIDER", "Groq")
+    monkeypatch.setenv("MODEL_NAME", "llama-3.3-70b-versatile")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://api.groq.com/openai/v1")
+    assert configured_api_key_env() == "GROQ_API_KEY"
+
+    # Test Ollama
+    monkeypatch.setenv("MODEL_PROVIDER", "Ollama")
+    monkeypatch.setenv("MODEL_NAME", "qwen2.5:7b")
+    monkeypatch.setenv("OPENAI_BASE_URL", "http://localhost:11434/v1")
+    assert configured_api_key_env() == "OLLAMA_API_KEY"
+

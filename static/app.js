@@ -574,6 +574,12 @@ async function runCompatibilityCheck() {
 
 // Settings Modal Logic
 const PRESETS = {
+  "orcarouter": {
+    provider: "OrcaRouter",
+    model_name: "deepseek/deepseek-chat",
+    base_url: "https://api.orcarouter.com/v1",
+    placeholder: "sk-or-...",
+  },
   "deepseek-chat": {
     provider: "DeepSeek",
     model_name: "deepseek-chat",
@@ -586,17 +592,53 @@ const PRESETS = {
     base_url: "https://api.deepseek.com",
     placeholder: "sk-...",
   },
-  "orcarouter": {
-    provider: "OrcaRouter",
-    model_name: "deepseek/deepseek-chat",
-    base_url: "https://api.orcarouter.com/v1",
-    placeholder: "sk-or-...",
-  },
   "openai": {
     provider: "OpenAI",
-    model_name: "gpt-4o-mini",
+    model_name: "gpt-4o",
     base_url: "https://api.openai.com/v1",
     placeholder: "sk-proj-...",
+  },
+  "qwen": {
+    provider: "Qwen",
+    model_name: "qwen-plus",
+    base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    placeholder: "sk-...",
+  },
+  "moonshot": {
+    provider: "Moonshot",
+    model_name: "moonshot-v1-8k",
+    base_url: "https://api.moonshot.cn/v1",
+    placeholder: "sk-...",
+  },
+  "zhipu": {
+    provider: "Zhipu",
+    model_name: "glm-4-flash",
+    base_url: "https://open.bigmodel.cn/api/paas/v4",
+    placeholder: "your-api-key.id",
+  },
+  "siliconflow": {
+    provider: "SiliconFlow",
+    model_name: "deepseek-ai/DeepSeek-V3",
+    base_url: "https://api.siliconflow.cn/v1",
+    placeholder: "sk-...",
+  },
+  "groq": {
+    provider: "Groq",
+    model_name: "llama-3.3-70b-versatile",
+    base_url: "https://api.groq.com/openai/v1",
+    placeholder: "gsk_...",
+  },
+  "ollama": {
+    provider: "Ollama",
+    model_name: "qwen2.5:7b",
+    base_url: "http://localhost:11434/v1",
+    placeholder: "ollama (私有化部署可留空或输入任意值)",
+  },
+  "custom": {
+    provider: "Custom Gateway",
+    model_name: "custom-model-id",
+    base_url: "https://your-custom-api-domain.com/v1",
+    placeholder: "sk-...",
   },
 };
 

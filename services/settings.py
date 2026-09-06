@@ -27,6 +27,18 @@ def save_runtime_settings(
 
     if "orcarouter" in prov_lower or "orcarouter" in base_lower:
         key_env = "ORCAROUTER_API_KEY"
+    elif "siliconflow" in prov_lower or "siliconflow" in base_lower:
+        key_env = "SILICONFLOW_API_KEY"
+    elif "dashscope" in base_lower or "qwen" in prov_lower or "aliyun" in base_lower:
+        key_env = "DASHSCOPE_API_KEY"
+    elif "moonshot" in prov_lower or "moonshot" in base_lower or "kimi" in prov_lower:
+        key_env = "MOONSHOT_API_KEY"
+    elif "bigmodel" in base_lower or "zhipu" in prov_lower or "glm" in model_lower:
+        key_env = "ZHIPU_API_KEY"
+    elif "groq" in prov_lower or "groq" in base_lower:
+        key_env = "GROQ_API_KEY"
+    elif "11434" in base_lower or "ollama" in prov_lower or "ollama" in base_lower:
+        key_env = "OLLAMA_API_KEY"
     elif "deepseek" in prov_lower or "deepseek" in base_lower or model_lower.startswith("deepseek"):
         key_env = "DEEPSEEK_API_KEY"
     else:
@@ -58,6 +70,7 @@ def save_runtime_settings(
                 line = line.strip()
                 if line and not line.startswith("#") and "=" in line:
                     k, v = line.split("=", 1)
+                    env_dict[k.strip()] = v.strip()
                     env_dict[k.strip()] = v.strip()
         elif ENV_EXAMPLE.exists():
             for line in ENV_EXAMPLE.read_text(encoding="utf-8").splitlines():
@@ -129,6 +142,12 @@ def test_connection_probe(
         or os.getenv("DEEPSEEK_API_KEY")
         or os.getenv("OPENAI_API_KEY")
         or os.getenv("ORCAROUTER_API_KEY")
+        or os.getenv("DASHSCOPE_API_KEY")
+        or os.getenv("MOONSHOT_API_KEY")
+        or os.getenv("ZHIPU_API_KEY")
+        or os.getenv("SILICONFLOW_API_KEY")
+        or os.getenv("GROQ_API_KEY")
+        or os.getenv("OLLAMA_API_KEY")
     )
 
     if not resolved_key:

@@ -294,12 +294,22 @@
           <div class="modal-body">
             <!-- Preset Quick Select Buttons -->
             <div class="preset-buttons-container">
-              <span class="preset-label">官方预设一键填入:</span>
+              <div class="preset-header-row">
+                <span class="preset-label">一键选择推荐提供商与预设 (点击自动填入):</span>
+                <span class="preset-subhint">支持任何 OpenAI API 格式兼容的服务商</span>
+              </div>
               <div class="preset-pills">
-                <button type="button" class="preset-pill" data-preset="deepseek-chat">⚡ DeepSeek Chat</button>
+                <button type="button" class="preset-pill preset-pill-featured" data-preset="orcarouter">🌐 OrcaRouter (推荐企业网关)</button>
+                <button type="button" class="preset-pill" data-preset="deepseek-chat">⚡ DeepSeek V3</button>
                 <button type="button" class="preset-pill" data-preset="deepseek-r1">🧠 DeepSeek R1</button>
-                <button type="button" class="preset-pill preset-pill-featured" data-preset="orcarouter">🌐 OrcaRouter (推荐网关)</button>
-                <button type="button" class="preset-pill" data-preset="openai">🤖 OpenAI GPT-4o-mini</button>
+                <button type="button" class="preset-pill" data-preset="openai">🤖 OpenAI GPT-4o</button>
+                <button type="button" class="preset-pill" data-preset="qwen">☁️ 通义千问 Qwen</button>
+                <button type="button" class="preset-pill" data-preset="moonshot">🌙 月之暗面 Kimi</button>
+                <button type="button" class="preset-pill" data-preset="zhipu">✨ 智谱 GLM-4</button>
+                <button type="button" class="preset-pill" data-preset="siliconflow">🌊 硅基流动</button>
+                <button type="button" class="preset-pill" data-preset="groq">⚡ Groq 高速</button>
+                <button type="button" class="preset-pill" data-preset="ollama">🦙 Ollama 本地私有化</button>
+                <button type="button" class="preset-pill preset-pill-custom" data-preset="custom">🛠️ 自定义第三方网关 (Custom)</button>
               </div>
             </div>
 
