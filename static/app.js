@@ -129,7 +129,11 @@ function renderPromptChips() {
     const chip = document.createElement("button");
     chip.type = "button";
     chip.className = "prompt-chip";
-    chip.textContent = `${item.label}: ${item.text.slice(0, 16)}...`;
+    chip.innerHTML = `
+      <span class="chip-dot"></span>
+      <span class="chip-title">${escapeHtml(item.label)}</span>
+      <span class="chip-snippet">${escapeHtml(item.text.slice(0, 14))}...</span>
+    `;
     chip.title = item.text;
     chip.addEventListener("click", () => {
       messageInput.value = item.text;
@@ -163,7 +167,9 @@ function appendMessageBubble(role, content, meta = {}) {
 
   const avatar = document.createElement("div");
   avatar.className = `bubble-avatar ${role === "user" ? "user-avatar" : "assistant-avatar"}`;
-  avatar.textContent = role === "user" ? "👤" : "✨";
+  avatar.innerHTML = role === "user"
+    ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`
+    : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>`;
 
   const contentDiv = document.createElement("div");
   contentDiv.className = "bubble-content-box bubble-content";
@@ -313,10 +319,13 @@ function startNewChat() {
 
   chatTimeline.innerHTML = `
     <div class="chat-bubble assistant-bubble intro-bubble">
-      <div class="bubble-avatar">✨</div>
-      <div class="bubble-content">
-        <div class="bubble-header">
-          <strong>知愈星 AI (ZhiYuXing Copilot)</strong>
+      <div class="bubble-avatar assistant-avatar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+      </div>
+      <div class="bubble-content-box bubble-content">
+        <div class="bubble-top-meta bubble-header">
+          <span class="sender-name">知愈星 Copilot</span>
+          <span class="sender-tag">心身关怀与赋能</span>
           <span class="bubble-time">系统</span>
         </div>
         <div class="bubble-body" id="intro-body">

@@ -15,17 +15,15 @@
   </head>
   <body>
     <div class="app-shell">
-      <!-- 1. Top Navigation Bar (Modern Sleek SaaS Header) -->
+      <!-- 1. Top Navigation Bar (Studio Minimalist Header) -->
       <header class="top-nav">
         <div class="nav-left">
           <button id="toggle-sidebar-btn" class="nav-icon-btn" type="button" title="展开/收起侧边栏">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
           </button>
           <div class="nav-brand">
             <div class="brand-avatar">
-              <span class="brand-sparkle">✨</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
             </div>
             <div class="brand-titles">
               <div class="brand-name-row">
@@ -40,11 +38,11 @@
         <!-- Scenario Mode Switcher -->
         <div class="scenario-segmented-control">
           <button type="button" class="scenario-btn active" data-scenario="campus">
-            <span class="btn-icon">🎓</span>
+            <svg class="btn-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 6 0 0 0 12 0v-3.5"/></svg>
             <span class="btn-text">高校青年成长</span>
           </button>
           <button type="button" class="scenario-btn" data-scenario="enterprise">
-            <span class="btn-icon">🏢</span>
+            <svg class="btn-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
             <span class="btn-text">企业员工 EAP 关怀</span>
           </button>
         </div>
@@ -52,21 +50,23 @@
         <!-- Nav Right Actions -->
         <div class="nav-actions">
           <button id="theme-toggle-btn" class="nav-btn nav-btn-outline" type="button" title="切换浅色/深色主题">
-            <span id="theme-icon">☀️</span>
+            <span id="theme-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+            </span>
             <span id="theme-text">浅色</span>
           </button>
           <button id="toggle-inspector-btn" class="nav-btn nav-btn-outline" type="button" title="展开/收起遥测与知识库抽屉">
-            <span class="btn-icon">📊</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
             <span class="btn-text">遥测与知识</span>
           </button>
           <button id="open-settings-modal-btn" class="nav-btn nav-btn-primary" type="button">
-            <span class="btn-icon">⚙️</span>
-            <span>密钥与模型设置</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>配置模型</span>
           </button>
           <div class="nav-divider"></div>
-          <a href="/docs" target="_blank" class="nav-link" title="OpenAPI / Swagger">API 文档</a>
-          <a href="/metrics" target="_blank" class="nav-link" title="Prometheus Metrics">指标监控</a>
-          <span id="runtime-badge" class="badge-status-dot">系统就绪</span>
+          <a href="/docs" target="_blank" class="nav-link" title="OpenAPI / Swagger">API</a>
+          <a href="/metrics" target="_blank" class="nav-link" title="Prometheus Metrics">监控</a>
+          <span id="runtime-badge" class="badge-status-dot">就绪</span>
         </div>
       </header>
 
@@ -76,7 +76,7 @@
         <aside class="sidebar-pane" id="sidebar-pane">
           <div class="sidebar-top-action">
             <button id="new-chat-btn" class="btn-new-chat" type="button">
-              <span class="plus-icon">＋</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
               <span>开启新对话</span>
             </button>
           </div>
@@ -88,7 +88,7 @@
             </div>
             <ul id="session-nav-list" class="session-list">
               <li class="session-item active" data-id="">
-                <span class="session-item-icon">💬</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
                 <span class="session-title">当前活动会话</span>
               </li>
             </ul>
@@ -96,15 +96,15 @@
 
           <div class="sidebar-group">
             <div class="sidebar-group-header">
-              <span class="sidebar-group-title">知识库 (Enterprise RAG)</span>
+              <span class="sidebar-group-title">企业知识库 (RAG)</span>
               <button id="open-knowledge-modal-btn" class="text-link-btn" type="button">管理</button>
             </div>
             <div class="knowledge-card-widget">
               <div class="knowledge-widget-header">
-                <span class="widget-icon">📚</span>
-                <span id="sidebar-doc-count" class="widget-title">挂载 7 篇核心政策与干预指南</span>
+                <svg class="widget-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+                <span id="sidebar-doc-count" class="widget-title">挂载 7 篇核心政策与指南</span>
               </div>
-              <p class="widget-sub">专业学术心理指引、SOP与干预知识向量索引</p>
+              <p class="widget-sub">专业心理干预 SOP、政策与学术向量索引</p>
               <button id="quick-add-doc-btn" class="btn-widget-action" type="button">+ 扩充新知识文档</button>
             </div>
           </div>
@@ -113,16 +113,16 @@
           <div class="sidebar-footer">
             <div class="partner-glass-card">
               <div class="partner-row">
-                <span class="partner-tag">推荐模型路由</span>
+                <span class="partner-tag">推荐模型网关</span>
                 <a href="https://www.orcarouter.ai/ref/ref_f60521be8c405c4c116f" target="_blank" class="partner-brand">OrcaRouter</a>
               </div>
-              <p class="partner-intro">高性能分布式大模型路由，一键接入 DeepSeek / GPT-4o 高并发调度</p>
+              <p class="partner-intro">分布式大模型弹性路由，一键接入 DeepSeek / GPT-4o 高并发调度</p>
               <a href="/project-docs/orcarouter.md" target="_blank" class="partner-learn-more">接入指南与配置说明 →</a>
             </div>
 
             <div class="footer-links">
               <a href="https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant" target="_blank" class="footer-link">
-                ⭐ GitHub 开源主页
+                GitHub 源码
               </a>
               <span class="footer-dot">·</span>
               <a href="/project-docs/commercialization.md" target="_blank" class="footer-link">
@@ -146,13 +146,15 @@
             <div class="chat-timeline" id="chat-timeline">
               <div class="chat-bubble assistant-bubble intro-bubble">
                 <div class="bubble-avatar-wrapper">
-                  <div class="bubble-avatar assistant-avatar">✨</div>
+                  <div class="bubble-avatar assistant-avatar">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+                  </div>
                 </div>
                 <div class="bubble-content-box">
                   <div class="bubble-top-meta">
-                    <span class="sender-name">知愈星 AI (ZhiYuXing Copilot)</span>
-                    <span class="sender-tag">官方赋能智能体</span>
-                    <span class="bubble-time">刚刚</span>
+                    <span class="sender-name">知愈星 Copilot</span>
+                    <span class="sender-tag">心身关怀与赋能</span>
+                    <span class="bubble-time">系统</span>
                   </div>
                   <div class="bubble-body" id="intro-body">
                     您好！我是知愈星 AI 心身关怀与行动赋能智能体。无论是学业压力排解、拖延内耗阻断，还是职场倦怠修复与任务切片破冰，我都可以为您提供兼具共情与可执行微步的支持。
@@ -172,91 +174,93 @@
                 <ul id="history-list"></ul>
               </div>
 
-              <!-- Configuration Selector Strip -->
-              <div class="config-bar">
-                <div class="config-cell">
-                  <label for="model_target" class="config-label">目标模型:</label>
-                  <div class="select-container">
-                    <select id="model_target" name="model_target" class="glass-select"></select>
-                  </div>
-                  <button type="button" id="toggle-custom-target-btn" class="btn-custom-pill" title="自定义配置模型（供应商、Base URL、API Key、模型名）">
-                    <span class="pill-spark">✨</span> 自定义直连模型
-                  </button>
-                  <span id="model-helper" class="helper-bubble"></span>
-                </div>
+              <!-- Unified Luxury Input Card -->
+              <form id="chat-form" class="studio-input-card">
+                <!-- Textarea -->
+                <textarea
+                  id="message"
+                  name="message"
+                  rows="3"
+                  placeholder="输入您正在面临的压力、困惑或交付挑战... (Enter 发送，Shift+Enter 换行)"
+                  required
+                ></textarea>
 
-                <div class="config-cell">
-                  <label for="response_style" class="config-label">响应风格:</label>
-                  <div class="select-container">
-                    <select id="response_style" name="response_style" class="glass-select"></select>
-                  </div>
-                  <span id="style-helper" class="helper-bubble"></span>
-                </div>
-
-                <div class="config-cell config-cell-hint">
-                  <label for="system_hint" class="config-label">补充提示:</label>
-                  <input
-                    id="system_hint"
-                    name="system_hint"
-                    type="text"
-                    class="glass-input"
-                    placeholder="例如：突出三步拆解 / 强调边界对齐"
-                  />
-                </div>
-              </div>
-
-              <!-- Custom Model Quick Direct Connect Box (Collapsible) -->
-              <div id="custom-model-bar" class="custom-model-box" style="display:none;">
-                <div class="custom-box-top">
-                  <div class="custom-box-title">
-                    <span class="pulse-indicator"></span>
-                    <strong>自定义模型直连参数 (本次请求按此配置实时路由)</strong>
-                  </div>
-                  <div class="custom-box-presets">
-                    <button type="button" id="custom-fill-orcarouter" class="chip-action">OrcaRouter 推荐</button>
-                    <button type="button" id="custom-fill-siliconflow" class="chip-action">硅基流动</button>
-                    <button type="button" id="custom-fill-ollama" class="chip-action">本地 Ollama</button>
-                    <button type="button" id="close-custom-model-bar-btn" class="close-custom-btn">✕ 收起</button>
-                  </div>
-                </div>
-                <div class="custom-box-grid">
-                  <div class="box-field">
-                    <label for="custom-target-provider">供应商名称 (Provider):</label>
-                    <input type="text" id="custom-target-provider" placeholder="例如：OrcaRouter / SiliconFlow / PrivateGW" />
-                  </div>
-                  <div class="box-field">
-                    <label for="custom-target-model">模型标识 (Model):</label>
-                    <input type="text" id="custom-target-model" placeholder="例如：deepseek-chat / llama-3-70b" />
-                  </div>
-                  <div class="box-field">
-                    <label for="custom-target-baseurl">API Base URL:</label>
-                    <input type="url" id="custom-target-baseurl" placeholder="https://api.orcarouter.com/v1" />
-                  </div>
-                  <div class="box-field">
-                    <label for="custom-target-apikey">API Key (密钥):</label>
-                    <input type="password" id="custom-target-apikey" placeholder="sk-..." autocomplete="off" />
-                  </div>
-                </div>
-              </div>
-
-              <!-- Input Box -->
-              <form id="chat-form" class="studio-input-form">
-                <div class="studio-textarea-card">
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows="3"
-                    placeholder="输入您正在面临的压力、困惑或交付挑战... (Enter 发送，Shift+Enter 换行)"
-                    required
-                  ></textarea>
-                  <div class="studio-form-bottom">
-                    <div class="stream-badge">
-                      <span class="live-dot"></span>
-                      <span>SSE 实时流式传输已就绪</span>
+                <!-- Custom Model Quick Direct Connect Box (Collapsible inside the card) -->
+                <div id="custom-model-bar" class="custom-model-box" style="display:none;">
+                  <div class="custom-box-top">
+                    <div class="custom-box-title">
+                      <span class="pulse-indicator"></span>
+                      <strong>自定义直连参数 (本次请求按此配置实时路由)</strong>
                     </div>
-                    <button id="submit-button" class="btn-send-studio" type="submit">
-                      <span>发送消息</span>
-                      <span class="send-arrow">↵</span>
+                    <div class="custom-box-presets">
+                      <button type="button" id="custom-fill-orcarouter" class="chip-action">OrcaRouter 推荐</button>
+                      <button type="button" id="custom-fill-siliconflow" class="chip-action">硅基流动</button>
+                      <button type="button" id="custom-fill-ollama" class="chip-action">本地 Ollama</button>
+                      <button type="button" id="close-custom-model-bar-btn" class="close-custom-btn">✕ 收起</button>
+                    </div>
+                  </div>
+                  <div class="custom-box-grid">
+                    <div class="box-field">
+                      <label for="custom-target-provider">供应商名称 (Provider):</label>
+                      <input type="text" id="custom-target-provider" placeholder="例如：OrcaRouter / SiliconFlow / PrivateGW" />
+                    </div>
+                    <div class="box-field">
+                      <label for="custom-target-model">模型标识 (Model):</label>
+                      <input type="text" id="custom-target-model" placeholder="例如：deepseek-chat / llama-3-70b" />
+                    </div>
+                    <div class="box-field">
+                      <label for="custom-target-baseurl">API Base URL:</label>
+                      <input type="url" id="custom-target-baseurl" placeholder="https://api.orcarouter.com/v1" />
+                    </div>
+                    <div class="box-field">
+                      <label for="custom-target-apikey">API Key (密钥):</label>
+                      <input type="password" id="custom-target-apikey" placeholder="sk-..." autocomplete="off" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card Bottom Toolbar -->
+                <div class="studio-card-toolbar">
+                  <div class="toolbar-left-group">
+                    <!-- Model Selector Pill -->
+                    <div class="control-pill" title="切换使用的底层语言模型">
+                      <span class="pill-label">模型:</span>
+                      <select id="model_target" name="model_target" class="clean-select"></select>
+                      <span id="model-helper" class="helper-bubble" style="display:none;"></span>
+                    </div>
+
+                    <!-- Direct Connect Toggle Button -->
+                    <button type="button" id="toggle-custom-target-btn" class="btn-custom-pill" title="自定义配置模型（供应商、Base URL、API Key、模型名）">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+                      <span>自定义直连</span>
+                    </button>
+
+                    <!-- Style Selector Pill -->
+                    <div class="control-pill" title="调整回答风格与输出颗粒度">
+                      <span class="pill-label">风格:</span>
+                      <select id="response_style" name="response_style" class="clean-select"></select>
+                      <span id="style-helper" class="helper-bubble" style="display:none;"></span>
+                    </div>
+
+                    <!-- Prompt Hint Input Pill -->
+                    <div class="hint-input-wrapper">
+                      <input
+                        id="system_hint"
+                        name="system_hint"
+                        type="text"
+                        class="clean-hint-input"
+                        placeholder="补充指令 (例如：三步拆解 / 职场边界)..."
+                      />
+                    </div>
+                  </div>
+
+                  <div class="toolbar-right-group">
+                    <div class="stream-badge" title="SSE 实时流式推流状态">
+                      <span class="live-dot"></span>
+                      <span>SSE 流式</span>
+                    </div>
+                    <button id="submit-button" class="btn-send-round" type="submit" title="发送消息 (Enter)">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
                     </button>
                   </div>
                 </div>
@@ -269,15 +273,15 @@
         <aside class="inspector-pane" id="inspector-pane">
           <div class="inspector-top-bar">
             <div class="inspector-top-title">
-              <span class="inspector-icon">📊</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
               <span>实时遥测与知识库</span>
             </div>
             <button id="close-inspector-btn" class="close-inspector-btn" type="button" title="收起遥测面板">✕</button>
           </div>
           <div class="inspector-card">
             <div class="inspector-header">
-              <span class="inspector-icon">⚡</span>
-              <h3 class="inspector-title">系统遥测与运行状态</h3>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <h3 class="inspector-title">系统状态与遥测指标</h3>
             </div>
             <div class="metrics-grid">
               <div class="metric-block">
@@ -285,7 +289,7 @@
                 <strong id="provider-name" class="metric-val">-</strong>
               </div>
               <div class="metric-block">
-                <span class="metric-label">当前挂载模型</span>
+                <span class="metric-label">挂载模型</span>
                 <strong id="model-name" class="metric-val">-</strong>
               </div>
               <div class="metric-block">
@@ -310,15 +314,15 @@
               </div>
             </div>
             <button id="inspector-settings-btn" class="btn-inspector-action" type="button">
-              ⚙️ 管理 API Key / 切换大模型
+              管理 API Key / 切换大模型
             </button>
           </div>
 
           <!-- RAG Hits Panel -->
           <div class="inspector-card">
             <div class="inspector-header">
-              <span class="inspector-icon">🔍</span>
-              <h3 class="inspector-title">本轮知识检索 (RAG Citations)</h3>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <h3 class="inspector-title">本轮知识切片 (RAG Citations)</h3>
             </div>
             <ul id="knowledge-list" class="knowledge-cards-list">
               <li class="empty-hint">发送消息后，系统将自动穿透检索匹配的知识库切片并在此结构化呈现。</li>
@@ -328,7 +332,7 @@
           <!-- Compatibility Check -->
           <div class="inspector-card">
             <div class="inspector-header">
-              <span class="inspector-icon">🛡️</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
               <div class="inspector-title-row">
                 <h3 class="inspector-title">API 接入合规检查</h3>
                 <button id="compatibility-button" class="text-link-btn" type="button">重新检测</button>
@@ -341,7 +345,7 @@
           <!-- Feedback -->
           <div class="inspector-card">
             <div class="inspector-header">
-              <span class="inspector-icon">💬</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               <h3 class="inspector-title">回复质量反馈</h3>
             </div>
             <div class="feedback-btn-group">
@@ -358,7 +362,7 @@
         <div class="modal-window">
           <div class="modal-head">
             <div class="modal-head-title">
-              <span class="modal-icon">📚</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
               <h3>企业知识库与干预政策管理</h3>
             </div>
             <button id="close-knowledge-modal-btn" class="modal-close-x">&times;</button>
@@ -398,7 +402,7 @@
         <div class="modal-window modal-window-settings">
           <div class="modal-head">
             <div class="modal-head-title">
-              <span class="modal-icon">⚙️</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
               <h3>全局模型与 API Key 配置管理</h3>
             </div>
             <button id="close-settings-modal-btn" class="modal-close-x">&times;</button>
@@ -407,11 +411,11 @@
             <!-- Preset Quick Select Buttons -->
             <div class="preset-glass-section">
               <div class="preset-section-top">
-                <span class="preset-section-title">一键选择推荐提供商与预设 (自动填充配置):</span>
-                <span class="preset-section-sub">支持任何标准 OpenAI API 格式兼容服务</span>
+                <span class="preset-section-title">一键配置推荐模型服务商:</span>
+                <span class="preset-section-sub">支持所有标准 OpenAI API 格式兼容接口</span>
               </div>
               <div class="preset-pills-row">
-                <button type="button" class="preset-pill preset-pill-star" data-preset="orcarouter">🌐 OrcaRouter (推荐企业网关)</button>
+                <button type="button" class="preset-pill preset-pill-star" data-preset="orcarouter">🌐 OrcaRouter (推荐网关)</button>
                 <button type="button" class="preset-pill" data-preset="deepseek-chat">⚡ DeepSeek V3</button>
                 <button type="button" class="preset-pill" data-preset="deepseek-r1">🧠 DeepSeek R1</button>
                 <button type="button" class="preset-pill" data-preset="openai">🤖 OpenAI GPT-4o</button>
@@ -446,9 +450,9 @@
                 <label for="settings-key-input">API Key (私钥保护):</label>
                 <div class="key-input-row">
                   <input type="password" id="settings-key-input" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
-                  <button type="button" id="toggle-key-visibility-btn" class="btn-key-toggle">👁️ 显示</button>
+                  <button type="button" id="toggle-key-visibility-btn" class="btn-key-toggle">显示/隐藏</button>
                 </div>
-                <span class="field-hint-text">密钥仅在服务器与所配提供商通信时直接使用，绝不上传到任何第三方。</span>
+                <span class="field-hint-text">密钥仅直接用于与所配置的大模型服务商通信，绝不上传到任何第三方。</span>
               </div>
 
               <div class="form-grid-2">
@@ -459,7 +463,7 @@
                 <div class="form-field form-field-checkbox">
                   <label>
                     <input type="checkbox" id="settings-demo-mode-checkbox" />
-                    强制进入本地免 Key 离线演示模式
+                    强制进入本地免 Key 演示模式
                   </label>
                 </div>
               </div>
@@ -472,7 +476,7 @@
                   重置为本地演示
                 </button>
                 <button type="submit" id="settings-save-btn" class="btn-save-settings">
-                  💾 保存并应用生效
+                  保存并生效
                 </button>
               </div>
 
