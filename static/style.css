@@ -3,28 +3,29 @@
    Aesthetic: World-Class Minimalist SaaS (Reflect / Claude / Linear / Apple)
    =================================================================== */
 
-/* --- 1. Light Theme (Default: Alabaster Porcelain & Sleek Obsidian) --- */
+/* --- 1. Light Theme (Modern High-Clarity Porcelain & Sapphire Glow) --- */
 :root,
 html[data-theme="light"] {
-  --bg-app: #fafaf9;
-  --bg-canvas-mesh: radial-gradient(ellipse 70% 45% at 50% -10%, rgba(99, 102, 241, 0.055), transparent 70%), radial-gradient(ellipse 40% 30% at 85% 15%, rgba(14, 165, 233, 0.035), transparent 60%);
-  --bg-top-nav: rgba(250, 250, 249, 0.85);
-  --bg-sidebar: #f5f5f4;
+  --bg-app: #f8fafc;
+  --bg-canvas-mesh: radial-gradient(ellipse 70% 45% at 50% -10%, rgba(59, 130, 246, 0.05), transparent 70%), radial-gradient(ellipse 40% 30% at 85% 15%, rgba(99, 102, 241, 0.035), transparent 60%);
+  --bg-top-nav: rgba(248, 250, 252, 0.88);
+  --bg-sidebar: #f1f5f9;
   --bg-surface: #ffffff;
-  --bg-surface-elevated: #f5f5f4;
-  --bg-surface-hover: #ececeb;
+  --bg-surface-elevated: #f8fafc;
+  --bg-surface-hover: #e2e8f0;
   --bg-card: #ffffff;
   --bg-input: #ffffff;
 
-  --text-primary: #09090b;
-  --text-secondary: #52525b;
-  --text-tertiary: #71717a;
-  --text-muted: #a1a1aa;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-tertiary: #64748b;
+  --text-muted: #64748b;
 
-  --border-subtle: rgba(0, 0, 0, 0.055);
-  --border-light: rgba(0, 0, 0, 0.09);
-  --border-focus: #18181b;
+  --border-subtle: #e2e8f0;
+  --border-light: #cbd5e1;
+  --border-focus: #3b82f6;
   --border-active: #2563eb;
+  --focus-ring: rgba(59, 130, 246, 0.16);
 
   --primary: #2563eb;
   --primary-hover: #1d4ed8;
@@ -33,9 +34,9 @@ html[data-theme="light"] {
   --primary-border: #bfdbfe;
   --accent-gradient: linear-gradient(135deg, #2563eb 0%, #6366f1 100%);
 
-  --cta-btn-bg: #18181b;
+  --cta-btn-bg: #2563eb;
   --cta-btn-text: #ffffff;
-  --cta-btn-hover: #000000;
+  --cta-btn-hover: #1d4ed8;
 
   --status-low: #15803d;
   --status-low-bg: #ecfdf5;
@@ -46,25 +47,25 @@ html[data-theme="light"] {
   --status-crisis: #be123c;
   --status-crisis-bg: #fff1f2;
 
-  --user-bubble-bg: #18181b;
+  --user-bubble-bg: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
   --user-bubble-text: #ffffff;
   --user-bubble-border: transparent;
-  --user-bubble-shadow: 0 4px 16px -2px rgba(24, 24, 27, 0.15);
+  --user-bubble-shadow: 0 4px 14px -2px rgba(37, 99, 235, 0.25);
 
   --assistant-bubble-bg: #ffffff;
-  --assistant-bubble-text: #1f2937;
-  --assistant-bubble-border: rgba(0, 0, 0, 0.06);
-  --assistant-bubble-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+  --assistant-bubble-text: #1e293b;
+  --assistant-bubble-border: #e2e8f0;
+  --assistant-bubble-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px -2px rgba(0, 0, 0, 0.05);
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.03);
-  --shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  --shadow-lg: 0 12px 30px -4px rgba(0, 0, 0, 0.08);
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.03), 0 10px 30px -4px rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -1px rgba(15, 23, 42, 0.03);
+  --shadow-lg: 0 12px 30px -4px rgba(15, 23, 42, 0.08);
+  --shadow-card: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
 
-  --code-bg: #f4f4f5;
-  --code-border: #e4e4e7;
-  --pre-bg: #18181b;
-  --pre-text: #f4f4f5;
+  --code-bg: #f1f5f9;
+  --code-border: #e2e8f0;
+  --pre-bg: #0f172a;
+  --pre-text: #f8fafc;
 }
 
 /* --- 2. Dark Theme (Titanium Obsidian Studio) --- */
@@ -1655,19 +1656,19 @@ html[data-theme="dark"] .inline-code {
 
 .studio-input-card {
   background: var(--bg-surface);
-  border: 1px solid var(--border-light);
+  border: 1.5px solid var(--border-light);
   border-radius: var(--radius-lg);
-  padding: 12px 14px 10px;
+  padding: 14px 16px 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   box-shadow: var(--shadow-card);
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .studio-input-card:focus-within {
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.08), var(--shadow-card);
+  box-shadow: 0 0 0 3px var(--focus-ring), var(--shadow-card);
 }
 
 .studio-input-card textarea {
@@ -1677,14 +1678,17 @@ html[data-theme="dark"] .inline-code {
   outline: none;
   color: var(--text-primary);
   font-family: var(--font-sans);
-  font-size: 0.92rem;
-  line-height: 1.55;
+  font-size: 0.94rem;
+  line-height: 1.6;
   resize: none;
-  max-height: 130px;
+  max-height: 140px;
+  caret-color: var(--primary);
 }
 
 .studio-input-card textarea::placeholder {
   color: var(--text-muted);
+  font-weight: 400;
+  opacity: 0.9;
 }
 
 /* Collapsible Custom Model Direct Connect Bar */
@@ -1781,17 +1785,19 @@ html[data-theme="dark"] .inline-code {
 
 .box-field input {
   background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-xs);
-  padding: 4px 6px;
+  padding: 6px 8px;
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   color: var(--text-primary);
   outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .box-field input:focus {
   border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px var(--focus-ring);
 }
 
 /* Card Bottom Toolbar */
@@ -1815,12 +1821,18 @@ html[data-theme="dark"] .inline-code {
 .control-pill {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
+  gap: 5px;
+  padding: 4px 10px;
   background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-full);
-  font-size: 0.72rem;
+  font-size: 0.73rem;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.control-pill:hover {
+  border-color: var(--border-focus);
+  background: var(--bg-surface);
 }
 
 .pill-label {
@@ -1872,7 +1884,20 @@ html[data-theme="dark"] .inline-code {
 
 .hint-input-wrapper {
   flex: 1;
-  min-width: 110px;
+  min-width: 130px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-full);
+  padding: 3px 10px;
+  display: flex;
+  align-items: center;
+  transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
+}
+
+.hint-input-wrapper:focus-within {
+  border-color: var(--border-focus);
+  background: var(--bg-surface);
+  box-shadow: 0 0 0 2px var(--focus-ring);
 }
 
 .clean-hint-input {
@@ -1880,13 +1905,14 @@ html[data-theme="dark"] .inline-code {
   background: transparent;
   border: none;
   outline: none;
-  font-size: 0.72rem;
+  font-size: 0.73rem;
   color: var(--text-primary);
-  padding: 2px 4px;
+  padding: 1px 2px;
 }
 
 .clean-hint-input::placeholder {
   color: var(--text-muted);
+  opacity: 0.85;
 }
 
 .toolbar-right-group {
@@ -1915,21 +1941,20 @@ html[data-theme="dark"] .inline-code {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: var(--cta-btn-bg);
-  color: var(--cta-btn-text);
+  background: var(--accent-gradient);
+  color: #ffffff;
   border: none;
   cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;
+  box-shadow: 0 4px 14px -2px rgba(37, 99, 235, 0.35);
 }
 
 .btn-send-round:hover {
-  background: var(--cta-btn-hover);
-  transform: scale(1.08);
-  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.28);
+  transform: scale(1.06);
+  box-shadow: 0 6px 20px -2px rgba(37, 99, 235, 0.45);
 }
 
 .btn-send-round:active {
@@ -2355,18 +2380,20 @@ html[data-theme="dark"] .inline-code {
 }
 
 .form-field input, .form-field textarea {
-  background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-xs);
-  padding: 6px 8px;
+  padding: 8px 10px;
   color: var(--text-primary);
   font-family: var(--font-sans);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .form-field input:focus, .form-field textarea:focus {
   border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px var(--focus-ring);
 }
 
 .btn-modal-primary {
@@ -2492,14 +2519,20 @@ html[data-theme="dark"] .inline-code {
 }
 
 .btn-key-toggle {
-  padding: 0 9px;
+  padding: 0 10px;
   border-radius: var(--radius-xs);
   background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-light);
   color: var(--text-secondary);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-key-toggle:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--border-focus);
 }
 
 .field-hint-text {

@@ -97,6 +97,30 @@ def resolve_model_target(
 
     target_id = (model_target or "configured").strip().lower()
 
+    if target_id in {"local:transformer-medium", "local_transformer", "transformer-medium"}:
+        return ResolvedTarget(
+            id="local:transformer-medium",
+            label="本地离线 Transformer 中型模型 (768d + 语料知识库)",
+            mode="local_transformer",
+            provider_name="本地 Transformer 引擎",
+            model_name="transformer-medium-768d",
+            base_url="local://transformer-engine",
+            api_key="local-key",
+            api_key_env=None,
+        )
+
+    if target_id in {"local:autonomous-agent", "autonomous_agent", "autonomous-agent"}:
+        return ResolvedTarget(
+            id="local:autonomous-agent",
+            label="本地自主多智能体 (ReAct 循环 + 规划反思)",
+            mode="autonomous_agent",
+            provider_name="自主多智能体引擎",
+            model_name="multi-agent-react",
+            base_url="local://agent-automation",
+            api_key="local-key",
+            api_key_env=None,
+        )
+
     if target_id == "configured":
         return build_configured_target()
     if target_id == "demo":
@@ -180,6 +204,22 @@ def list_model_options() -> list[ModelOption]:
             provider_name="Local Demo",
             model_name="builtin-demo",
             mode="demo",
+            available=True,
+        ),
+        ModelOption(
+            id="local:transformer-medium",
+            label="本地离线 Transformer 中型模型 (768d + 语料知识库)",
+            provider_name="本地 Transformer 引擎",
+            model_name="transformer-medium-768d",
+            mode="local_transformer",
+            available=True,
+        ),
+        ModelOption(
+            id="local:autonomous-agent",
+            label="本地自主多智能体 (ReAct 循环 + 规划反思)",
+            provider_name="自主多智能体引擎",
+            model_name="multi-agent-react",
+            mode="autonomous_agent",
             available=True,
         ),
     ]
