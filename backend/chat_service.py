@@ -25,7 +25,12 @@ from backend.schemas import ChatRequest, ChatResponse
 
 
 def handle_chat_request(req: ChatRequest) -> ChatResponse:
-    target = resolve_model_target(req.model_target)
+    target = resolve_model_target(
+        req.model_target,
+        custom_provider=req.custom_provider,
+        custom_base_url=req.custom_base_url,
+        custom_api_key=req.custom_api_key,
+    )
     scenario = req.scenario or "campus"
     style = normalize_response_style(req.response_style, req.system_hint)
     session_id = ensure_session(req.session_id, req.message)
@@ -185,7 +190,12 @@ def handle_chat_request(req: ChatRequest) -> ChatResponse:
 
 async def handle_chat_stream(req: ChatRequest) -> AsyncGenerator[str, None]:
     """Server-Sent Events (SSE) streaming chat generator."""
-    target = resolve_model_target(req.model_target)
+    target = resolve_model_target(
+        req.model_target,
+        custom_provider=req.custom_provider,
+        custom_base_url=req.custom_base_url,
+        custom_api_key=req.custom_api_key,
+    )
     scenario = req.scenario or "campus"
     style = normalize_response_style(req.response_style, req.system_hint)
     session_id = ensure_session(req.session_id, req.message)

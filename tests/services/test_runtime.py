@@ -62,6 +62,21 @@ def test_resolve_model_target_custom_and_fallback(monkeypatch) -> None:
     assert target3.model_name == "my-custom-v1"
 
 
+def test_resolve_model_target_with_explicit_custom_credentials() -> None:
+    # Explicit custom parameters passed directly from request
+    target = resolve_model_target(
+        model_target="my-custom-model",
+        custom_provider="MyPrivateCloud",
+        custom_base_url="https://api.myprivate.cloud/v1",
+        custom_api_key="sk-private-123456",
+    )
+    assert target.provider_name == "MyPrivateCloud"
+    assert target.model_name == "my-custom-model"
+    assert target.base_url == "https://api.myprivate.cloud/v1"
+    assert target.api_key == "sk-private-123456"
+    assert target.mode == "openai"
+
+
 def test_configured_api_key_env_matches_model_family(monkeypatch) -> None:
     monkeypatch.setenv("MODEL_NAME", "deepseek-chat")
     monkeypatch.setenv("OPENAI_BASE_URL", "https://api.deepseek.com")

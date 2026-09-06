@@ -55,9 +55,45 @@ def build_configured_target() -> ResolvedTarget:
     return configured_target
 
 
-def resolve_model_target(model_target: str | None) -> ResolvedTarget:
+def resolve_model_target(
+    model_target: str | None,
+    custom_provider: str | None = None,
+    custom_base_url: str | None = None,
+    custom_api_key: str | None = None,
+) -> ResolvedTarget:
     if public_demo_mode():
         return build_demo_target()
+
+    # If explicit custom parameters (provider/base_url/api_key) are provided along with a model target
+    clean_base_url = (custom_base_url or "").strip()
+    clean_api_key = (custom_api_key or "").strip()
+    clean_provider = (custom_provider or "").strip()
+
+    if clean_base_url:
+        configured = build_configured_target()
+        model_name = (model_target or "").strip()
+        if model_name.startswith("custom:"):
+            model_name = model_name[7:].strip()
+        if not model_name or model_name in {"configured", "custom"}:
+            model_name = configured.model_name or "custom-model"
+
+        provider_name = clean_provider or configured.provider_name or "Custom Provider"
+        resolved_key = clean_api_key or configured.api_key
+        if not resolved_key and not env_flag("DEMO_MODE"):
+            # Check if ollama or local service where key can be placeholder
+            if "11434" not in clean_base_url and "localhost" not in clean_base_url:
+                raise HTTPException(status_code=400, detail="自定义模型缺少 API Key")
+
+        return ResolvedTarget(
+            id=f"custom:{model_name}",
+            label=f"{provider_name} · {model_name}",
+            mode="openai",
+            provider_name=provider_name,
+            model_name=model_name,
+            base_url=clean_base_url,
+            api_key=resolved_key or "local-key",
+            api_key_env=None,
+        )
 
     target_id = (model_target or "configured").strip().lower()
 
@@ -72,12 +108,12 @@ def resolve_model_target(model_target: str | None) -> ResolvedTarget:
             if custom_model:
                 return ResolvedTarget(
                     id=f"custom:{custom_model}",
-                    label=f"自定义模型 · {custom_model}",
+                    label=f"{clean_provider or configured.provider_name} · {custom_model}",
                     mode=configured.mode,
-                    provider_name=configured.provider_name,
+                    provider_name=clean_provider or configured.provider_name,
                     model_name=custom_model,
-                    base_url=configured.base_url,
-                    api_key=configured.api_key,
+                    base_url=clean_base_url or configured.base_url,
+                    api_key=clean_api_key or configured.api_key,
                     api_key_env=configured.api_key_env,
                 )
         return configured

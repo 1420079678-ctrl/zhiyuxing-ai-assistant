@@ -9,8 +9,16 @@ const providerName = document.getElementById("provider-name");
 const modelName = document.getElementById("model-name");
 const baseUrl = document.getElementById("base-url");
 const modelTargetInput = document.getElementById("model_target");
-const customModelTargetInput = document.getElementById("custom_model_target");
 const toggleCustomTargetBtn = document.getElementById("toggle-custom-target-btn");
+const customModelBar = document.getElementById("custom-model-bar");
+const closeCustomModelBarBtn = document.getElementById("close-custom-model-bar-btn");
+const customTargetProvider = document.getElementById("custom-target-provider");
+const customTargetModel = document.getElementById("custom-target-model");
+const customTargetBaseUrl = document.getElementById("custom-target-baseurl");
+const customTargetApiKey = document.getElementById("custom-target-apikey");
+const customFillOrcarouter = document.getElementById("custom-fill-orcarouter");
+const customFillSiliconflow = document.getElementById("custom-fill-siliconflow");
+const customFillOllama = document.getElementById("custom-fill-ollama");
 const responseStyleInput = document.getElementById("response_style");
 const modelHelper = document.getElementById("model-helper");
 const styleHelper = document.getElementById("style-helper");
@@ -344,8 +352,20 @@ async function handleSendMessage(e) {
 
   const hint = hintInput.value.trim();
   let modelTarget = modelTargetInput.value || "configured";
-  if (customModelTargetInput && customModelTargetInput.style.display !== "none" && customModelTargetInput.value.trim()) {
-    modelTarget = `custom:${customModelTargetInput.value.trim()}`;
+  let customProvider = undefined;
+  let customBaseUrl = undefined;
+  let customApiKey = undefined;
+
+  if (customModelBar && customModelBar.style.display !== "none") {
+    const p = (customTargetProvider.value || "").trim();
+    const m = (customTargetModel.value || "").trim();
+    const u = (customTargetBaseUrl.value || "").trim();
+    const k = (customTargetApiKey.value || "").trim();
+
+    if (m) modelTarget = `custom:${m}`;
+    if (p) customProvider = p;
+    if (u) customBaseUrl = u;
+    if (k) customApiKey = k;
   }
   const responseStyle = responseStyleInput.value || "balanced";
 
@@ -366,6 +386,9 @@ async function handleSendMessage(e) {
       message,
       system_hint: hint || undefined,
       model_target: modelTarget,
+      custom_provider: customProvider,
+      custom_base_url: customBaseUrl,
+      custom_api_key: customApiKey,
       response_style: responseStyle,
       scenario: activeScenario,
       session_id: currentSessionId || undefined,
@@ -852,19 +875,48 @@ async function init() {
     }
   });
 
-  if (toggleCustomTargetBtn && customModelTargetInput && modelTargetInput) {
+  if (toggleCustomTargetBtn && customModelBar) {
     toggleCustomTargetBtn.addEventListener("click", () => {
-      const isCustomVisible = customModelTargetInput.style.display !== "none";
-      if (isCustomVisible) {
-        customModelTargetInput.style.display = "none";
-        modelTargetInput.style.display = "inline-block";
-        toggleCustomTargetBtn.textContent = "✏️ 自定义";
-      } else {
-        customModelTargetInput.style.display = "inline-block";
-        modelTargetInput.style.display = "none";
-        customModelTargetInput.focus();
-        toggleCustomTargetBtn.textContent = "📋 列表";
+      const isVisible = customModelBar.style.display !== "none";
+      customModelBar.style.display = isVisible ? "none" : "block";
+      toggleCustomTargetBtn.classList.toggle("active", !isVisible);
+      if (!isVisible && customTargetProvider) {
+        customTargetProvider.focus();
       }
+    });
+  }
+
+  if (closeCustomModelBarBtn && customModelBar) {
+    closeCustomModelBarBtn.addEventListener("click", () => {
+      customModelBar.style.display = "none";
+      if (toggleCustomTargetBtn) toggleCustomTargetBtn.classList.remove("active");
+    });
+  }
+
+  if (customFillOrcarouter) {
+    customFillOrcarouter.addEventListener("click", () => {
+      if (customTargetProvider) customTargetProvider.value = "OrcaRouter";
+      if (customTargetModel) customTargetModel.value = "deepseek/deepseek-chat";
+      if (customTargetBaseUrl) customTargetBaseUrl.value = "https://api.orcarouter.com/v1";
+      if (customTargetApiKey) customTargetApiKey.placeholder = "sk-or-...";
+    });
+  }
+
+  if (customFillSiliconflow) {
+    customFillSiliconflow.addEventListener("click", () => {
+      if (customTargetProvider) customTargetProvider.value = "SiliconFlow";
+      if (customTargetModel) customTargetModel.value = "deepseek-ai/DeepSeek-V3";
+      if (customTargetBaseUrl) customTargetBaseUrl.value = "https://api.siliconflow.cn/v1";
+      if (customTargetApiKey) customTargetApiKey.placeholder = "sk-...";
+    });
+  }
+
+  if (customFillOllama) {
+    customFillOllama.addEventListener("click", () => {
+      if (customTargetProvider) customTargetProvider.value = "Ollama";
+      if (customTargetModel) customTargetModel.value = "qwen2.5:7b";
+      if (customTargetBaseUrl) customTargetBaseUrl.value = "http://localhost:11434/v1";
+      if (customTargetApiKey) customTargetApiKey.value = "ollama";
     });
   }
 

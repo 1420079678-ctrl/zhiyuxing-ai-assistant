@@ -134,14 +134,9 @@
               <div class="config-item">
                 <label for="model_target">🎯 目标模型:</label>
                 <select id="model_target" name="model_target"></select>
-                <input
-                  id="custom_model_target"
-                  name="custom_model_target"
-                  type="text"
-                  placeholder="输入自定义模型ID (如 llama-3-70b)"
-                  style="display:none; width: 180px;"
-                />
-                <button type="button" id="toggle-custom-target-btn" class="text-btn" title="切换自定义模型ID输入">✏️ 自定义</button>
+                <button type="button" id="toggle-custom-target-btn" class="custom-target-pill-btn" title="自定义配置模型（供应商、Base URL、API Key、模型名）">
+                  ✨ 自定义配置模型
+                </button>
                 <span id="model-helper" class="helper-bubble"></span>
               </div>
 
@@ -159,6 +154,40 @@
                   type="text"
                   placeholder="例如：突出三步拆解 / 强调边界对齐"
                 />
+              </div>
+            </div>
+
+            <!-- Custom Model Quick Config Bar (Collapsible) -->
+            <div id="custom-model-bar" class="custom-model-bar" style="display:none;">
+              <div class="custom-bar-header">
+                <div class="custom-bar-title">
+                  <span class="custom-dot"></span>
+                  <strong>自定义模型直连 (按此配置发送本次请求)</strong>
+                </div>
+                <div class="custom-bar-actions">
+                  <button type="button" id="custom-fill-orcarouter" class="chip-mini">使用 OrcaRouter 网关</button>
+                  <button type="button" id="custom-fill-siliconflow" class="chip-mini">使用 硅基流动</button>
+                  <button type="button" id="custom-fill-ollama" class="chip-mini">使用 本地 Ollama</button>
+                  <button type="button" id="close-custom-model-bar-btn" class="text-btn" style="color:var(--text-light); margin-left: 8px;">✕ 关闭</button>
+                </div>
+              </div>
+              <div class="custom-bar-grid">
+                <div class="custom-input-group">
+                  <label for="custom-target-provider">供应商名称 (Provider):</label>
+                  <input type="text" id="custom-target-provider" placeholder="例如：OrcaRouter / SiliconFlow / PrivateGW" />
+                </div>
+                <div class="custom-input-group">
+                  <label for="custom-target-model">模型名称 (Model):</label>
+                  <input type="text" id="custom-target-model" placeholder="例如：deepseek-chat / llama-3-70b" />
+                </div>
+                <div class="custom-input-group custom-input-group-wide">
+                  <label for="custom-target-baseurl">API Base URL:</label>
+                  <input type="url" id="custom-target-baseurl" placeholder="https://api.orcarouter.com/v1" />
+                </div>
+                <div class="custom-input-group custom-input-group-wide">
+                  <label for="custom-target-apikey">API Key (密钥):</label>
+                  <input type="password" id="custom-target-apikey" placeholder="sk-..." autocomplete="off" />
+                </div>
               </div>
             </div>
 

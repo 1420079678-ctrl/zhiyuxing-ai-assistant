@@ -11,6 +11,9 @@ class ChatRequest(BaseModel):
     system_hint: Optional[str] = Field(default=None, description="可选的额外系统提示")
     response_style: Optional[str] = Field(default="balanced", description="回答风格")
     model_target: Optional[str] = Field(default="configured", description="模型目标")
+    custom_provider: Optional[str] = Field(default=None, description="自定义模型提供商名称")
+    custom_base_url: Optional[str] = Field(default=None, description="自定义模型 API Base URL")
+    custom_api_key: Optional[str] = Field(default=None, description="自定义模型 API Key")
     session_id: Optional[str] = Field(default=None, description="会话 ID；为空时自动创建")
     scenario: Optional[str] = Field(default="campus", description="业务场景：campus (高校学业成长) 或 enterprise (企业员工EAP关怀)")
 
