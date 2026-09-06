@@ -3,113 +3,144 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>知愈星 AI Assistant (ZhiYuXing Copilot) · 企业级多场景心身关怀与行动赋能平台</title>
+    <title>知愈星 AI Assistant (ZhiYuXing Copilot) · 现代化心身关怀与行动赋能平台</title>
+    <!-- Modern Typography & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/static/style.css" />
   </head>
   <body>
+    <!-- Ambient Lighting Backdrop Glows -->
+    <div class="ambient-glow glow-top"></div>
+    <div class="ambient-glow glow-bottom"></div>
+
     <div class="app-shell">
-      <!-- Top Navigation Bar -->
+      <!-- 1. Top Navigation Bar (Linear / Vercel Ultra Header) -->
       <header class="top-nav">
         <div class="nav-brand">
-          <div class="brand-icon">✨</div>
-          <div class="brand-text">
-            <h1>知愈星 AI Assistant</h1>
-            <span class="brand-sub">ZhiYuXing Copilot Enterprise</span>
+          <div class="brand-avatar">
+            <span class="brand-sparkle">✨</span>
           </div>
-          <span class="badge badge-primary">v1.0.0 Commercial</span>
-        </div>
-
-        <div class="scenario-selector-bar">
-          <span class="scenario-label">场景模式:</span>
-          <div class="scenario-pills" id="scenario-pills">
-            <button type="button" class="scenario-pill active" data-scenario="campus">
-              🎓 高校青年成长
-            </button>
-            <button type="button" class="scenario-pill" data-scenario="enterprise">
-              🏢 企业员工 EAP 关怀
-            </button>
+          <div class="brand-titles">
+            <div class="brand-name-row">
+              <span class="brand-title">知愈星 Copilot</span>
+              <span class="pill-badge pill-badge-pro">Enterprise v1.2</span>
+            </div>
+            <span class="brand-sub">ZhiYuXing AI Assistant · 心身关怀与行动赋能</span>
           </div>
         </div>
 
-        <div class="nav-actions">
-          <button id="open-settings-modal-btn" class="btn btn-secondary btn-sm" type="button">
-            ⚙️ 密钥与模型设置
+        <!-- Scenario Mode Switcher -->
+        <div class="scenario-segmented-control">
+          <button type="button" class="scenario-btn active" data-scenario="campus">
+            <span class="btn-icon">🎓</span>
+            <span class="btn-text">高校青年成长</span>
           </button>
-          <a href="/docs" target="_blank" class="nav-link">Swagger API</a>
-          <a href="/metrics" target="_blank" class="nav-link">Prometheus Metrics</a>
-          <span id="runtime-badge" class="status-badge">系统检测中</span>
+          <button type="button" class="scenario-btn" data-scenario="enterprise">
+            <span class="btn-icon">🏢</span>
+            <span class="btn-text">企业员工 EAP 关怀</span>
+          </button>
+        </div>
+
+        <!-- Nav Right Actions -->
+        <div class="nav-actions">
+          <button id="open-settings-modal-btn" class="nav-btn nav-btn-primary" type="button">
+            <span class="btn-icon">⚙️</span>
+            <span>密钥与模型设置</span>
+          </button>
+          <div class="nav-divider"></div>
+          <a href="/docs" target="_blank" class="nav-link" title="OpenAPI / Swagger">API 文档</a>
+          <a href="/metrics" target="_blank" class="nav-link" title="Prometheus Metrics">指标监控</a>
+          <span id="runtime-badge" class="badge-status-dot">系统就绪</span>
         </div>
       </header>
 
-      <!-- Main Layout: 3 Columns -->
+      <!-- 2. Workspace Grid (3-Column Modern Glass Layout) -->
       <div class="workspace-grid">
-        <!-- Column 1: Sidebar -->
+        <!-- Sidebar: Sessions & Knowledge -->
         <aside class="sidebar-pane">
-          <div class="sidebar-action">
-            <button id="new-chat-btn" class="btn btn-primary btn-block" type="button">
-              + 新建会话
+          <div class="sidebar-top-action">
+            <button id="new-chat-btn" class="btn-new-chat" type="button">
+              <span class="plus-icon">＋</span>
+              <span>开启新对话</span>
             </button>
           </div>
 
-          <div class="sidebar-section">
-            <div class="section-title-row">
-              <span class="sidebar-section-title">最近会话 (Sessions)</span>
-              <button id="reset-session-button" class="text-btn" type="button" title="重置当前会话">重置</button>
+          <div class="sidebar-group">
+            <div class="sidebar-group-header">
+              <span class="sidebar-group-title">最近对话 (Sessions)</span>
+              <button id="reset-session-button" class="text-link-btn" type="button" title="重置当前对话">清空</button>
             </div>
-            <ul id="session-nav-list" class="session-nav-list">
-              <li class="session-nav-item active" data-id="">
+            <ul id="session-nav-list" class="session-list">
+              <li class="session-item active" data-id="">
+                <span class="session-item-icon">💬</span>
                 <span class="session-title">当前活动会话</span>
               </li>
             </ul>
           </div>
 
-          <div class="sidebar-section">
-            <div class="section-title-row">
-              <span class="sidebar-section-title">知识库 (Enterprise RAG)</span>
-              <button id="open-knowledge-modal-btn" class="text-btn" type="button">管理</button>
+          <div class="sidebar-group">
+            <div class="sidebar-group-header">
+              <span class="sidebar-group-title">知识库 (Enterprise RAG)</span>
+              <button id="open-knowledge-modal-btn" class="text-link-btn" type="button">管理</button>
             </div>
-            <div class="sidebar-knowledge-summary">
-              <span id="sidebar-doc-count">内置 7 篇核心政策与干预指南</span>
-              <button id="quick-add-doc-btn" class="btn btn-secondary btn-sm" type="button">+ 上传新知识</button>
+            <div class="knowledge-card-widget">
+              <div class="knowledge-widget-header">
+                <span class="widget-icon">📚</span>
+                <span id="sidebar-doc-count" class="widget-title">挂载 7 篇核心政策与干预指南</span>
+              </div>
+              <p class="widget-sub">专业学术心理指引、SOP与干预知识向量索引</p>
+              <button id="quick-add-doc-btn" class="btn-widget-action" type="button">+ 扩充新知识文档</button>
             </div>
           </div>
 
+          <!-- Promotion & Footer -->
           <div class="sidebar-footer">
-            <div class="partner-card">
-              <div class="partner-header">
-                <span class="partner-badge">推荐网关</span>
-                <a href="https://www.orcarouter.ai/ref/ref_f60521be8c405c4c116f" target="_blank" class="partner-name">OrcaRouter</a>
+            <div class="partner-glass-card">
+              <div class="partner-row">
+                <span class="partner-tag">推荐模型路由</span>
+                <a href="https://www.orcarouter.ai/ref/ref_f60521be8c405c4c116f" target="_blank" class="partner-brand">OrcaRouter</a>
               </div>
-              <p class="partner-desc">一键接入弹性多模型路由与高并发负载</p>
-              <a href="/project-docs/orcarouter.md" target="_blank" class="partner-link">查看接入说明 →</a>
+              <p class="partner-intro">高性能分布式大模型路由，一键接入 DeepSeek / GPT-4o 高并发调度</p>
+              <a href="/project-docs/orcarouter.md" target="_blank" class="partner-learn-more">接入指南与配置说明 →</a>
             </div>
 
-            <div class="repo-links">
-              <a href="https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant" target="_blank" class="repo-link">
+            <div class="footer-links">
+              <a href="https://github.com/1420079678-ctrl/zhiyuxing-ai-assistant" target="_blank" class="footer-link">
                 ⭐ GitHub 开源主页
               </a>
-              <a href="/project-docs/commercialization.md" target="_blank" class="repo-link">
-                📄 商业落地白皮书
+              <span class="footer-dot">·</span>
+              <a href="/project-docs/commercialization.md" target="_blank" class="footer-link">
+                商业落地白皮书
               </a>
             </div>
           </div>
         </aside>
 
-        <!-- Column 2: Chat Main Workspace -->
+        <!-- Main Chat Area -->
         <main class="chat-workspace">
-          <!-- Suggestion Prompts Banner -->
-          <div class="prompt-chips-container" id="prompt-chips-container">
-            <!-- Dynamic suggestion chips injected by JS based on active scenario -->
+          <!-- Suggestion Chips Scroll Track -->
+          <div class="prompt-chips-wrapper">
+            <div class="prompt-chips-container" id="prompt-chips-container">
+              <!-- Dynamically populated chips -->
+            </div>
           </div>
 
-          <!-- Chat Timeline (Message Bubbles) -->
+          <!-- Chat Messages Timeline -->
           <div class="chat-timeline" id="chat-timeline">
             <div class="chat-bubble assistant-bubble intro-bubble">
-              <div class="bubble-avatar">✨</div>
-              <div class="bubble-content">
-                <div class="bubble-header">
-                  <strong>知愈星 AI (ZhiYuXing Copilot)</strong>
-                  <span class="bubble-time">系统</span>
+              <div class="bubble-avatar-wrapper">
+                <div class="bubble-avatar assistant-avatar">✨</div>
+              </div>
+              <div class="bubble-content-box">
+                <div class="bubble-top-meta">
+                  <span class="sender-name">知愈星 AI (ZhiYuXing Copilot)</span>
+                  <span class="sender-tag">官方赋能智能体</span>
+                  <span class="bubble-time">刚刚</span>
                 </div>
                 <div class="bubble-body" id="intro-body">
                   您好！我是知愈星 AI 心身关怀与行动赋能智能体。无论是学业压力排解、拖延内耗阻断，还是职场倦怠修复与任务切片破冰，我都可以为您提供兼具共情与可执行微步的支持。
@@ -118,8 +149,8 @@
             </div>
           </div>
 
-          <!-- Chat Input Controls -->
-          <div class="chat-input-deck">
+          <!-- Bottom Floating Input Studio Deck -->
+          <div class="chat-input-studio">
             <!-- Hidden backward-compatible response fields -->
             <div style="display:none;">
               <span id="status-badge">等待输入</span>
@@ -130,61 +161,66 @@
             </div>
 
             <!-- Configuration Selector Strip -->
-            <div class="config-strip">
-              <div class="config-item">
-                <label for="model_target">🎯 目标模型:</label>
-                <select id="model_target" name="model_target"></select>
-                <button type="button" id="toggle-custom-target-btn" class="custom-target-pill-btn" title="自定义配置模型（供应商、Base URL、API Key、模型名）">
-                  ✨ 自定义配置模型
+            <div class="config-bar">
+              <div class="config-cell">
+                <label for="model_target" class="config-label">目标模型:</label>
+                <div class="select-container">
+                  <select id="model_target" name="model_target" class="glass-select"></select>
+                </div>
+                <button type="button" id="toggle-custom-target-btn" class="btn-custom-pill" title="自定义配置模型（供应商、Base URL、API Key、模型名）">
+                  <span class="pill-spark">✨</span> 自定义直连模型
                 </button>
                 <span id="model-helper" class="helper-bubble"></span>
               </div>
 
-              <div class="config-item">
-                <label for="response_style">回答风格:</label>
-                <select id="response_style" name="response_style"></select>
+              <div class="config-cell">
+                <label for="response_style" class="config-label">响应风格:</label>
+                <div class="select-container">
+                  <select id="response_style" name="response_style" class="glass-select"></select>
+                </div>
                 <span id="style-helper" class="helper-bubble"></span>
               </div>
 
-              <div class="config-item hint-toggle-item">
-                <label for="system_hint">补充指令:</label>
+              <div class="config-cell config-cell-hint">
+                <label for="system_hint" class="config-label">补充提示:</label>
                 <input
                   id="system_hint"
                   name="system_hint"
                   type="text"
+                  class="glass-input"
                   placeholder="例如：突出三步拆解 / 强调边界对齐"
                 />
               </div>
             </div>
 
-            <!-- Custom Model Quick Config Bar (Collapsible) -->
-            <div id="custom-model-bar" class="custom-model-bar" style="display:none;">
-              <div class="custom-bar-header">
-                <div class="custom-bar-title">
-                  <span class="custom-dot"></span>
-                  <strong>自定义模型直连 (按此配置发送本次请求)</strong>
+            <!-- Custom Model Quick Direct Connect Box (Collapsible) -->
+            <div id="custom-model-bar" class="custom-model-box" style="display:none;">
+              <div class="custom-box-top">
+                <div class="custom-box-title">
+                  <span class="pulse-indicator"></span>
+                  <strong>自定义模型直连参数 (本次请求按此配置实时路由)</strong>
                 </div>
-                <div class="custom-bar-actions">
-                  <button type="button" id="custom-fill-orcarouter" class="chip-mini">使用 OrcaRouter 网关</button>
-                  <button type="button" id="custom-fill-siliconflow" class="chip-mini">使用 硅基流动</button>
-                  <button type="button" id="custom-fill-ollama" class="chip-mini">使用 本地 Ollama</button>
-                  <button type="button" id="close-custom-model-bar-btn" class="text-btn" style="color:var(--text-light); margin-left: 8px;">✕ 关闭</button>
+                <div class="custom-box-presets">
+                  <button type="button" id="custom-fill-orcarouter" class="chip-action">OrcaRouter 推荐</button>
+                  <button type="button" id="custom-fill-siliconflow" class="chip-action">硅基流动</button>
+                  <button type="button" id="custom-fill-ollama" class="chip-action">本地 Ollama</button>
+                  <button type="button" id="close-custom-model-bar-btn" class="close-custom-btn">✕ 收起</button>
                 </div>
               </div>
-              <div class="custom-bar-grid">
-                <div class="custom-input-group">
+              <div class="custom-box-grid">
+                <div class="box-field">
                   <label for="custom-target-provider">供应商名称 (Provider):</label>
                   <input type="text" id="custom-target-provider" placeholder="例如：OrcaRouter / SiliconFlow / PrivateGW" />
                 </div>
-                <div class="custom-input-group">
-                  <label for="custom-target-model">模型名称 (Model):</label>
+                <div class="box-field">
+                  <label for="custom-target-model">模型标识 (Model):</label>
                   <input type="text" id="custom-target-model" placeholder="例如：deepseek-chat / llama-3-70b" />
                 </div>
-                <div class="custom-input-group custom-input-group-wide">
+                <div class="box-field">
                   <label for="custom-target-baseurl">API Base URL:</label>
                   <input type="url" id="custom-target-baseurl" placeholder="https://api.orcarouter.com/v1" />
                 </div>
-                <div class="custom-input-group custom-input-group-wide">
+                <div class="box-field">
                   <label for="custom-target-apikey">API Key (密钥):</label>
                   <input type="password" id="custom-target-apikey" placeholder="sk-..." autocomplete="off" />
                 </div>
@@ -192,8 +228,8 @@
             </div>
 
             <!-- Input Box -->
-            <form id="chat-form" class="input-form">
-              <div class="textarea-wrapper">
+            <form id="chat-form" class="studio-input-form">
+              <div class="studio-textarea-card">
                 <textarea
                   id="message"
                   name="message"
@@ -201,10 +237,14 @@
                   placeholder="输入您正在面临的压力、困惑或交付挑战... (Enter 发送，Shift+Enter 换行)"
                   required
                 ></textarea>
-                <div class="form-actions">
-                  <div class="stream-toggle-badge">⚡ 实时流式响应已启用</div>
-                  <button id="submit-button" class="btn btn-primary submit-btn" type="submit">
-                    发送 (Send)
+                <div class="studio-form-bottom">
+                  <div class="stream-badge">
+                    <span class="live-dot"></span>
+                    <span>SSE 实时流式传输已就绪</span>
+                  </div>
+                  <button id="submit-button" class="btn-send-studio" type="submit">
+                    <span>发送消息</span>
+                    <span class="send-arrow">↵</span>
                   </button>
                 </div>
               </div>
@@ -212,107 +252,119 @@
           </div>
         </main>
 
-        <!-- Column 3: Live Observability & RAG Inspector -->
+        <!-- Observability & Telemetry Inspector (Right Pane) -->
         <aside class="inspector-pane">
-          <div class="inspector-section">
-            <h3 class="inspector-title">系统状态与遥测 (Telemetry)</h3>
+          <div class="inspector-card">
+            <div class="inspector-header">
+              <span class="inspector-icon">📊</span>
+              <h3 class="inspector-title">系统遥测与运行状态</h3>
+            </div>
             <div class="metrics-grid">
-              <div class="metric-cell">
-                <span class="metric-label">当前提供商</span>
+              <div class="metric-block">
+                <span class="metric-label">服务供应商</span>
                 <strong id="provider-name" class="metric-val">-</strong>
               </div>
-              <div class="metric-cell">
-                <span class="metric-label">当前模型</span>
+              <div class="metric-block">
+                <span class="metric-label">当前挂载模型</span>
                 <strong id="model-name" class="metric-val">-</strong>
               </div>
-              <div class="metric-cell">
-                <span class="metric-label">风险等级</span>
-                <strong id="risk-level" class="risk-indicator risk-indicator-low">常规场景</strong>
+              <div class="metric-block">
+                <span class="metric-label">安全防护雷达</span>
+                <strong id="risk-level" class="risk-pill risk-low">常规场景</strong>
               </div>
-              <div class="metric-cell">
-                <span class="metric-label">记忆条数</span>
+              <div class="metric-block">
+                <span class="metric-label">会话记忆轮数</span>
                 <strong id="memory-count" class="metric-val">0</strong>
               </div>
-              <div class="metric-cell">
-                <span class="metric-label">知识命中</span>
+              <div class="metric-block">
+                <span class="metric-label">知识命中切片</span>
                 <strong id="knowledge-count" class="metric-val">0</strong>
               </div>
-              <div class="metric-cell">
-                <span class="metric-label">活动会话</span>
-                <strong id="session-id" class="metric-val metric-val-mono">新会话</strong>
+              <div class="metric-block">
+                <span class="metric-label">会话标识</span>
+                <strong id="session-id" class="metric-val metric-mono">新会话</strong>
               </div>
-              <div class="metric-cell metric-cell-full">
-                <span class="metric-label">API 接入地址</span>
-                <strong id="base-url" class="metric-val metric-val-mono">-</strong>
+              <div class="metric-block metric-full">
+                <span class="metric-label">API Base URL</span>
+                <strong id="base-url" class="metric-val metric-mono">-</strong>
               </div>
             </div>
-            <button id="inspector-settings-btn" class="btn btn-secondary btn-sm btn-block" type="button" style="margin-top: 10px;">
-              ⚙️ 配置 API Key / 切换模型
+            <button id="inspector-settings-btn" class="btn-inspector-action" type="button">
+              ⚙️ 管理 API Key / 切换大模型
             </button>
           </div>
 
           <!-- RAG Hits Panel -->
-          <div class="inspector-section">
-            <h3 class="inspector-title">本轮知识检索 (RAG Citations)</h3>
+          <div class="inspector-card">
+            <div class="inspector-header">
+              <span class="inspector-icon">🔍</span>
+              <h3 class="inspector-title">本轮知识检索 (RAG Citations)</h3>
+            </div>
             <ul id="knowledge-list" class="knowledge-cards-list">
-              <li class="empty-hint">发送消息后，系统将自动检索匹配的知识库切片并在此穿透展示。</li>
+              <li class="empty-hint">发送消息后，系统将自动穿透检索匹配的知识库切片并在此结构化呈现。</li>
             </ul>
           </div>
 
-          <!-- Compatibility & Security Check -->
-          <div class="inspector-section">
-            <div class="section-title-row">
-              <h3 class="inspector-title">API 接入合规检查</h3>
-              <button id="compatibility-button" class="text-btn" type="button">重新检测</button>
+          <!-- Compatibility Check -->
+          <div class="inspector-card">
+            <div class="inspector-header">
+              <span class="inspector-icon">🛡️</span>
+              <div class="inspector-title-row">
+                <h3 class="inspector-title">API 接入合规检查</h3>
+                <button id="compatibility-button" class="text-link-btn" type="button">重新检测</button>
+              </div>
             </div>
             <p id="compatibility-summary" class="compatibility-summary">检测中...</p>
             <ul id="compatibility-list" class="compatibility-checks-list"></ul>
           </div>
 
-          <!-- Quick Actions & Feedback -->
-          <div class="inspector-section">
-            <h3 class="inspector-title">回复质量反馈</h3>
-            <div class="feedback-actions">
-              <button id="feedback-helpful" class="btn btn-secondary btn-sm" type="button" disabled>👍 建议很有帮助</button>
-              <button id="feedback-needs-more" class="btn btn-secondary btn-sm" type="button" disabled>💡 希望更具体</button>
+          <!-- Feedback -->
+          <div class="inspector-card">
+            <div class="inspector-header">
+              <span class="inspector-icon">💬</span>
+              <h3 class="inspector-title">回复质量反馈</h3>
             </div>
-            <span id="feedback-status" class="feedback-status">反馈功能在生成回复后就绪</span>
+            <div class="feedback-btn-group">
+              <button id="feedback-helpful" class="btn-feedback" type="button" disabled>👍 建议很有帮助</button>
+              <button id="feedback-needs-more" class="btn-feedback" type="button" disabled>💡 希望更具体</button>
+            </div>
+            <span id="feedback-status" class="feedback-status">生成回复后可直接评价</span>
           </div>
         </aside>
       </div>
 
       <!-- Knowledge Base Modal -->
       <div id="knowledge-modal" class="modal-overlay" style="display:none;">
-        <div class="modal-dialog">
-          <div class="modal-header">
-            <h3>企业知识库与干预政策管理</h3>
-            <button id="close-knowledge-modal-btn" class="modal-close-btn">&times;</button>
+        <div class="modal-window">
+          <div class="modal-head">
+            <div class="modal-head-title">
+              <span class="modal-icon">📚</span>
+              <h3>企业知识库与干预政策管理</h3>
+            </div>
+            <button id="close-knowledge-modal-btn" class="modal-close-x">&times;</button>
           </div>
-          <div class="modal-body">
-            <div class="modal-split">
-              <!-- Left: Document List -->
-              <div class="doc-list-col">
-                <h4>已挂载文档列表</h4>
-                <ul id="modal-doc-list" class="doc-table-list"></ul>
+          <div class="modal-content">
+            <div class="modal-columns">
+              <div class="modal-col-left">
+                <h4 class="col-title">已挂载文档列表</h4>
+                <ul id="modal-doc-list" class="modal-doc-items"></ul>
               </div>
-
-              <!-- Right: Upload Form -->
-              <div class="doc-upload-col">
-                <h4>上传自定义政策 / SOP / 指南</h4>
+              <div class="modal-col-right">
+                <h4 class="col-title">上传自定义干预政策 / SOP / 指南</h4>
                 <form id="upload-doc-form">
-                  <div class="form-group">
+                  <div class="form-field">
                     <label for="doc-title-input">文档标题:</label>
                     <input type="text" id="doc-title-input" placeholder="例如：某企业 EAP 心理关怀指引" required />
                   </div>
-                  <div class="form-group">
+                  <div class="form-field">
                     <label for="doc-id-input">文档唯一标识 (可选):</label>
                     <input type="text" id="doc-id-input" placeholder="例如：company-eap-guide" />
                   </div>
-                  <div class="form-group">
+                  <div class="form-field">
                     <label for="doc-content-input">Markdown 内容 (至少 20 字符):</label>
                     <textarea id="doc-content-input" rows="8" placeholder="粘贴 Markdown 文本，系统将自动进行分词索引并参与 RAG 检索..." required></textarea>
                   </div>
-                  <button type="submit" class="btn btn-primary">写入知识库并立即生效</button>
+                  <button type="submit" class="btn-modal-primary">写入知识库并立即生效</button>
                   <span id="upload-doc-status" class="status-msg"></span>
                 </form>
               </div>
@@ -323,20 +375,23 @@
 
       <!-- Model & API Key Settings Modal -->
       <div id="settings-modal" class="modal-overlay" style="display:none;">
-        <div class="modal-dialog settings-modal-dialog">
-          <div class="modal-header">
-            <h3>⚙️ 模型与 API Key 配置管理</h3>
-            <button id="close-settings-modal-btn" class="modal-close-btn">&times;</button>
+        <div class="modal-window modal-window-settings">
+          <div class="modal-head">
+            <div class="modal-head-title">
+              <span class="modal-icon">⚙️</span>
+              <h3>全局模型与 API Key 配置管理</h3>
+            </div>
+            <button id="close-settings-modal-btn" class="modal-close-x">&times;</button>
           </div>
-          <div class="modal-body">
+          <div class="modal-content">
             <!-- Preset Quick Select Buttons -->
-            <div class="preset-buttons-container">
-              <div class="preset-header-row">
-                <span class="preset-label">一键选择推荐提供商与预设 (点击自动填入):</span>
-                <span class="preset-subhint">支持任何 OpenAI API 格式兼容的服务商</span>
+            <div class="preset-glass-section">
+              <div class="preset-section-top">
+                <span class="preset-section-title">一键选择推荐提供商与预设 (自动填充配置):</span>
+                <span class="preset-section-sub">支持任何标准 OpenAI API 格式兼容服务</span>
               </div>
-              <div class="preset-pills">
-                <button type="button" class="preset-pill preset-pill-featured" data-preset="orcarouter">🌐 OrcaRouter (推荐企业网关)</button>
+              <div class="preset-pills-row">
+                <button type="button" class="preset-pill preset-pill-star" data-preset="orcarouter">🌐 OrcaRouter (推荐企业网关)</button>
                 <button type="button" class="preset-pill" data-preset="deepseek-chat">⚡ DeepSeek V3</button>
                 <button type="button" class="preset-pill" data-preset="deepseek-r1">🧠 DeepSeek R1</button>
                 <button type="button" class="preset-pill" data-preset="openai">🤖 OpenAI GPT-4o</button>
@@ -346,62 +401,62 @@
                 <button type="button" class="preset-pill" data-preset="siliconflow">🌊 硅基流动</button>
                 <button type="button" class="preset-pill" data-preset="groq">⚡ Groq 高速</button>
                 <button type="button" class="preset-pill" data-preset="ollama">🦙 Ollama 本地私有化</button>
-                <button type="button" class="preset-pill preset-pill-custom" data-preset="custom">🛠️ 自定义第三方网关 (Custom)</button>
+                <button type="button" class="preset-pill preset-pill-user" data-preset="custom">🛠️ 自定义第三方网关</button>
               </div>
             </div>
 
-            <form id="model-settings-form" class="settings-form">
-              <div class="form-row-2">
-                <div class="form-group">
+            <form id="model-settings-form" class="settings-form-body">
+              <div class="form-grid-2">
+                <div class="form-field">
                   <label for="settings-provider-input">服务提供商 (Provider):</label>
                   <input type="text" id="settings-provider-input" placeholder="例如：DeepSeek / OpenAI / OrcaRouter" required />
                 </div>
-                <div class="form-group">
+                <div class="form-field">
                   <label for="settings-modelname-input">模型标识 (Model Name):</label>
                   <input type="text" id="settings-modelname-input" placeholder="例如：deepseek-chat / gpt-4o-mini" required />
                 </div>
               </div>
 
-              <div class="form-group">
+              <div class="form-field">
                 <label for="settings-baseurl-input">API Base URL (OpenAI 兼容地址):</label>
                 <input type="url" id="settings-baseurl-input" placeholder="https://api.deepseek.com" required />
               </div>
 
-              <div class="form-group">
-                <label for="settings-key-input">API Key (私钥安全保护):</label>
-                <div class="input-with-action">
+              <div class="form-field">
+                <label for="settings-key-input">API Key (私钥保护):</label>
+                <div class="key-input-row">
                   <input type="password" id="settings-key-input" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
-                  <button type="button" id="toggle-key-visibility-btn" class="btn btn-secondary btn-sm" title="显示或隐藏密钥">👁️ 显示</button>
+                  <button type="button" id="toggle-key-visibility-btn" class="btn-key-toggle">👁️ 显示</button>
                 </div>
-                <span class="field-hint">密钥保存后仅在本地服务器与接口调用时使用，绝不外泄。</span>
+                <span class="field-hint-text">密钥仅在服务器与所配提供商通信时直接使用，绝不上传到任何第三方。</span>
               </div>
 
-              <div class="form-row-2">
-                <div class="form-group">
+              <div class="form-grid-2">
+                <div class="form-field">
                   <label for="settings-temperature-input">生成多样性 (Temperature 0.0 ~ 1.5):</label>
                   <input type="number" id="settings-temperature-input" step="0.1" min="0.0" max="1.5" value="0.7" />
                 </div>
-                <div class="form-group form-group-checkbox">
+                <div class="form-field form-field-checkbox">
                   <label>
                     <input type="checkbox" id="settings-demo-mode-checkbox" />
-                    强制进入本地免 Key 演示模式
+                    强制进入本地免 Key 离线演示模式
                   </label>
                 </div>
               </div>
 
-              <div class="settings-modal-actions">
-                <button type="button" id="settings-probe-btn" class="btn btn-secondary">
+              <div class="settings-dialog-footer">
+                <button type="button" id="settings-probe-btn" class="btn-probe">
                   🧪 一键连通性测试 (Probe)
                 </button>
-                <button type="button" id="settings-reset-demo-btn" class="text-btn" style="color:var(--text-muted);">
+                <button type="button" id="settings-reset-demo-btn" class="text-link-btn" style="color:var(--text-tertiary);">
                   重置为本地演示
                 </button>
-                <button type="submit" id="settings-save-btn" class="btn btn-primary" style="margin-left: auto;">
+                <button type="submit" id="settings-save-btn" class="btn-save-settings">
                   💾 保存并应用生效
                 </button>
               </div>
 
-              <div id="settings-status-banner" class="settings-status-banner" style="display:none;"></div>
+              <div id="settings-status-banner" class="settings-banner" style="display:none;"></div>
             </form>
           </div>
         </div>

@@ -100,7 +100,7 @@ function setScenario(scenario) {
   activeScenario = scenario;
   window.localStorage.setItem(SCENARIO_STORAGE_KEY, scenario);
 
-  document.querySelectorAll(".scenario-pill").forEach((pill) => {
+  document.querySelectorAll(".scenario-pill, .scenario-btn").forEach((pill) => {
     pill.classList.toggle("active", pill.getAttribute("data-scenario") === scenario);
   });
 
@@ -152,15 +152,16 @@ function appendMessageBubble(role, content, meta = {}) {
   bubble.className = `chat-bubble ${role === "user" ? "user-bubble" : "assistant-bubble"}`;
 
   const avatar = document.createElement("div");
-  avatar.className = "bubble-avatar";
+  avatar.className = `bubble-avatar ${role === "user" ? "user-avatar" : "assistant-avatar"}`;
   avatar.textContent = role === "user" ? "👤" : "✨";
 
   const contentDiv = document.createElement("div");
-  contentDiv.className = "bubble-content";
+  contentDiv.className = "bubble-content-box bubble-content";
 
   const header = document.createElement("div");
-  header.className = "bubble-header";
+  header.className = "bubble-top-meta bubble-header";
   const nameStrong = document.createElement("strong");
+  nameStrong.className = "sender-name";
   nameStrong.textContent = role === "user" ? "您" : meta.name || "知愈星 AI";
   const timeSpan = document.createElement("span");
   timeSpan.className = "bubble-time";
@@ -848,13 +849,11 @@ async function refreshMetaAndUI() {
 async function init() {
   // 1. Setup scenario
   setScenario(activeScenario);
-  if (scenarioPills) {
-    scenarioPills.querySelectorAll(".scenario-pill").forEach((pill) => {
-      pill.addEventListener("click", () => {
-        setScenario(pill.getAttribute("data-scenario"));
-      });
+  document.querySelectorAll(".scenario-pill, .scenario-btn").forEach((pill) => {
+    pill.addEventListener("click", () => {
+      setScenario(pill.getAttribute("data-scenario"));
     });
-  }
+  });
 
   // 2. Fetch meta
   await refreshMetaAndUI();
