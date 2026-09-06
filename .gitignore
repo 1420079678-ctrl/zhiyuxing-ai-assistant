@@ -12,3 +12,6 @@ public-demo-url.txt
 dist/
 data/
 *.db
+
+# Local model configuration backup (may contain API keys)
+.env.before-orcarouter

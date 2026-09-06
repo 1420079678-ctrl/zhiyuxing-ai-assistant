@@ -18,6 +18,17 @@
 
 如果这个项目对你有帮助，欢迎点一个 `Star`。
 
+## OrcaRouter 可选模型接入
+
+[![OrcaRouter 可选提供商](https://img.shields.io/badge/OrcaRouter-Optional_provider-2563eb)](https://www.orcarouter.ai/ref/ref_f60521be8c405c4c116f)
+
+可通过项目已有的 OpenAI 兼容配置接入 OrcaRouter，在自托管后端中使用其模型服务。详见 [OrcaRouter 接入指南](docs/orcarouter.md)，包含可重放配置命令、密钥设置、验证和回滚步骤。
+
+- [前往 OrcaRouter](https://www.orcarouter.ai/ref/ref_f60521be8c405c4c116f) · [官方快速开始](https://docs.orcarouter.ai/getting-started/quickstart)
+- 上述链接为项目推荐链接；通过该链接使用服务，维护者可能获得推荐收益。
+- 状态记录（2026-09-06）：推广计划已生效；开源目录尚未发布，应用标识尚未签发。本文提供配置接入方式，尚未完成真实 API 调用验证，不代表官方背书。
+- GitHub Pages 演示仍使用本地演示逻辑；真实调用需自行配置后端和 API Key。
+
 ## 快速入口
 
 - `在线体验`：[Live Demo](https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/)

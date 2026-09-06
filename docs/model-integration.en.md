@@ -205,3 +205,7 @@ So users can understand the current runtime setup without reading the code.
 - [DeepSeek API Quick Start](https://api-docs.deepseek.com/zh-cn/)
 - [DeepSeek Models and Pricing](https://api-docs.deepseek.com/zh-cn/quick_start/pricing)
 - [DeepSeek Reasoning Model Guide](https://api-docs.deepseek.com/guides/reasoning_model)
+
+## OrcaRouter
+
+Use the existing generic setup script to configure OrcaRouter as an OpenAI-compatible provider. See the [OrcaRouter guide](orcarouter.en.md) for the separate `ORCAROUTER_API_KEY`, endpoint, model ID, and live verification steps.

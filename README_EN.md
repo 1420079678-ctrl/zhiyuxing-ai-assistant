@@ -18,6 +18,17 @@ This repository is not just a concept showcase. It is structured as a runnable p
 
 If this project is useful to you, consider giving it a `Star`.
 
+## Optional OrcaRouter Integration
+
+[![OrcaRouter optional provider](https://img.shields.io/badge/OrcaRouter-Optional_provider-2563eb)](https://www.orcarouter.ai/ref/ref_f60521be8c405c4c116f)
+
+Use OrcaRouter through the project's existing OpenAI-compatible configuration in a self-hosted backend. The [OrcaRouter guide](docs/orcarouter.en.md) includes repeatable setup commands, key configuration, verification, and rollback steps.
+
+- [Open OrcaRouter](https://www.orcarouter.ai/ref/ref_f60521be8c405c4c116f) · [Official quickstart](https://docs.orcarouter.ai/getting-started/quickstart)
+- This is the project's referral link; the maintainer may earn referral revenue when you use the service through it.
+- Status recorded on 2026-09-06: the referral program is active; the open-source directory listing is not published and an app ID has not been issued. Configuration instructions are available, but a live API call has not been verified. This does not imply official endorsement.
+- The GitHub Pages demo still uses local demo logic; real calls require your own backend configuration and API key.
+
 ## Quick Links
 
 - `Try online`:[Live Demo](https://1420079678-ctrl.github.io/zhiyuxing-ai-assistant/)

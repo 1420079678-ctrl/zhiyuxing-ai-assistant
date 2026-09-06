@@ -245,3 +245,7 @@ DEMO_MODE=false
 - [DeepSeek API 快速开始](https://api-docs.deepseek.com/zh-cn/)
 - [DeepSeek 模型与价格](https://api-docs.deepseek.com/zh-cn/quick_start/pricing)
 - [DeepSeek Reasoning Model](https://api-docs.deepseek.com/guides/reasoning_model)
+
+## OrcaRouter
+
+OrcaRouter 可通过现有通用配置脚本作为 OpenAI 兼容提供商接入。参阅 [OrcaRouter 接入指南](orcarouter.md)，按步骤配置独立的 `ORCAROUTER_API_KEY`、API 地址、模型名，并验证真实请求。
