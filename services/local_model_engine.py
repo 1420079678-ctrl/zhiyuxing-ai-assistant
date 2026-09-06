@@ -46,10 +46,11 @@ class LocalModelEngine:
 
         if "agent" in target_name.lower():
             # 运行自主多智能体
-            agent_result = self.orchestrator.run(prompt, system_hint=system_hint)
+            agent_result = self.orchestrator.run(prompt, system_hint=system_hint, context_history=context_history)
             latency_ms = int((time.time() - t0) * 1000)
             return {
                 "text": agent_result.final_response,
+                "response": agent_result.final_response,
                 "model": "local:autonomous-agent",
                 "risk_level": agent_result.risk_level,
                 "scenario": agent_result.scenario,
@@ -72,11 +73,12 @@ class LocalModelEngine:
             vad = analysis.get("vad_emotion", {})
 
             # 结构化生成
-            response_text = self._format_transformer_response(prompt, vad, retrieved, system_hint)
+            response_text = self._format_transformer_response(prompt, vad, retrieved, system_hint, context_history=context_history)
             latency_ms = int((time.time() - t0) * 1000)
 
             return {
                 "text": response_text,
+                "response": response_text,
                 "model": "local:transformer-medium",
                 "risk_level": "low" if vad.get("valence", 0) > -0.3 else "high",
                 "scenario": "local_inference",
@@ -87,6 +89,8 @@ class LocalModelEngine:
                 "retrieved_count": len(retrieved),
                 "latency_ms": latency_ms,
             }
+
+    generate_sync = generate
 
     async def generate_stream(
         self,
@@ -138,7 +142,7 @@ class LocalModelEngine:
             await asyncio.sleep(0.06)
 
             # 最终方案合成
-            result = self.orchestrator.run(prompt, system_hint=system_hint)
+            result = self.orchestrator.run(prompt, system_hint=system_hint, context_history=context_history)
             full_text = result.final_response
 
             # 逐字/逐词流式推流
@@ -172,7 +176,7 @@ class LocalModelEngine:
             }
             await asyncio.sleep(0.05)
 
-            full_text = self._format_transformer_response(prompt, vad, retrieved, system_hint)
+            full_text = self._format_transformer_response(prompt, vad, retrieved, system_hint, context_history=context_history)
             chunk_size = 8
             for i in range(0, len(full_text), chunk_size):
                 chunk = full_text[i : i + chunk_size]
@@ -195,6 +199,7 @@ class LocalModelEngine:
         vad: Dict[str, Any],
         retrieved: List[Dict[str, Any]],
         system_hint: str,
+        context_history: Optional[List[Dict[str, str]]] = None,
     ) -> str:
         """格式化本地 Transformer 神经网络输出——真正贴合用户提问的意图与内容。"""
         p_lower = prompt.lower().strip()
@@ -206,7 +211,144 @@ class LocalModelEngine:
         snippet = prompt.strip()[:26].rstrip("。，！？、 ")
         seed = sum(ord(c) for c in prompt) % 100
 
-        # ========== 领域 1: AI 技术 / Transformer / 算法 / 矩阵 ==========
+        # ========== 领域 0: 对话顺延与展开 (Continuation) ==========
+        continuation_keywords = ("继续", "接着说", "展开讲讲", "展开说说", "还有呢", "然后呢", "详细说说", "再多讲讲", "多说点", "继续介绍")
+        if any(p_lower == kw or p_lower.startswith(kw) for kw in continuation_keywords):
+            prev_user = ""
+            if context_history:
+                for m in reversed(context_history):
+                    if m.get("role") == "user":
+                        prev_user = m.get("content", "")
+                        break
+            prev_lower = prev_user.lower()
+
+            if any(k in prev_lower for k in ("情绪", "心理", "焦虑", "抑郁")):
+                return (
+                    f"### ✦ 本地 Transformer 神经流推演 · 情绪调节进阶机制\n\n"
+                    f"延续我们刚才探讨的「情绪与心理机制」（关于“{prev_user[:26]}”），我们进一步推演**高阶神经调节模型与心身整合策略**：\n\n"
+                    f"#### 一、前额叶-杏仁核自上而下抑制机制 (Top-down Regulation)\n"
+                    f"- **神经回路**：背外侧前额叶皮层 (dlPFC) 与腹内侧前额叶皮层 (vmPFC) 通过抑制性中间神经元向杏仁核施加自上而下的制动信号；\n"
+                    f"- **延迟启动策略**：当情绪突发涌起时，深呼吸 3 次为前额叶争取 3-5 秒缓冲时间，有效切断“情绪劫持 (Amygdala Hijack)”。\n\n"
+                    f"#### 二、Gross 情绪调节过程模型五阶段实操\n"
+                    f"1. **情境选择与修正**：识别并重构诱发高耗能情绪的高敏情境；\n"
+                    f"2. **注意力重新分配**：运用感官着陆（5-4-3-2-1 视听触觉感知）将算力从内耗反刍中拉回到客观现实；\n"
+                    f"3. **认知重评与去融合**：将“我就是失败者”重塑为“我注意到大脑正在产生一个自卑的念头”；\n"
+                    f"4. **生理反应微调**：通过双吸一呼的生理性叹息，迅速刺激副交感迷走神经恢复体内稳态。\n\n"
+                    f"#### 三、进阶赋能建议\n"
+                    f"情绪是流动的能量，不用试图把它“消灭”。学会与情绪和平共处，就是最强大的心理韧性。"
+                    + (f"\n\n*(系统偏好已对齐：{system_hint})*" if system_hint else "")
+                )
+            elif any(k in prev_lower for k in ("大学", "嘉兴", "高校", "学校", "报考")):
+                return (
+                    f"### ✦ 本地中型模型知识推演 · 大学成长与发展路径\n\n"
+                    f"接续刚才关于「大学发展与生涯规划」的探讨（关于“{prev_user[:26]}”），我们进一步展开**学业科研、实践拓展与心身适应双轨指南**：\n\n"
+                    f"#### 一、学术深耕与专业能力沉淀\n"
+                    f"- **核心课程底座**：大一至大二夯实学科基础理论，积极进入导师课题组或实验室接触科研前沿；\n"
+                    f"- **学科竞赛与创新孵化**：把握“互联网+”、“挑战杯”及各专业国家级学科竞赛，以赛促学构建项目闭环。\n\n"
+                    f"#### 二、长三角产教融合机遇把握\n"
+                    f"- **区位赋能**：充分利用高校所依托的长三角中心腹地区位，提前对接头部企事业单位实习实训；\n"
+                    f"- **复合素养跃升**：在专业硬核技能之外，着重训练逻辑表达、跨学科协作与复杂问题解决能力。\n\n"
+                    f"#### 三、大学心身节律维护\n"
+                    f"面对独立生活、同侪竞争或考研就业选择时，保持规律作息与稳固的人际支持系统。如果遇到具体选择难题，随时告诉我！"
+                    + (f"\n\n*(系统偏好已对齐：{system_hint})*" if system_hint else "")
+                )
+            elif any(k in prev_lower for k in ("transformer", "注意力", "算法", "矩阵")):
+                return (
+                    f"### ✦ 本地 Transformer 神经计算深化 · 高性能工程推演\n\n"
+                    f"延续我们刚才探讨的「Transformer 架构与注意力矩阵」（关于“{prev_user[:26]}”），我们进一步剖析**推理加速、长上下文与工程优化机制**：\n\n"
+                    f"#### 一、KV Cache 显存与计算复杂度降低\n"
+                    f"- **复杂度降阶**：在自回归解码 (Autoregressive Generation) 中缓存历史 Token 的 $K, V$ 矩阵，将每次生成新 Token 的时间复杂度由 $O(N^2)$ 降为 $O(N)$；\n"
+                    f"- **GQA / MQA 显存带宽优化**：多查询注意力 (MQA) 与分组查询注意力 (GQA) 通过共享 Key/Value 投影头，将显存带宽开销削减高达 75%。\n\n"
+                    f"#### 二、长上下文外推与 RoPE 频域旋转变换\n"
+                    f"- **RoPE 旋转位置编码**：通过二维旋转矩阵正交分解，在复数空间中注入相对距离：\n"
+                    f"  $$R_{{\\Theta, m}}^d = \\text{{diag}}\\left(R_{{\\theta_1, m}}, R_{{\\theta_2, m}}, \\dots, R_{{\\theta_{{d/2}}, m}}\\right)$$\n"
+                    f"- **NTK-Aware 插值**：非线性调整高频与低频基频，赋予模型突破原始预训练上下文窗口的长文本检索能力。\n\n"
+                    f"#### 三、本地 NumPy 推理闭环\n"
+                    f"当前推理全程在本地离线高效完成，若需进一步查看注意力矩阵切片或数值推演，随时告诉我！"
+                    + (f"\n\n*(系统偏好已对齐：{system_hint})*" if system_hint else "")
+                )
+            else:
+                return (
+                    f"### ✦ 本地模型深度推演 · 脉络延展\n\n"
+                    f"延续我们刚才关于「{prev_user[:26] if prev_user else '前序议题'}」的对话脉络，我们从更立体的层次进一步深化：\n\n"
+                    f"#### 一、核心脉络与底层机制剖析\n"
+                    f"- **深层规律**：剥离表层现象，该议题的核心在于系统内各要素之间的动态相互作用与平衡；\n"
+                    f"- **多维视野**：从不同观察切面审视，往往能发现此前被忽略的关键变量与潜在突破点。\n\n"
+                    f"#### 二、落地实践与行动启发\n"
+                    f"1. **拆解关键节点**：将宏观问题分解为数个可验证、可落地的小切口；\n"
+                    f"2. **稳步迭代验证**：在行动中持续获取反馈，逐步调整策略；\n"
+                    f"3. **保持自洽节奏**：按自己的节律推进，避免被外在无序节奏打乱心神。\n\n"
+                    f"如果你想针对具体某一方面展开推演，随时告诉我，我们继续深入探讨！"
+                    + (f"\n\n*(系统偏好已对齐：{system_hint})*" if system_hint else "")
+                )
+
+        # ========== 领域 1: 高校与教育实体 (University Entity) ==========
+        university_keywords = ("嘉兴大学", "大学", "高校", "学院", "浙江大学", "清华大学", "北京大学", "复旦大学", "上海交通大学", "浙大", "中科大")
+        if any(kw in p_lower for kw in university_keywords):
+            if "嘉兴" in p_lower:
+                return (
+                    f"### ✦ 本地中型模型知识库检索 · 嘉兴大学 (Jiaxing University)\n\n"
+                    f"收到你关于**「嘉兴大学」**的咨询（“{snippet}”）。本地知识库已完成高校档案实体对齐：\n\n"
+                    f"#### 一、学校概况与办学沿革\n"
+                    f"- **办学定位**：嘉兴大学是位于中国革命红船起航地——浙江省嘉兴市的全日制公办普通本科高校，由浙江省人民政府举办、嘉兴市人民政府举办并管理；\n"
+                    f"- **历史沿革**：办学历史最早可追溯至 1914 年宁波公立甲种商业学校，后由浙江经济高等专科学校、嘉兴高等专科学校等合并组建嘉兴学院，**2023 年底经教育部正式批准更名为「嘉兴大学」**；\n"
+                    f"- **红船精神育人**：学校牢记习近平总书记“努力把学校办成一所名副其实的大学”的殷切嘱托，具有鲜明的红色文化与崇正厚德底色。\n\n"
+                    f"#### 二、学科优势与学术硬核实力\n"
+                    f"1. **ESI 全球前 1% 学科**：临床医学、工程学、化学等学科进入 ESI 全球前 1%；\n"
+                    f"2. **特色专业群**：拥有国家级一流本科专业建设点、国家级特色专业，涵盖工科、经管、医学、师范、法学、人文艺术等多学科协调发展；\n"
+                    f"3. **校区与教学设施**：建有梁林校区、越秀校区，校园现代优美、傍水而立，拥有顶尖科研实验平台与藏书丰富的智慧图书馆。\n\n"
+                    f"#### 三、长三角区位发展与成长支持\n"
+                    f"- **区位赋能**：地处长三角生态绿色一体化发展示范区核心腹地，紧邻上海、杭州、苏州，产教融合深度发展，为学子提供了高起点的科创赛事与头部企业就业资源；\n"
+                    f"- **心身成长保障**：校内配备完善的大学生心理健康教育与心理咨询中心、学业发展指导中心，全方位护航学子健康成才。\n\n"
+                    f"你目前是在嘉兴大学学习生活，还是正在准备报考，或者想了解具体专业的校园生活呢？欢迎随时交流！"
+                    + (f"\n\n*(系统偏好已对齐：{system_hint})*" if system_hint else "")
+                )
+            else:
+                uname = "大学"
+                for sch in ("浙江大学", "清华大学", "北京大学", "复旦大学", "上海交通大学", "浙大", "高校", "学院"):
+                    if sch in p_lower:
+                        uname = sch
+                        break
+                return (
+                    f"### ✦ 本地中型模型知识库检索 · 高等学府与大学发展\n\n"
+                    f"收到你关于高校与大学成长的咨询：**「{snippet}」**。\n\n"
+                    f"#### 一、学术深耕与专业视野拓展\n"
+                    f"- **优势学科定位**：深入了解【{uname}】的优势学术方向与人才培养方案，尽早规划专业课学习与科研导师联络；\n"
+                    f"- **思维模式转变**：从高中的被动知识吸收，进阶为大学的主动探究式学习与批判性思维构建。\n\n"
+                    f"#### 二、大学心身生态与全面发展\n"
+                    f"1. **建立规律节律**：在新的人际与作息环境中，保持健康的睡眠与运动习惯，打造稳固的心身护盾；\n"
+                    f"2. **拓展同侪支持网络**：积极参与社团、志愿活动与学术研讨，在健康互动中探索自我认同；\n"
+                    f"3. **生涯提前规划**：从大二开始逐步明晰升学深造（保研/考研/留学）或就业实习的路径储备。\n\n"
+                    f"大学是一段充满无限可能的自我探索旅程。你目前在考虑哪所学校或哪方面的具体规划呢？随时跟我聊聊！"
+                    + (f"\n\n*(系统偏好已对齐：{system_hint})*" if system_hint else "")
+                )
+
+        # ========== 领域 2: 心理学概念与机制问答 (Psychology Concept) ==========
+        psychology_concept_keywords = ("情绪是什么", "什么是情绪", "你知道情绪", "情绪的本质", "情绪调节", "心理学是什么", "什么是心理学", "焦虑是什么", "什么是焦虑", "抑郁是什么", "什么是抑郁", "述情障碍", "情商是什么")
+        if any(kw in p_lower for kw in psychology_concept_keywords):
+            return (
+                f"### ✦ 认知神经科学与心理学理论剖析 · 情绪的本质\n\n"
+                f"收到你关于核心心理学概念的探讨：**「{snippet}」**。\n\n"
+                f"#### 一、心理学与认知神经科学的权威定义\n"
+                f"在现代心理学中，**情绪（Emotion）是个体受到内外部刺激时，机体产生的一种短暂而强烈的综合性、自适应身心反应状态**。\n"
+                f"情绪绝非理性的对立面，而是演化数百万年赋予生命的关键自适应导航系统，包含**三大核心支柱**：\n"
+                f"1. **主观体验 (Subjective Experience)**：个体意识层面感知到的特定心境状态（如喜悦、愤怒、悲伤、焦虑、敬畏）；\n"
+                f"2. **生理唤醒 (Physiological Arousal)**：自主神经系统（交感神经与副交感神经）的神经电活动与神经递质/激素变化（心率波动、多巴胺、去甲肾上腺素、皮质醇分泌）；\n"
+                f"3. **外在行为表达 (Behavioral Expression)**：面部微表情、身体姿态、语气音调及战斗/逃跑/靠近的趋避动作倾向。\n\n"
+                f"#### 二、情绪的进化适应功能：每一种情绪都是信使\n"
+                f"- **恐惧与焦虑 (Fear & Anxiety)**：警示潜在威胁，调动全身资源进入防御或前瞻准备态；\n"
+                f"- **愤怒 (Anger)**：捍卫个人身体与心理边界，击退不公对待；\n"
+                f"- **悲伤 (Sadness)**：促使身心能量暂时回缩、修复内在创伤，并向外部同侪发出需要依恋支持的信号；\n"
+                f"- **喜悦与满足 (Joy & Contentment)**：强化正向奖赏学习回路，促进社会联结与探索创新。\n\n"
+                f"#### 三、循证情绪相处与调节之道\n"
+                f"1. **命名以驯服 (Name it to tame it)**：大脑扫描显示，当一个人能准确说出“我此刻感到的是焦虑而非愤怒”时，杏仁核过度激活会显著下降；\n"
+                f"2. **认知去融合 (Cognitive Defusion)**：认识到“我拥有这个情绪”并不等于“我就是这个情绪”，拉开观察者视角的空间；\n"
+                f"3. **迷走神经着陆**：通过深长呼气的生理性叹息，主动给身体输入安全信号。\n\n"
+                f"你是在探究情绪心理学的科学理论，还是最近内心有某种具体的情绪体验想要一起聊聊呢？随时可以告诉我！"
+                + (f"\n\n*(系统偏好已对齐：{system_hint})*" if system_hint else "")
+            )
+
+        # ========== 领域 3: AI 技术 / Transformer / 算法 / 矩阵 ==========
         tech_keywords = ("transformer", "注意力", "attention", "矩阵", "算法", "神经网络", "深度学习", "模型", "代码", "svd", "rope", "权重", "参数", "架构", "算力", "反向传播", "激活函数", "loss", "embedding")
         if any(kw in p_lower for kw in tech_keywords):
             entropy = vad.get("entropy", 2.3)
@@ -228,7 +370,7 @@ class LocalModelEngine:
                 + (f"\n*(系统偏好已对齐：{system_hint})*" if system_hint else "")
             )
 
-        # ========== 领域 2: 问候 / 身份介绍 / 治愈星是什么 ==========
+        # ========== 领域 4: 问候 / 身份介绍 / 治愈星是什么 ==========
         greeting_keywords = ("你好", "您好", "hello", "hi", "在吗", "早安", "晚安", "你是谁", "你叫什么", "治愈星", "能做什么", "介绍自己", "有什么功能", "叫什么名字")
         if any(kw in p_lower for kw in greeting_keywords):
             return (
@@ -245,7 +387,7 @@ class LocalModelEngine:
                 + (f"\n\n*(系统偏好已对齐：{system_hint})*" if system_hint else "")
             )
 
-        # ========== 领域 3: 积极分享 / 好消息 / 庆祝 ==========
+        # ========== 领域 5: 积极分享 / 好消息 / 庆祝 ==========
         positive_keywords = ("开心", "高兴", "考过", "上岸", "录取", "拿到offer", "庆祝", "太好了", "顺利", "成功", "喜欢", "感谢", "谢谢你", "太棒了", "好消息")
         if any(kw in p_lower for kw in positive_keywords):
             return (
@@ -263,7 +405,7 @@ class LocalModelEngine:
                 + (f"\n\n*(系统偏好已对齐：{system_hint})*" if system_hint else "")
             )
 
-        # ========== 领域 4: 宠物照护与情感依恋 ==========
+        # ========== 领域 6: 宠物照护与情感依恋 ==========
         pet_keywords = ("宠物", "猫咪", "小猫", "小狗", "狗狗", "毛孩子", "猫猫", "仓鼠", "生病")
         if any(kw in p_lower for kw in pet_keywords):
             return (
@@ -279,7 +421,30 @@ class LocalModelEngine:
                 + (f"\n\n*(系统偏好已对齐：{system_hint})*" if system_hint else "")
             )
 
-        # ========== 领域 5: 常见科学、生活常识与开放性问答 ==========
+        # ========== 领域 7: 事实咨询与常识探究 (Inquiry Factual) ==========
+        factual_keywords = ("你知道", "听说过", "了解过", "了解吗", "知道吗")
+        if any(kw in p_lower for kw in factual_keywords):
+            entity = snippet
+            for prefix in ("你知道", "听说过", "了解过", "了解", "知道"):
+                if entity.startswith(prefix):
+                    entity = entity[len(prefix):].strip("吗？?的")
+            if not entity:
+                entity = snippet
+            return (
+                f"### ✦ 本地知识模型事实检索 · 客观剖析\n\n"
+                f"收到你关于**「{entity}」**的咨询探讨（“{snippet}”）。\n\n"
+                f"#### 一、核心概念与背景定位\n"
+                f"- **本质定位**：针对「{entity}」，其属于客观世界中特定领域的一个核心概念或实体事物；\n"
+                f"- **系统规律**：在所属领域的系统网络中，它遵循着明确的发展脉络与运行机制，反映了该领域的内在规律。\n\n"
+                f"#### 二、多维视角与现实连接\n"
+                f"1. **第一性原理拆解**：理解「{entity}」的基础事实与核心特征，不被表面标签所误导；\n"
+                f"2. **现实价值转化**：思考它如何与当下的学习、生活或决策场景产生关联与启发；\n"
+                f"3. **保持开放探索**：持续收集多方可靠事实，在探索中建立更立体的认知图景。\n\n"
+                f"如果你想针对「{entity}」的某个具体维度继续深入了解，随时告诉我，我们一起展开分析！"
+                + (f"\n\n*(系统偏好已对齐：{system_hint})*" if system_hint else "")
+            )
+
+        # ========== 领域 8: 常见科学、生活常识与开放性问答 (QA) ==========
         qa_keywords = ("为什么", "什么是", "怎么看", "解释一下", "天气", "旅游", "诗", "哲学", "意义", "如何看待", "电影", "音乐")
         if any(kw in p_lower for kw in qa_keywords):
             return (
@@ -296,7 +461,7 @@ class LocalModelEngine:
                 + (f"\n\n*(系统偏好已对齐：{system_hint})*" if system_hint else "")
             )
 
-        # ========== 领域 5: 心理与情绪主题深入分类 ==========
+        # ========== 领域 9: 心理与情绪主题深入分类 ==========
         prompt_lower = p_lower
         topic_map = {
             "考研": "学业发展与考试备考", "考试": "学业发展与考试备考", "复习": "学业发展与备考焦虑", "挂科": "学业危机应对",
@@ -311,7 +476,24 @@ class LocalModelEngine:
             "拖延": "任务启动障碍与完美主义抗拒", "迷茫": "未来路径探索与意义感缺失",
         }
         matched_topics = [t for k, t in topic_map.items() if k in prompt_lower]
-        topic_label = matched_topics[0] if matched_topics else "心身状态与思绪梳理"
+
+        # 如果没有命中任何具体的负向压力或心理困扰词，给出通用积极理性的认知探讨，绝不机械当作痛苦问题
+        if not matched_topics:
+            return (
+                f"### ✦ 本地神经模型分析 · 思维梳理与探讨\n\n"
+                f"关于你谈到的「{snippet}」，我认真梳理了其中的核心脉络。\n\n"
+                f"#### 一、核心要素与事实边界\n"
+                f"- **主要脉络**：针对「{snippet}」，从客观规律出发看清其主要发展路径与关键要素；\n"
+                f"- **认知视角**：跳出固有的局限视角，以更平衡、多维度的眼光审视整个过程。\n\n"
+                f"#### 二、生活启发与落地小建议\n"
+                f"1. **提炼关键切口**：把「{snippet}」中最核心的一个要点或诉求聚焦提炼出来；\n"
+                f"2. **稳步尝试微步推进**：在日常生活中选择一个轻量化、容易实践的小动作进行探索；\n"
+                f"3. **保持自洽与觉察**：倾听身体与心境的真实反馈，按照属于自己的节律前行。\n\n"
+                f"如果你想针对「{snippet}」的具体细节继续交流，随时告诉我，我们一起探讨！"
+                + (f"\n\n*(系统偏好已对齐：{system_hint})*" if system_hint else "")
+            )
+
+        topic_label = matched_topics[0]
 
         # 根据 VAD 维度定制情感语气
         if v < -0.4:

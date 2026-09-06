@@ -42,3 +42,30 @@ def test_normalize_response_style_supports_hint_fallback() -> None:
     style = normalize_response_style(None, "更鼓励一点")
 
     assert style == "encouraging"
+
+
+def test_demo_reply_factual_and_continuation_matching() -> None:
+    # 1. Jiaxing university inquiry
+    uni_reply = build_demo_reply("嘉兴大学你知道吗")
+    assert "嘉兴大学" in uni_reply
+    assert "痛点" not in uni_reply
+    assert "困惑或想寻找更好的解法是极其自然的反应" not in uni_reply
+
+    # 2. Emotion definition inquiry
+    emo_reply = build_demo_reply("你知道情绪是什么吗")
+    assert "情绪" in emo_reply
+    assert "主观体验" in emo_reply or "生理唤醒" in emo_reply
+    assert "痛点" not in emo_reply
+
+    # 3. Continuation with previous emotion context
+    history_emo = [{"role": "user", "content": "你知道情绪是什么吗"}, {"role": "assistant", "content": "情绪是..."}]
+    cont_emo = build_demo_reply("继续", conversation_history=history_emo)
+    assert "情绪" in cont_emo
+    assert "调节" in cont_emo or "杏仁核" in cont_emo or "前额叶" in cont_emo
+
+    # 4. Continuation with previous university context
+    history_uni = [{"role": "user", "content": "嘉兴大学你知道吗"}, {"role": "assistant", "content": "嘉兴大学是..."}]
+    cont_uni = build_demo_reply("继续", conversation_history=history_uni)
+    assert "大学" in cont_uni or "长三角" in cont_uni
+    assert "痛点" not in cont_uni
+

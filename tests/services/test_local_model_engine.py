@@ -74,3 +74,35 @@ async def test_local_model_engine_stream():
     assert len(delta_texts) > 0
     full_text = "".join(delta_texts)
     assert len(full_text) > 20
+
+
+def test_local_model_engine_university_and_emotion_and_continuation():
+    engine = get_local_model_engine()
+
+    # 1. 嘉兴大学 inquiry in local transformer
+    uni_res = engine.generate("local:transformer-medium", "嘉兴大学你知道吗")
+    assert "嘉兴大学" in uni_res["text"]
+    assert "2023" in uni_res["text"] or "红船" in uni_res["text"] or "校区" in uni_res["text"]
+    assert "痛点" not in uni_res["text"]
+
+    # 2. 情绪是什么 inquiry in local transformer
+    emo_res = engine.generate("local:transformer-medium", "你知道情绪是什么吗")
+    assert "主观体验" in emo_res["text"] or "生理唤醒" in emo_res["text"] or "自适应" in emo_res["text"]
+    assert "痛点" not in emo_res["text"]
+
+    # 3. 对话继续 (continuation with history)
+    history = [{"role": "user", "content": "你知道情绪是什么吗"}, {"role": "assistant", "content": "情绪是..."}]
+    cont_res = engine.generate("local:transformer-medium", "继续", context_history=history)
+    assert "情绪" in cont_res["text"]
+    assert "调节" in cont_res["text"] or "前额叶" in cont_res["text"] or "杏仁核" in cont_res["text"]
+
+    # 4. 嘉兴大学 in autonomous agent
+    agent_uni = engine.generate("local:autonomous-agent", "嘉兴大学你知道吗")
+    assert "嘉兴大学" in agent_uni["text"]
+    assert "痛点" not in agent_uni["text"]
+
+    # 5. 情绪是什么 in autonomous agent
+    agent_emo = engine.generate("local:autonomous-agent", "你知道情绪是什么吗")
+    assert "主观体验" in agent_emo["text"] or "生理唤醒" in agent_emo["text"]
+    assert "痛点" not in agent_emo["text"]
+

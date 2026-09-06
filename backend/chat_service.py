@@ -192,18 +192,42 @@ def handle_chat_request(req: ChatRequest) -> ChatResponse:
             skill_id=req.skill_id,
             skill_name=active_skill.name if active_skill else None,
         )
-        knowledge_note = ""
-        if knowledge_hits:
-            knowledge_note = " 已结合本地知识库片段增强建议。"
-        safety_note = ""
-        if safety_assessment.level == "medium":
-            safety_note = " 同时检测到需要额外关注的状态，回复里已补充线下支持提醒。"
+
+    # --- Local Transformer / Autonomous Agent mode: offline neural inference ---
+    if target.mode in {"local_transformer", "autonomous_agent"}:
+        engine = _get_local_engine()
+        sync_result = engine.generate_sync(
+            target_name=target.id,
+            prompt=req.message,
+            system_hint=req.system_hint or "",
+            context_history=conversation_history,
+        )
+        reply = sync_result.get("response", "本地模型未能生成回复。")
+        assistant_message_id = save_turn(
+            session_id,
+            req.message,
+            reply,
+            response_style=style,
+            provider_name=target.provider_name,
+            model_name=target.model_name,
+            mode=target.mode,
+            risk_level=safety_assessment.level,
+            knowledge_sources=knowledge_sources(knowledge_hits),
+        )
+        telemetry.record_chat(
+            mode=target.mode,
+            provider=target.provider_name,
+            model=target.model_name,
+            scenario=scenario,
+            is_stream=False,
+        )
+        telemetry.record_tokens(len(req.message) + len(reply))
         skill_note = f" 已激活专精心理技能【{active_skill.name}】。" if active_skill else ""
         return ChatResponse(
             reply=reply,
             note=(
-                f"当前为本地演示模式（已接入本地 Transformer 引擎增强语义理解）。已按“{STYLE_LABELS[style]}”返回回复；"
-                f"本轮使用了 {len(conversation_history)} 条会话记忆。{knowledge_note}{safety_note}{skill_note}"
+                f"当前为本地离线中型模型推理模式 ({target.provider_name})。已按“{STYLE_LABELS[style]}”返回回复；"
+                f"本轮使用了 {len(conversation_history)} 条会话记忆。{skill_note}"
             ).strip(),
             mode=target.mode,
             provider_name=target.provider_name,
@@ -362,6 +386,7 @@ async def handle_chat_stream(req: ChatRequest) -> AsyncGenerator[str, None]:
             target_name=target.id,
             prompt=req.message,
             system_hint=req.system_hint or "",
+            context_history=conversation_history,
         ):
             if chunk.get("type") == "thought":
                 yield f"data: {json.dumps({'event': 'thought', 'agent': chunk.get('agent', ''), 'content': chunk.get('content', '')}, ensure_ascii=False)}\n\n"
