@@ -32,6 +32,9 @@
         </div>
 
         <div class="nav-actions">
+          <button id="open-settings-modal-btn" class="btn btn-secondary btn-sm" type="button">
+            ⚙️ 密钥与模型设置
+          </button>
           <a href="/docs" target="_blank" class="nav-link">Swagger API</a>
           <a href="/metrics" target="_blank" class="nav-link">Prometheus Metrics</a>
           <span id="runtime-badge" class="status-badge">系统检测中</span>
@@ -206,6 +209,9 @@
                 <strong id="base-url" class="metric-val metric-val-mono">-</strong>
               </div>
             </div>
+            <button id="inspector-settings-btn" class="btn btn-secondary btn-sm btn-block" type="button" style="margin-top: 10px;">
+              ⚙️ 配置 API Key / 切换模型
+            </button>
           </div>
 
           <!-- RAG Hits Panel -->
@@ -274,6 +280,82 @@
                 </form>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Model & API Key Settings Modal -->
+      <div id="settings-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-dialog settings-modal-dialog">
+          <div class="modal-header">
+            <h3>⚙️ 模型与 API Key 配置管理</h3>
+            <button id="close-settings-modal-btn" class="modal-close-btn">&times;</button>
+          </div>
+          <div class="modal-body">
+            <!-- Preset Quick Select Buttons -->
+            <div class="preset-buttons-container">
+              <span class="preset-label">官方预设一键填入:</span>
+              <div class="preset-pills">
+                <button type="button" class="preset-pill" data-preset="deepseek-chat">⚡ DeepSeek Chat</button>
+                <button type="button" class="preset-pill" data-preset="deepseek-r1">🧠 DeepSeek R1</button>
+                <button type="button" class="preset-pill preset-pill-featured" data-preset="orcarouter">🌐 OrcaRouter (推荐网关)</button>
+                <button type="button" class="preset-pill" data-preset="openai">🤖 OpenAI GPT-4o-mini</button>
+              </div>
+            </div>
+
+            <form id="model-settings-form" class="settings-form">
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="settings-provider-input">服务提供商 (Provider):</label>
+                  <input type="text" id="settings-provider-input" placeholder="例如：DeepSeek / OpenAI / OrcaRouter" required />
+                </div>
+                <div class="form-group">
+                  <label for="settings-modelname-input">模型标识 (Model Name):</label>
+                  <input type="text" id="settings-modelname-input" placeholder="例如：deepseek-chat / gpt-4o-mini" required />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="settings-baseurl-input">API Base URL (OpenAI 兼容地址):</label>
+                <input type="url" id="settings-baseurl-input" placeholder="https://api.deepseek.com" required />
+              </div>
+
+              <div class="form-group">
+                <label for="settings-key-input">API Key (私钥安全保护):</label>
+                <div class="input-with-action">
+                  <input type="password" id="settings-key-input" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+                  <button type="button" id="toggle-key-visibility-btn" class="btn btn-secondary btn-sm" title="显示或隐藏密钥">👁️ 显示</button>
+                </div>
+                <span class="field-hint">密钥保存后仅在本地服务器与接口调用时使用，绝不外泄。</span>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="settings-temperature-input">生成多样性 (Temperature 0.0 ~ 1.5):</label>
+                  <input type="number" id="settings-temperature-input" step="0.1" min="0.0" max="1.5" value="0.7" />
+                </div>
+                <div class="form-group form-group-checkbox">
+                  <label>
+                    <input type="checkbox" id="settings-demo-mode-checkbox" />
+                    强制进入本地免 Key 演示模式
+                  </label>
+                </div>
+              </div>
+
+              <div class="settings-modal-actions">
+                <button type="button" id="settings-probe-btn" class="btn btn-secondary">
+                  🧪 一键连通性测试 (Probe)
+                </button>
+                <button type="button" id="settings-reset-demo-btn" class="text-btn" style="color:var(--text-muted);">
+                  重置为本地演示
+                </button>
+                <button type="submit" id="settings-save-btn" class="btn btn-primary" style="margin-left: auto;">
+                  💾 保存并应用生效
+                </button>
+              </div>
+
+              <div id="settings-status-banner" class="settings-status-banner" style="display:none;"></div>
+            </form>
           </div>
         </div>
       </div>

@@ -41,6 +41,23 @@ const uploadDocForm = document.getElementById("upload-doc-form");
 const uploadDocStatus = document.getElementById("upload-doc-status");
 const sidebarDocCount = document.getElementById("sidebar-doc-count");
 
+// Settings modal elements
+const settingsModal = document.getElementById("settings-modal");
+const openSettingsModalBtn = document.getElementById("open-settings-modal-btn");
+const inspectorSettingsBtn = document.getElementById("inspector-settings-btn");
+const closeSettingsModalBtn = document.getElementById("close-settings-modal-btn");
+const modelSettingsForm = document.getElementById("model-settings-form");
+const settingsProviderInput = document.getElementById("settings-provider-input");
+const settingsModelNameInput = document.getElementById("settings-modelname-input");
+const settingsBaseUrlInput = document.getElementById("settings-baseurl-input");
+const settingsKeyInput = document.getElementById("settings-key-input");
+const toggleKeyVisibilityBtn = document.getElementById("toggle-key-visibility-btn");
+const settingsTemperatureInput = document.getElementById("settings-temperature-input");
+const settingsDemoModeCheckbox = document.getElementById("settings-demo-mode-checkbox");
+const settingsProbeBtn = document.getElementById("settings-probe-btn");
+const settingsResetDemoBtn = document.getElementById("settings-reset-demo-btn");
+const settingsStatusBanner = document.getElementById("settings-status-banner");
+
 const SESSION_STORAGE_KEY = "zhiyuxing_demo_session_id";
 const SCENARIO_STORAGE_KEY = "zhiyuxing_active_scenario";
 
@@ -555,19 +572,172 @@ async function runCompatibilityCheck() {
   }
 }
 
-// Bootstrapping
-async function init() {
-  // 1. Setup scenario
-  setScenario(activeScenario);
-  if (scenarioPills) {
-    scenarioPills.querySelectorAll(".scenario-pill").forEach((pill) => {
-      pill.addEventListener("click", () => {
-        setScenario(pill.getAttribute("data-scenario"));
-      });
-    });
+// Settings Modal Logic
+const PRESETS = {
+  "deepseek-chat": {
+    provider: "DeepSeek",
+    model_name: "deepseek-chat",
+    base_url: "https://api.deepseek.com",
+    placeholder: "sk-...",
+  },
+  "deepseek-r1": {
+    provider: "DeepSeek",
+    model_name: "deepseek-reasoner",
+    base_url: "https://api.deepseek.com",
+    placeholder: "sk-...",
+  },
+  "orcarouter": {
+    provider: "OrcaRouter",
+    model_name: "deepseek/deepseek-chat",
+    base_url: "https://api.orcarouter.com/v1",
+    placeholder: "sk-or-...",
+  },
+  "openai": {
+    provider: "OpenAI",
+    model_name: "gpt-4o-mini",
+    base_url: "https://api.openai.com/v1",
+    placeholder: "sk-proj-...",
+  },
+};
+
+function openSettingsModal() {
+  if (!settingsModal) return;
+  settingsModal.style.display = "flex";
+  hideSettingsStatus();
+
+  // Populate form from runtimeMeta if available
+  if (runtimeMeta) {
+    settingsProviderInput.value = runtimeMeta.provider_name || "DeepSeek";
+    settingsModelNameInput.value = runtimeMeta.model_name || "deepseek-chat";
+    settingsBaseUrlInput.value = runtimeMeta.base_url || "https://api.deepseek.com";
+    settingsDemoModeCheckbox.checked = runtimeMeta.chat_mode === "demo";
+  }
+}
+
+function closeSettingsModal() {
+  if (settingsModal) {
+    settingsModal.style.display = "none";
+  }
+}
+
+function showSettingsStatus(message, isError = false) {
+  if (!settingsStatusBanner) return;
+  settingsStatusBanner.style.display = "block";
+  settingsStatusBanner.textContent = message;
+  settingsStatusBanner.className = `settings-status-banner ${isError ? "status-error" : "status-success"}`;
+}
+
+function hideSettingsStatus() {
+  if (!settingsStatusBanner) return;
+  settingsStatusBanner.style.display = "none";
+  settingsStatusBanner.textContent = "";
+}
+
+function applyPreset(presetKey) {
+  const cfg = PRESETS[presetKey];
+  if (!cfg) return;
+  settingsProviderInput.value = cfg.provider;
+  settingsModelNameInput.value = cfg.model_name;
+  settingsBaseUrlInput.value = cfg.base_url;
+  settingsKeyInput.placeholder = cfg.placeholder;
+  settingsDemoModeCheckbox.checked = false;
+  showSettingsStatus(`已填入 ${cfg.provider} (${cfg.model_name}) 推荐配置，请输入您的 API Key 后点击测试或保存。`, false);
+}
+
+async function handleSettingsProbe() {
+  const provider = settingsProviderInput.value.trim();
+  const model_name = settingsModelNameInput.value.trim();
+  const base_url = settingsBaseUrlInput.value.trim();
+  const api_key = settingsKeyInput.value.trim();
+
+  if (!base_url) {
+    showSettingsStatus("请先填写有效的 API Base URL。", true);
+    return;
   }
 
-  // 2. Fetch meta
+  showSettingsStatus("⏳ 正在向远端发起连通性探测 (Probe)... 请稍候", false);
+  settingsProbeBtn.disabled = true;
+
+  try {
+    const res = await fetch("/api/settings/probe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        provider: provider || undefined,
+        model_name: model_name || undefined,
+        base_url,
+        api_key: api_key || undefined,
+      }),
+    });
+
+    const data = await res.json();
+    if (res.ok && data.status === "ok") {
+      showSettingsStatus(`✅ 探测成功！${data.message} 延迟: ${data.latency_ms}ms`, false);
+    } else {
+      showSettingsStatus(`❌ 探测失败: ${data.message || data.detail || "无法连接到指定服务"}`, true);
+    }
+  } catch (err) {
+    showSettingsStatus(`❌ 网络探测异常: ${err.message}`, true);
+  } finally {
+    settingsProbeBtn.disabled = false;
+  }
+}
+
+async function handleSaveSettings(e) {
+  e.preventDefault();
+  const provider = settingsProviderInput.value.trim();
+  const model_name = settingsModelNameInput.value.trim();
+  const base_url = settingsBaseUrlInput.value.trim();
+  const api_key = settingsKeyInput.value.trim();
+  const temperature = parseFloat(settingsTemperatureInput.value) || 0.7;
+  const demo_mode = settingsDemoModeCheckbox.checked;
+
+  const saveBtn = document.getElementById("settings-save-btn");
+  if (saveBtn) saveBtn.disabled = true;
+
+  try {
+    const res = await fetch("/api/settings/model", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        provider,
+        model_name,
+        base_url,
+        api_key: api_key || undefined,
+        temperature,
+        demo_mode,
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      showSettingsStatus(`✅ 保存成功！当前模式: ${data.mode === "demo" ? "本地演示" : "商业模型已就绪"}`, false);
+
+      // Refresh meta & compatibility
+      await refreshMetaAndUI();
+      await runCompatibilityCheck();
+
+      setTimeout(() => {
+        closeSettingsModal();
+      }, 1000);
+    } else {
+      const err = await res.json();
+      showSettingsStatus(`❌ 保存失败: ${err.detail || "请检查输入项"}`, true);
+    }
+  } catch (err) {
+    showSettingsStatus(`❌ 提交失败: ${err.message}`, true);
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
+  }
+}
+
+async function handleResetToDemo() {
+  settingsDemoModeCheckbox.checked = true;
+  settingsKeyInput.value = "";
+  showSettingsStatus("已切换为演示模式开关。点击'保存并应用生效'即时切回本地离线模式。", false);
+}
+
+async function refreshMetaAndUI() {
   try {
     const res = await fetch("/api/meta");
     if (res.ok) {
@@ -600,8 +770,24 @@ async function init() {
       }
     }
   } catch (err) {
-    console.warn("拉取元信息失败:", err);
+    console.warn("刷新元信息失败:", err);
   }
+}
+
+// Bootstrapping
+async function init() {
+  // 1. Setup scenario
+  setScenario(activeScenario);
+  if (scenarioPills) {
+    scenarioPills.querySelectorAll(".scenario-pill").forEach((pill) => {
+      pill.addEventListener("click", () => {
+        setScenario(pill.getAttribute("data-scenario"));
+      });
+    });
+  }
+
+  // 2. Fetch meta
+  await refreshMetaAndUI();
 
   // 3. Load initial sessions
   if (currentSessionId) {
@@ -632,8 +818,37 @@ async function init() {
   closeKnowledgeModalBtn.addEventListener("click", closeKnowledgeModal);
   uploadDocForm.addEventListener("submit", handleUploadDoc);
 
+  // Settings modal event listeners
+  if (openSettingsModalBtn) openSettingsModalBtn.addEventListener("click", openSettingsModal);
+  if (inspectorSettingsBtn) inspectorSettingsBtn.addEventListener("click", openSettingsModal);
+  if (closeSettingsModalBtn) closeSettingsModalBtn.addEventListener("click", closeSettingsModal);
+  if (modelSettingsForm) modelSettingsForm.addEventListener("submit", handleSaveSettings);
+  if (settingsProbeBtn) settingsProbeBtn.addEventListener("click", handleSettingsProbe);
+  if (settingsResetDemoBtn) settingsResetDemoBtn.addEventListener("click", handleResetToDemo);
+
+  if (toggleKeyVisibilityBtn && settingsKeyInput) {
+    toggleKeyVisibilityBtn.addEventListener("click", () => {
+      if (settingsKeyInput.type === "password") {
+        settingsKeyInput.type = "text";
+        toggleKeyVisibilityBtn.textContent = "🔒 隐藏";
+      } else {
+        settingsKeyInput.type = "password";
+        toggleKeyVisibilityBtn.textContent = "👁️ 显示";
+      }
+    });
+  }
+
+  // Preset buttons
+  document.querySelectorAll(".preset-pill").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const preset = btn.getAttribute("data-preset");
+      applyPreset(preset);
+    });
+  });
+
   // Initial compatibility run
   runCompatibilityCheck();
 }
 
 window.addEventListener("DOMContentLoaded", init);
+

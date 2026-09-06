@@ -94,3 +94,59 @@ def test_knowledge_document_deletion(test_client) -> None:
     # 3. Deleting it again returns 404
     del_again = test_client.delete(f"/api/knowledge/documents/{doc_id}")
     assert del_again.status_code == 404
+
+
+def test_update_model_settings_and_meta(test_client) -> None:
+    # 1. Update settings
+    resp = test_client.post(
+        "/api/settings/model",
+        json={
+            "provider": "DeepSeek",
+            "model_name": "deepseek-chat",
+            "base_url": "https://api.deepseek.com",
+            "api_key": "sk-test-mock-key-12345",
+            "temperature": 0.8,
+            "demo_mode": False,
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "ok"
+    assert data["api_key_configured"] is True
+
+    # 2. Check meta reflects changes
+    meta_resp = test_client.get("/api/meta")
+    assert meta_resp.status_code == 200
+    meta = meta_resp.json()
+    assert meta["api_key_configured"] is True
+
+    # 3. Reset back to demo
+    reset_resp = test_client.post(
+        "/api/settings/model",
+        json={
+            "provider": "DeepSeek",
+            "model_name": "deepseek-chat",
+            "base_url": "https://api.deepseek.com",
+            "demo_mode": True,
+        },
+    )
+    assert reset_resp.status_code == 200
+    assert reset_resp.json()["mode"] == "demo"
+
+
+def test_probe_settings_endpoint(test_client) -> None:
+    # Probe with invalid url or local address
+    resp = test_client.post(
+        "/api/settings/probe",
+        json={
+            "provider": "MockProvider",
+            "model_name": "mock-model",
+            "base_url": "https://127.0.0.1:9999",
+            "api_key": "sk-fake",
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "status" in data
+    assert "message" in data
+

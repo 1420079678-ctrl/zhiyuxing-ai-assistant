@@ -13,6 +13,7 @@ from services.knowledge import (
     search_knowledge,
     write_knowledge_document,
 )
+from services.settings import save_runtime_settings, test_connection_probe
 from services.storage import delete_session, list_recent_sessions, save_feedback, session_history
 from services.telemetry import telemetry
 
@@ -41,6 +42,10 @@ from backend.schemas import (
     KnowledgeDocumentSummary,
     KnowledgeDocumentUpsertResponse,
     KnowledgeSearchResponse,
+    ModelSettingsUpdateRequest,
+    ModelSettingsUpdateResponse,
+    ProbeTestRequest,
+    ProbeTestResponse,
     ScenarioOption,
     ServiceInfo,
     SessionHistoryResponse,
@@ -222,3 +227,46 @@ async def chat_stream(req: ChatRequest, _: Optional[str] = Depends(verify_api_ke
             "X-Accel-Buffering": "no",
         },
     )
+
+
+@router.post("/api/settings/model", response_model=ModelSettingsUpdateResponse)
+def update_model_settings(req: ModelSettingsUpdateRequest) -> ModelSettingsUpdateResponse:
+    """Update active model credentials & provider settings directly from frontend."""
+    if public_demo_mode():
+        raise HTTPException(status_code=403, detail="PUBLIC_DEMO_MODE=true，当前公开受限演示后端禁止修改模型配置。")
+    res = save_runtime_settings(
+        provider=req.provider,
+        model_name=req.model_name,
+        base_url=req.base_url,
+        api_key=req.api_key,
+        temperature=req.temperature,
+        demo_mode=req.demo_mode,
+    )
+    return ModelSettingsUpdateResponse(
+        status="ok",
+        message="模型与密钥配置已保存并即时生效！",
+        current_provider=res["provider"],
+        current_model=res["model_name"],
+        base_url=res["base_url"],
+        api_key_configured=res["has_key"],
+        mode=res["mode"],
+    )
+
+
+@router.post("/api/settings/probe", response_model=ProbeTestResponse)
+def probe_model_settings(req: ProbeTestRequest) -> ProbeTestResponse:
+    """Test model connection and API key on-the-fly."""
+    if public_demo_mode():
+        raise HTTPException(status_code=403, detail="PUBLIC_DEMO_MODE=true，禁止发起探测请求。")
+    success, message, latency = test_connection_probe(
+        provider=req.provider,
+        model_name=req.model_name,
+        base_url=req.base_url,
+        api_key=req.api_key,
+    )
+    return ProbeTestResponse(
+        status="ok" if success else "error",
+        message=message,
+        latency_ms=latency,
+    )
+

@@ -247,3 +247,36 @@ class MetricsSummaryResponse(BaseModel):
     guardrail_triggers: int
     tokens_estimated: int
 
+
+class ModelSettingsUpdateRequest(BaseModel):
+    provider: str = Field(default="DeepSeek", description="模型提供商名称")
+    model_name: str = Field(default="deepseek-chat", description="模型标识符")
+    base_url: str = Field(default="https://api.deepseek.com", description="OpenAI 兼容 API Base URL")
+    api_key: Optional[str] = Field(default=None, description="API Key")
+    temperature: Optional[float] = Field(default=0.7, ge=0.0, le=2.0)
+    demo_mode: Optional[bool] = Field(default=False, description="是否强制演示模式")
+
+
+class ModelSettingsUpdateResponse(BaseModel):
+    status: str
+    message: str
+    current_provider: str
+    current_model: str
+    base_url: str
+    api_key_configured: bool
+    mode: str
+
+
+class ProbeTestRequest(BaseModel):
+    provider: Optional[str] = None
+    model_name: Optional[str] = None
+    base_url: Optional[str] = None
+    api_key: Optional[str] = None
+
+
+class ProbeTestResponse(BaseModel):
+    status: str
+    message: str
+    latency_ms: Optional[float] = None
+
+
