@@ -46,6 +46,10 @@ const workspaceGrid = document.getElementById("workspace-grid");
 const toggleSidebarBtn = document.getElementById("toggle-sidebar-btn");
 const toggleInspectorBtn = document.getElementById("toggle-inspector-btn");
 const closeInspectorBtn = document.getElementById("close-inspector-btn");
+const themeToggleBtn = document.getElementById("theme-toggle-btn");
+const themeIcon = document.getElementById("theme-icon");
+const themeText = document.getElementById("theme-text");
+const THEME_STORAGE_KEY = "zhiyuxing_app_theme";
 
 // Knowledge modal elements
 const knowledgeModal = document.getElementById("knowledge-modal");
@@ -1000,6 +1004,23 @@ async function init() {
       workspaceGrid.classList.remove("inspector-open");
       toggleInspectorBtn?.classList.remove("active");
       window.localStorage.setItem(INSPECTOR_OPEN_KEY, "false");
+    });
+  }
+
+  // Theme initialization (defaults to light mode)
+  let currentTheme = window.localStorage.getItem(THEME_STORAGE_KEY) || "light";
+  function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+    if (themeIcon) themeIcon.textContent = theme === "dark" ? "🌙" : "☀️";
+    if (themeText) themeText.textContent = theme === "dark" ? "深色" : "浅色";
+  }
+  applyTheme(currentTheme);
+
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener("click", () => {
+      currentTheme = currentTheme === "light" ? "dark" : "light";
+      applyTheme(currentTheme);
     });
   }
 
